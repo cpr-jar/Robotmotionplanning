@@ -1,0 +1,78 @@
+{
+  "repository": "UniversalRobots/Universal_Robots_ROS2_Description",
+  "commit": "81f7c9fe003c2f0e02eec5a7253f1b262ad38b61",
+  "files": [
+    {
+      "path": "config/ur5e/visual_parameters.yaml",
+      "url": "https://raw.githubusercontent.com/UniversalRobots/Universal_Robots_ROS2_Description/81f7c9fe003c2f0e02eec5a7253f1b262ad38b61/config/ur5e/visual_parameters.yaml",
+      "bytes": 2393,
+      "sha256": "87e8adba0d4e40cc9a994e7ca2264671cc6b6c732649b675b553639cb275a16d"
+    },
+    {
+      "path": "urdf/inc/ur_common.xacro",
+      "url": "https://raw.githubusercontent.com/UniversalRobots/Universal_Robots_ROS2_Description/81f7c9fe003c2f0e02eec5a7253f1b262ad38b61/urdf/inc/ur_common.xacro",
+      "bytes": 20150,
+      "sha256": "70edfb657368ba53d3ab9717054cb1cbecba061229d2ffaa179ed0c43205f0f2"
+    },
+    {
+      "path": "urdf/ur_macro.xacro",
+      "url": "https://raw.githubusercontent.com/UniversalRobots/Universal_Robots_ROS2_Description/81f7c9fe003c2f0e02eec5a7253f1b262ad38b61/urdf/ur_macro.xacro",
+      "bytes": 21122,
+      "sha256": "5e496360ce0f5c7e7302a49e93f65ae9f52a4a433689d2c08298ff0e9d1648bc"
+    },
+    {
+      "path": "LICENSE",
+      "url": "https://raw.githubusercontent.com/UniversalRobots/Universal_Robots_ROS2_Description/81f7c9fe003c2f0e02eec5a7253f1b262ad38b61/LICENSE",
+      "bytes": 1459,
+      "sha256": "143077f9f6a8de5a99f78c2c2472801fb53cf240277ef661642f079b9acdfff8"
+    },
+    {
+      "path": "README.md",
+      "url": "https://raw.githubusercontent.com/UniversalRobots/Universal_Robots_ROS2_Description/81f7c9fe003c2f0e02eec5a7253f1b262ad38b61/README.md",
+      "bytes": 4306,
+      "sha256": "7bf26581913a851476323daab7226fb5fb8aa19b0acbda3969abe58be2689a18"
+    },
+    {
+      "path": "meshes/ur5e/visual/base.dae",
+      "url": "https://raw.githubusercontent.com/UniversalRobots/Universal_Robots_ROS2_Description/81f7c9fe003c2f0e02eec5a7253f1b262ad38b61/meshes/ur5e/visual/base.dae",
+      "bytes": 358056,
+      "sha256": "c30e4d7228ef633dca2a02c26df2316741f6642cb6333e8289dba6e6d0b22819"
+    },
+    {
+      "path": "meshes/ur5e/visual/shoulder.dae",
+      "url": "https://raw.githubusercontent.com/UniversalRobots/Universal_Robots_ROS2_Description/81f7c9fe003c2f0e02eec5a7253f1b262ad38b61/meshes/ur5e/visual/shoulder.dae",
+      "bytes": 1797083,
+      "sha256": "c581bfa55b86061d9b99d315ed53817b6b693e6a500643bbf9bbb783322d585d"
+    },
+    {
+      "path": "meshes/ur5e/visual/upperarm.dae",
+      "url": "https://raw.githubusercontent.com/UniversalRobots/Universal_Robots_ROS2_Description/81f7c9fe003c2f0e02eec5a7253f1b262ad38b61/meshes/ur5e/visual/upperarm.dae",
+      "bytes": 3082486,
+      "sha256": "c040a05bb224f14cfab6aa6704d70cbb773ada940eca9a3e34e6ce486c4c4c29"
+    },
+    {
+      "path": "meshes/ur5e/visual/forearm.dae",
+      "url": "https://raw.githubusercontent.com/UniversalRobots/Universal_Robots_ROS2_Description/81f7c9fe003c2f0e02eec5a7253f1b262ad38b61/meshes/ur5e/visual/forearm.dae",
+      "bytes": 1140937,
+      "sha256": "04694bf57dac46e9b8bc7c30f2eec75a1bc762e1f1a879ea30c944f24cacbad8"
+    },
+    {
+      "path": "meshes/ur5e/visual/wrist1.dae",
+      "url": "https://raw.githubusercontent.com/UniversalRobots/Universal_Robots_ROS2_Description/81f7c9fe003c2f0e02eec5a7253f1b262ad38b61/meshes/ur5e/visual/wrist1.dae",
+      "bytes": 1334663,
+      "sha256": "a07a3d96d2540f9be12e4a07bcb8577d9f1e36005920c396a407804343a3b588"
+    },
+    {
+      "path": "meshes/ur5e/visual/wrist2.dae",
+      "url": "https://raw.githubusercontent.com/UniversalRobots/Universal_Robots_ROS2_Description/81f7c9fe003c2f0e02eec5a7253f1b262ad38b61/meshes/ur5e/visual/wrist2.dae",
+      "bytes": 1554839,
+      "sha256": "982fa42933c6f81629882ad7975e9ba5dac5d474a6b56694e233708376cf840e"
+    },
+    {
+      "path": "meshes/ur5e/visual/wrist3.dae",
+      "url": "https://raw.githubusercontent.com/UniversalRobots/Universal_Robots_ROS2_Description/81f7c9fe003c2f0e02eec5a7253f1b262ad38b61/meshes/ur5e/visual/wrist3.dae",
+      "bytes": 66077,
+      "sha256": "7a7664ac4adcd53b0870fe6a2b8b975693d846dd4d07a5f44194c7d16f4890ba"
+    }
+  ]
+}

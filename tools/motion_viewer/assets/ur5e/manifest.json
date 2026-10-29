@@ -1,0 +1,229 @@
+{
+  "schema_version": 1,
+  "model": "ur5e",
+  "reference": {
+    "base_link": "base_link",
+    "tip_link": "tool0",
+    "joints": [
+      {
+        "name": "base_link-base_link_inertia",
+        "type": "fixed",
+        "parent_link": "base_link",
+        "child_link": "base_link_inertia",
+        "origin": {
+          "position": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "orientation": [
+            6.123233995736766e-17,
+            0.0,
+            0.0,
+            1.0
+          ]
+        },
+        "axis": [
+          1.0,
+          0.0,
+          0.0
+        ]
+      },
+      {
+        "name": "shoulder_pan_joint",
+        "type": "revolute",
+        "parent_link": "base_link_inertia",
+        "child_link": "shoulder_link",
+        "origin": {
+          "position": [
+            0.0,
+            0.0,
+            0.1625
+          ],
+          "orientation": [
+            1.0,
+            0.0,
+            0.0,
+            0.0
+          ]
+        },
+        "axis": [
+          0.0,
+          0.0,
+          1.0
+        ]
+      },
+      {
+        "name": "shoulder_lift_joint",
+        "type": "revolute",
+        "parent_link": "shoulder_link",
+        "child_link": "upper_arm_link",
+        "origin": {
+          "position": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "orientation": [
+            0.7071067811140325,
+            0.7071067812590626,
+            0.0,
+            0.0
+          ]
+        },
+        "axis": [
+          0.0,
+          0.0,
+          1.0
+        ]
+      },
+      {
+        "name": "elbow_joint",
+        "type": "revolute",
+        "parent_link": "upper_arm_link",
+        "child_link": "forearm_link",
+        "origin": {
+          "position": [
+            -0.425,
+            0.0,
+            0.0
+          ],
+          "orientation": [
+            1.0,
+            0.0,
+            0.0,
+            0.0
+          ]
+        },
+        "axis": [
+          0.0,
+          0.0,
+          1.0
+        ]
+      },
+      {
+        "name": "wrist_1_joint",
+        "type": "revolute",
+        "parent_link": "forearm_link",
+        "child_link": "wrist_1_link",
+        "origin": {
+          "position": [
+            -0.3922,
+            0.0,
+            0.1333
+          ],
+          "orientation": [
+            1.0,
+            0.0,
+            0.0,
+            0.0
+          ]
+        },
+        "axis": [
+          0.0,
+          0.0,
+          1.0
+        ]
+      },
+      {
+        "name": "wrist_2_joint",
+        "type": "revolute",
+        "parent_link": "wrist_1_link",
+        "child_link": "wrist_2_link",
+        "origin": {
+          "position": [
+            0.0,
+            -0.0997,
+            -2.044881182297852e-11
+          ],
+          "orientation": [
+            0.7071067811140325,
+            0.7071067812590626,
+            0.0,
+            0.0
+          ]
+        },
+        "axis": [
+          0.0,
+          0.0,
+          1.0
+        ]
+      },
+      {
+        "name": "wrist_3_joint",
+        "type": "revolute",
+        "parent_link": "wrist_2_link",
+        "child_link": "wrist_3_link",
+        "origin": {
+          "position": [
+            0.0,
+            0.0996,
+            -2.042830148012698e-11
+          ],
+          "orientation": [
+            0.7071067811140325,
+            -0.7071067812590626,
+            8.659560562354933e-17,
+            8.880527684815676e-27
+          ]
+        },
+        "axis": [
+          0.0,
+          0.0,
+          1.0
+        ]
+      },
+      {
+        "name": "wrist_3-flange",
+        "type": "fixed",
+        "parent_link": "wrist_3_link",
+        "child_link": "flange",
+        "origin": {
+          "position": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "orientation": [
+            0.5000000000000001,
+            -0.4999999999999999,
+            -0.5,
+            -0.5
+          ]
+        },
+        "axis": [
+          1.0,
+          0.0,
+          0.0
+        ]
+      },
+      {
+        "name": "flange-tool0",
+        "type": "fixed",
+        "parent_link": "flange",
+        "child_link": "tool0",
+        "origin": {
+          "position": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "orientation": [
+            0.5000000000000001,
+            0.5,
+            0.4999999999999999,
+            0.5
+          ]
+        },
+        "axis": [
+          1.0,
+          0.0,
+          0.0
+        ]
+      }
+    ]
+  },
+  "sha256": "60059a0cddc581146ac1d1d9280982d3979da1ff12a7a0c59670460d7754e52b",
+  "triangle_count": 121789,
+  "link_count": 7
+}

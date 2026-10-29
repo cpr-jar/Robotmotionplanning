@@ -1,4 +1,4 @@
-# Motion Viewer · separates Werkzeug 0.1.0
+# Motion Viewer · separates Werkzeug 0.2.0
 
 Ein **Offline-Viewer für die vorhandenen Bewegungsprogramme**, vollständig unter
 `tools/motion_viewer/`. Bibliothek, Steuerungsschnittstellen und deren Build-
@@ -7,15 +7,22 @@ benutzt ausschließlich die öffentlichen Bibliotheksschnittstellen.
 
 ## Sofort ansehen – ohne Build
 
-1. [Projekt mit Viewer herunterladen](https://github.com/cpr-jar/Robotmotionplanning/archive/refs/tags/motion-viewer-v0.1.0.zip) und entpacken.
+1. [Projekt mit vollständigem UR5e-Viewer herunterladen](https://github.com/cpr-jar/Robotmotionplanning/archive/refs/tags/motion-viewer-v0.2.0.zip) und entpacken.
 2. **`tools/motion_viewer/demo/ur5e_motion.html`** im Browser öffnen.
 3. **Abspielen** drücken. Mit dem Zeitregler oder den Programmschritten gezielt
    zu einer Stelle springen; die 3D-Ansicht mit der Maus drehen und zoomen.
+
+Unter **Modell** zwischen **UR5e vollständig** und **Kinematik** wechseln. Die
+vollständige Darstellung enthält Basis, Schulter, Oberarm, Unterarm und alle drei
+Handgelenke einschließlich der offiziellen Materialien. Ein Werkzeug ist nicht
+angebaut; der rote Punkt und das kleine Koordinatensystem markieren den TCP.
 
 Die fertige HTML-Datei enthält Modell, Daten, CSS und JavaScript. Sie benötigt
 keinen Server, keine Installation, kein Internet und keinen Zugriff auf die
 Steuerung. Browser mit einer Unternehmensrichtlinie gegen lokale Dateien können
 sie bei Bedarf über einen eigenen lokalen HTTP-Server öffnen.
+Die vollständige Ansicht benötigt WebGL; ohne WebGL bleibt die Kinematikansicht
+mit einer verständlichen Meldung bedienbar. Es werden keine Modelle nachgeladen.
 
 ![Vorschau des Bewegungsviewers](demo/ur5e_viewer_preview.png)
 
@@ -25,8 +32,9 @@ Ihre Grenzen sind die nominalen Beispielgrenzen des UR5e-Referenzmodells.
 
 ## Was sichtbar wird
 
-- Drehbares **3D-Kinematikmodell** mit Gelenkpunkten, optionalen Gelenkachsen,
-  TCP-Koordinatensystem und farbiger TCP-Bahn.
+- Vollständiges **UR5e-Visual-Modell** mit sieben bewegten Baugruppen und
+  121.789 Dreiecken aus der offiziellen UR-Beschreibung. Umschaltbare Kinematik
+  mit Gelenkpunkten, optionale Gelenkachsen, TCP-Koordinatensystem und farbige TCP-Bahn.
 - **Abspielen/Pause**, Einzelschritt, Zeitregler und Geschwindigkeit 0,25× bis 4×.
 - Programmablauf mit PTP/LIN/CIRC/WAIT, aktueller Quelldatei, Zeile und Schritt.
 - Alle Gelenkpositionen, Geschwindigkeiten, Beschleunigungen und Ruckwerte;
@@ -40,8 +48,10 @@ Ihre Grenzen sind die nominalen Beispielgrenzen des UR5e-Referenzmodells.
 - Automatischer Abgleich der dargestellten FK mit exportierter TCP-Position
   und -Orientierung. Bei Abweichung stoppt die Darstellung mit einer Diagnose.
 
-Die Linie verbindet die importierten Gelenkrahmen und den TCP; sie ist kein
-CAD-Modell der realen Roboterhülle. Angezeigt werden **simulierte Sollwerte**.
+Die Kinematikansicht verbindet die importierten Gelenkrahmen und den TCP.
+Die vollständige UR5e-Ansicht ergänzt die tatsächlichen Visual-Meshes des
+nominalen Referenzmodells; sie führt keine Kollisionsprüfung durch.
+Angezeigt werden **simulierte Sollwerte**.
 Eine spätere Anzeige von Istwerten oder Live-Steuerungsdaten wäre ein eigenes
 Werkzeug-Interface. Die Wiederholrate des Browsers ist unabhängig vom 1–20-ms-
 Sollwertraster und kein Echtzeitnachweis.
@@ -71,6 +81,30 @@ Standardraster ist **10 ms**. `--cycle-ms 1` bis `20` richtet die zugelassene
 ursprüngliche Referenz auf dieses Raster aus, ohne Segmente zu verkürzen.
 Der YAML-Startzustand ist der simulierte Anfangszustand; es wird keine Achse
 physisch dorthin gefahren.
+
+### Modellwahl
+
+`--visuals auto` ist Standard bei `run_demo.py` und `create_viewer.py`: Die
+UR5e-Geometrie wird nur eingebettet, wenn Link-/Gelenknamen, Gelenktypen, Achsen
+und die vollständige Kette der Montageversätze zum hinterlegten Referenzmodell
+passen. Ein ähnlicher Robotername reicht nicht. Andere Modelle, geänderte
+Kinematik und ältere Exporte ohne Linknamen werden als Kinematik dargestellt.
+Eigene Basis- und TCP-Werkzeugtransformationen sind zulässig; die Visuals bleiben
+an ihren Roboterlinks befestigt und folgen der Basistransformation.
+
+```sh
+# Kleine Datei mit der bisherigen Kinematikansicht, ohne Meshes/Three.js:
+python3 tools/motion_viewer/run_demo.py --visuals none
+
+# Passenden UR5e ausdrücklich verlangen; andere Kinematik wird abgelehnt:
+python3 tools/motion_viewer/create_viewer.py \
+  programs/examples/ur5e_demo.yaml --visuals ur5e \
+  --output build-motion-viewer/ur5e.html
+```
+
+Das fertige HTML mit vollständigem Modell ist ungefähr 16 MiB groß. Geometrien,
+Renderer und Lizenzen sind darin enthalten. Herkunft, Koordinatenkonventionen
+und die getrennte Visual-URDF beschreibt [assets/ur5e/README.md](assets/ur5e/README.md).
 
 ### Einmal bauen, danach schnell neue Ansichten erzeugen
 
@@ -145,9 +179,10 @@ Stands 0.12.3 umfasst in der Vollkonfiguration 27 CTests.
 ctest --test-dir build-motion-viewer --output-on-failure
 ```
 
-Ein CTest führt zehn Python-Tests aus: Vollständigkeit und Grenzen, Raster
+Ein CTest führt 17 Python-Tests aus: Vollständigkeit und Grenzen, Raster
 1/20 ms, Ausdünnung mit erhaltenen Übergängen, Parser-/Metadatenfehler,
-transaktionale Ausgaben und sichere Einbettung von Texten. Falls Node installiert
+transaktionale Ausgaben, sichere Einbettung von Texten, Geometrieintegrität,
+Modellzuordnung, Einheiten, Transformationen und Lizenzen. Falls Node installiert
 ist, wird außerdem die Renderer-FK gegen die native Ausgabe von drei Robotern
 und einer gemischten Kette verglichen. Node ist nur für diesen Entwicklercheck
 optional; der Viewer selbst braucht es nicht.
@@ -163,7 +198,9 @@ UBSAN_OPTIONS=halt_on_error=1 ctest --test-dir build-motion-viewer-asan --output
 
 Optionaler Browsercheck für Entwickler: `tests/browser_smoke.py` benötigt
 Playwright und eine installierte Chromium-Binary. Er prüft den fertigen Inhalt
-mit gesperrten Netzwerkanfragen, Bedienung, Kamera und mobiles Layout. Die normale
+mit gesperrten Netzwerkanfragen, vollständige Meshes, 42 Linktransformationen
+gegen die eigene Matrixrechnung von Three.js, Modellwechsel, fehlendes WebGL,
+Grafikkontextverlust, Bedienung, Kamera und mobiles Layout. Die normale
 Benutzung benötigt diese Testabhängigkeiten nicht. Ergebnisse: [VALIDATION.md](VALIDATION.md).
 
 ## Dateien und Zuständigkeiten
@@ -173,12 +210,17 @@ tools/motion_viewer/
 ├── CMakeLists.txt                  Eigenständiger Tool-Build
 ├── run_demo.py                     Ein Befehl für Build und Demo
 ├── create_viewer.py                Validierung, Ausdünnung und atomare HTML-Ausgabe
+├── visual_assets.py                Sichere Modellzuordnung und Lizenztexte
+├── build_visual_assets.py          Optionale Regeneration aus offiziellen COLLADA-Dateien
+├── assets/ur5e/                    Originale, Prüfsummen, Visual-URDF und abgeleitetes Mesh-Paket
+├── vendor/                        Lokal mitgeliefertes Three.js mit MIT-Lizenz
 ├── native/export_program_scene.cpp Öffentliche Bibliotheks-API → Diagnoseexport
 ├── web/
 │   ├── viewer.html                 Struktur der Oberfläche
 │   ├── viewer.css                  Darstellung
 │   ├── viewer.js                   Wiedergabe, Bedienung und Diagramme
-│   └── kinematics.js               Ausschließlich Renderer-FK, kein Motion-Solver
+│   ├── kinematics.js               Ausschließlich Renderer-FK, kein Motion-Solver
+│   └── mesh_renderer.js            WebGL-Geometrien, Materialien und Linktransformationen
 ├── tests/                          Daten-, FK- und optionale Browsertests
 └── demo/                           YAML, fertige Offline-HTML und Vorschau
 ```

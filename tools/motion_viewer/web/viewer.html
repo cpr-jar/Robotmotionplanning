@@ -50,14 +50,23 @@
           <button id="reset-camera" type="button">Ansicht zurücksetzen</button>
         </div>
         <div class="scene-wrap">
+          <canvas id="mesh-scene" aria-hidden="true" hidden></canvas>
           <canvas id="scene" aria-label="Drehbare dreidimensionale Kinematikansicht"></canvas>
           <div class="scene-caption"><span id="step-label"></span><span id="pose-label"></span></div>
         </div>
         <div class="scene-options">
+          <label
+            >Modell
+            <select id="render-mode" aria-label="Modelldarstellung">
+              <option value="mesh">UR5e vollständig</option>
+              <option value="skeleton">Kinematik</option>
+            </select>
+          </label>
           <label><input id="show-path" type="checkbox" checked /> TCP-Bahn</label
           ><label><input id="show-axes" type="checkbox" /> Gelenkachsen</label
-          ><span>Ziehen: drehen · Mausrad: zoomen · Linienmodell ohne CAD-Hüllen</span>
+          ><span>Ziehen: drehen · Mausrad: zoomen</span>
         </div>
+        <p id="model-note" class="small" role="status"></p>
       </section>
       <section class="card axis-panel">
         <div class="panel-head">
@@ -134,12 +143,18 @@
       <p>
         Die vollständige Referenz wurde vom vorhandenen C++-Planer zugelassen und mit virtueller Uhr
         ausgeführt. Diagramme zeigen Samples und Profilgrenzen; sie ersetzen keine kontinuierliche
-        Zulassungsprüfung. Das 3D-Linienmodell enthält keine Kollisionsgeometrie. Keine Hardwareverbindung und
-        kein Echtzeitnachweis.
+        Zulassungsprüfung. Die Visual-Geometrie führt keine Kollisionsprüfung durch. Keine Hardwareverbindung
+        und kein Echtzeitnachweis.
       </p>
+      <details id="model-legal" hidden>
+        <summary>Modellherkunft und Lizenzen</summary>
+        <pre id="model-licenses"></pre>
+      </details>
     </footer>
     <script>
+      /*__THREE__*/
       /*__KINEMATICS__*/
+      /*__MESH_RENDERER__*/
     </script>
     <script id="motion-data" type="application/json">
       __VIEWER_DATA__

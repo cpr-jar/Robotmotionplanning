@@ -110,6 +110,10 @@ void write_scene(const motion::PreparedRobotProgram &prepared, std::ostream &out
   output << std::setprecision(17);
   output << "{\"format\":\"robot-motion-viewer\",\"schema_version\":1,\"robot\":{\"name\":";
   text(output, robot.name);
+  output << ",\"base_link\":";
+  text(output, robot.base_link);
+  output << ",\"tip_link\":";
+  text(output, robot.tip_link);
   output << ",\"base_pose\":";
   pose(output, model.base_pose());
   output << ",\"tool_offset\":";
@@ -130,6 +134,10 @@ void write_scene(const motion::PreparedRobotProgram &prepared, std::ostream &out
     first = false;
     output << "{\"name\":";
     text(output, joint.name);
+    output << ",\"parent_link\":";
+    text(output, joint.parent_link);
+    output << ",\"child_link\":";
+    text(output, joint.child_link);
     output << ",\"type\":";
     text(output, joint_type(joint.type));
     output << ",\"origin\":";

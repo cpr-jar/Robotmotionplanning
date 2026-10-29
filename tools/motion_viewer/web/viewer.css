@@ -151,11 +151,25 @@ input[type="checkbox"] {
   overflow: hidden;
 }
 #scene {
+  position: relative;
   display: block;
   width: 100%;
   height: 385px;
   touch-action: none;
   cursor: grab;
+}
+#mesh-scene {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+#model-licenses {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  max-height: 340px;
+  overflow: auto;
 }
 .scene-caption {
   position: absolute;

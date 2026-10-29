@@ -150,6 +150,24 @@ class ViewerTests(unittest.TestCase):
         file.write_text('{"value":NaN}')
         with self.assertRaises(ValueError): viewer.load_export(file)
 
+    def test_visual_selection_is_trusted_and_skeleton_export_is_self_contained(self):
+        self.assertEqual(len(self.full['visual_model']['links']), 7)
+        # Imported display payloads never supply executable/foreign geometry.
+        exported = copy.deepcopy(self.exported)
+        exported['visual_model'] = {'model': 'untrusted external asset'}
+        for joint in exported['robot']['joints']:
+            joint.pop('parent_link', None)
+            joint.pop('child_link', None)
+        legacy = viewer.prepare_data(exported, 40)
+        self.assertNotIn('visual_model', legacy)
+        skeleton = viewer.prepare_data(self.exported, 40, visuals='none')
+        self.assertNotIn('visual_model', skeleton)
+        html = viewer.render_html(skeleton)
+        self.assertNotIn('THREE.WebGLRenderer', html)
+        self.assertNotIn('base.dae', html)
+        self.assertNotIn('/*__THREE__*/', html)
+        self.assertNotIn('/*__MESH_RENDERER__*/', html)
+
     def test_cycle_grid_one_and_twenty_ms(self):
         # A shorter already admitted reference exercises the two extreme grids.
         source = viewer.ROOT / 'programs/examples/ur5e_demo.yaml'

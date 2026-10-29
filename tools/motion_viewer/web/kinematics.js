@@ -84,7 +84,9 @@
     let transform = poseMatrix(robot.base_pose),
       movingIndex = 0;
     const points = [position(transform)],
-      axes = [];
+      axes = [],
+      linkFrames = Object.create(null);
+    if (robot.base_link) linkFrames[robot.base_link] = transform.slice();
     for (const joint of robot.joints) {
       transform = multiply(transform, poseMatrix(joint.origin));
       points.push(position(transform));
@@ -97,11 +99,12 @@
         transform = multiply(transform, jointMotion(joint.type, joint.axis, jointValues[movingIndex++]));
         if (joint.type === "prismatic") points.push(position(transform));
       }
+      if (joint.child_link) linkFrames[joint.child_link] = transform.slice();
     }
     if (movingIndex !== jointValues.length) throw Error("Gelenkreihenfolge stimmt nicht");
     transform = multiply(transform, poseMatrix(robot.tool_offset));
     points.push(position(transform));
-    return { points, axes, transform, tcp: position(transform) };
+    return { points, axes, transform, tcp: position(transform), linkFrames };
   }
   return { identity, multiply, poseMatrix, forwardKinematics, direction };
 });

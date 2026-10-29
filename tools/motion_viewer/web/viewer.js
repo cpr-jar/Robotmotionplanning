@@ -58,6 +58,55 @@
       target: [0, 0, 0],
       radius: 1,
     };
+    let meshRenderer = null;
+    let meshProblem = "";
+    if (data.visual_model) {
+      $("model-legal").hidden = false;
+      $("model-licenses").textContent = data.legal_notices;
+      try {
+        meshRenderer = globalThis.MotionMeshes.create(
+          $("mesh-scene"),
+          data.visual_model,
+          frames,
+          columns,
+          program.segments,
+        );
+      } catch (error) {
+        meshProblem = "Vollständiges Modell nicht verfügbar: " + error.message + " Kinematikansicht aktiv.";
+      }
+    }
+    function updateRenderMode() {
+      const full = meshRenderer && $("render-mode").value === "mesh";
+      $("mesh-scene").hidden = !full;
+      document.body.dataset.renderMode = full ? "mesh" : "skeleton";
+      document.body.dataset.meshLinks = String(meshRenderer ? meshRenderer.stats.links : 0);
+      document.body.dataset.meshTriangles = String(meshRenderer ? meshRenderer.stats.triangles : 0);
+      $("model-note").textContent =
+        meshProblem ||
+        (full
+          ? "UR5e · 7 Visual-Baugruppen · offizielle UR-Geometrie · ohne Werkzeuganbau"
+          : "Kinematikansicht: Gelenke, Verbindungslinien und TCP." +
+            (data.visual_model ? "" : " Für diese Kinematik ist kein passendes Visual-Modell hinterlegt."));
+    }
+    if (!meshRenderer) {
+      $("render-mode").value = "skeleton";
+      $("render-mode").querySelector('[value="mesh"]').disabled = true;
+    }
+    updateRenderMode();
+    $("render-mode").addEventListener("change", () => {
+      updateRenderMode();
+      paint();
+    });
+    $("mesh-scene").addEventListener("webglcontextlost", (event) => {
+      event.preventDefault();
+      meshRenderer = null;
+      meshProblem =
+        "3D-Grafikkontext unterbrochen. Kinematikansicht aktiv; zum erneuten Laden die Seite öffnen.";
+      $("render-mode").value = "skeleton";
+      $("render-mode").querySelector('[value="mesh"]').disabled = true;
+      updateRenderMode();
+      paint();
+    });
     const rows = [];
     for (let axis = 0; axis < count; axis++) {
       const row = document.createElement("tr"),
@@ -277,6 +326,10 @@
     );
     function drawScene(frame, geometry) {
       const { ctx, width, height } = setupCanvas($("scene"));
+      if (meshRenderer && $("render-mode").value === "mesh") {
+        meshRenderer.render(geometry, state, width, height, $("show-path").checked, $("show-axes").checked);
+        return;
+      }
       const direction = [
         Math.cos(state.pitch) * Math.cos(state.yaw),
         Math.cos(state.pitch) * Math.sin(state.yaw),

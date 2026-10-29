@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.20)
-project(robot_motion_viewer VERSION 0.1.0 LANGUAGES CXX)
+project(robot_motion_viewer VERSION 0.2.0 LANGUAGES CXX)
 get_filename_component(ROBOT_MOTION_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../.." ABSOLUTE)
 # This standalone tool embeds the library; it does not join its implementation/build graph.
 set(MOTION_BUILD_TESTS OFF)
