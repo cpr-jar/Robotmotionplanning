@@ -98,6 +98,8 @@ const char *operation(motion::ProgramOperation value) {
     return "CIRC";
   case ProgramOperation::Wait:
     return "WAIT";
+  case ProgramOperation::Dxf:
+    throw std::logic_error("DXF must be expanded before export");
   }
   throw std::logic_error("Unknown program operation");
 }
@@ -178,7 +180,18 @@ void write_scene(const motion::PreparedRobotProgram &prepared, std::ostream &out
     output << ",\"source_step\":" << instruction.location.step
            << ",\"source_line\":" << instruction.location.line
            << ",\"start_s\":" << (index ? schedule.segment_end(index - 1) : 0)
-           << ",\"end_s\":" << schedule.segment_end(index) << ",\"speed\":" << instruction.speed << '}';
+           << ",\"end_s\":" << schedule.segment_end(index) << ",\"speed\":" << instruction.speed;
+    if (instruction.drawing_location) {
+      const auto &drawing = *instruction.drawing_location;
+      output << ",\"source_command\":\"DXF\",\"dxf_file\":";
+      text(output, drawing.file);
+      output << ",\"dxf_layer\":";
+      text(output, drawing.layer);
+      output << ",\"dxf_type\":";
+      text(output, drawing.entity_type);
+      output << ",\"dxf_entity\":" << drawing.entity << ",\"dxf_line\":" << drawing.line;
+    }
+    output << '}';
   }
   output << "],\"commands\":" << report.commands << "},\"trace_csv\":";
   text(output, csv);
@@ -218,7 +231,17 @@ motion::PreparedRobotProgram prepare_editor_program(const std::filesystem::path 
       throw motion::RobotProgramError(source.robot_location(), error.what());
     }
   }();
-  return motion::compile_robot_program(source, std::move(robot));
+  const auto assets = std::filesystem::canonical(filename.parent_path());
+  const motion::ProgramAssetLoader loader = [&](const std::string &name) {
+    const std::filesystem::path relative(name);
+    if (relative.is_absolute() || relative.has_parent_path() || name.find('\\') != name.npos)
+      throw std::invalid_argument("Editor DXF paths must be uploaded filenames without directories");
+    const auto path = std::filesystem::weakly_canonical(assets / relative);
+    if (path.parent_path() != assets || !std::filesystem::is_regular_file(path))
+      throw std::invalid_argument("DXF attachment is missing; open the referenced DXF file in the editor");
+    return motion::read_dxf_text_file(path.string());
+  };
+  return motion::compile_robot_program(source, std::move(robot), loader);
 }
 
 void editor_diagnostic(const std::exception &error, const motion::ProgramLocation *location = nullptr) {

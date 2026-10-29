@@ -15,6 +15,8 @@ const char *name(motion::ProgramOperation op) {
     return "CIRC";
   case motion::ProgramOperation::Wait:
     return "WAIT";
+  case motion::ProgramOperation::Dxf:
+    return "DXF";
   }
   return "?";
 }

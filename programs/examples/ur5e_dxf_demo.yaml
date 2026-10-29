@@ -1,0 +1,15 @@
+# One program command follows the CAD centreline; nominal UR5e, simulation example.
+schema_version: 1
+units: SI
+robot_profile: ../../models/ur5e/profile.yaml
+cycle_s: 0.01
+start: {joints: [0.2, -0.6, 0.7, 0.3, 0.8, -0.2]}
+steps:
+  - type: DXF
+    file: ../dxf/rounded_path.dxf
+    units: auto
+    layer: PATH
+    reference: tcp
+    travel: LIN
+    speed: 0.5
+  - {type: WAIT, seconds: 0.2}

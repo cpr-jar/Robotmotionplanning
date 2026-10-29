@@ -900,5 +900,120 @@
         "fit_rigid_calibration(); Nicht-RT"
       ]
     ]
+  },
+  {
+    "id": "dxf",
+    "title": "DXF-Geometrie und Programmbefehl",
+    "nodes": [
+      {
+        "id": "instruction",
+        "name": "ProgramInstruction",
+        "header": "include/motion/program/robot_program.hpp",
+        "methods": [],
+        "fields": [
+          "operation, location, speed",
+          "dxf, drawing_location"
+        ]
+      },
+      {
+        "id": "command",
+        "name": "DxfProgramCommand",
+        "header": "include/motion/program/robot_program.hpp",
+        "methods": [],
+        "fields": [
+          "file, import, placement",
+          "relative_to_tcp, travel"
+        ]
+      },
+      {
+        "id": "options",
+        "name": "DxfImportOptions",
+        "header": "include/motion/io/dxf_path_import.hpp",
+        "methods": [],
+        "fields": [
+          "units, layer"
+        ]
+      },
+      {
+        "id": "drawing",
+        "name": "DxfDrawing",
+        "header": "include/motion/io/dxf_path_import.hpp",
+        "methods": [],
+        "fields": [
+          "strokes, metres_per_unit, curve_count"
+        ]
+      },
+      {
+        "id": "stroke",
+        "name": "DxfStroke",
+        "header": "include/motion/io/dxf_path_import.hpp",
+        "methods": [],
+        "fields": [
+          "start, curves, location"
+        ]
+      },
+      {
+        "id": "curve",
+        "name": "DxfCurve",
+        "header": "include/motion/io/dxf_path_import.hpp",
+        "methods": [],
+        "fields": [
+          "type, start, end, center, sweep_rad"
+        ]
+      },
+      {
+        "id": "location",
+        "name": "DxfLocation",
+        "header": "include/motion/io/dxf_path_import.hpp",
+        "methods": [],
+        "fields": [
+          "file, layer, entity_type, line, entity"
+        ]
+      }
+    ],
+    "edges": [
+      [
+        "instruction",
+        "command",
+        "owns",
+        "optional: source command"
+      ],
+      [
+        "command",
+        "options",
+        "owns",
+        "import policy"
+      ],
+      [
+        "options",
+        "drawing",
+        "uses",
+        "parse_dxf_path(); Non-RT"
+      ],
+      [
+        "drawing",
+        "stroke",
+        "owns",
+        "ordered vector"
+      ],
+      [
+        "stroke",
+        "curve",
+        "owns",
+        "LINE/ARC; empty for POINT"
+      ],
+      [
+        "curve",
+        "location",
+        "owns",
+        "CAD source"
+      ],
+      [
+        "drawing",
+        "instruction",
+        "uses",
+        "expand_dxf(); LIN/CIRC/PTP"
+      ]
+    ]
   }
 ]

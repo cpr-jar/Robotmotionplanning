@@ -1,0 +1,6 @@
+schema_version: 1
+units: SI
+robot_profile: profile.yaml
+start: {joints: [0, 0, 0]}
+steps:
+  - {type: DXF, file: path.dxf, units: mm, layer: PATH, reference: tcp, travel: LIN}

@@ -52,7 +52,7 @@ def main():
             page.goto(server.url)
             page.wait_for_function("document.body.dataset.editorState==='ready'")
             assert "models/ur5e/profile.yaml" in page.locator("#source").input_value()
-            assert page.locator("#example option").count() == 3
+            assert page.locator("#example option").count() == 4
             assert page.locator("#preview").is_hidden()
             original = page.locator("#source").input_value()
             page.locator("#filename").fill("testprogramm.yaml")

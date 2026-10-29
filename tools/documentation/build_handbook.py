@@ -27,6 +27,7 @@ CHAPTERS = [
     'docs/integration/acceptance_plan.md',
     'docs/formats/robot_model_yaml.md',
     'docs/formats/robot_program_yaml.md',
+    'docs/formats/dxf_program_command.md',
     'docs/testing/validation.md',
 ]
 IDENTIFIERS = {(ROOT / path).resolve(): 'chapter-' + Path(path).stem.lower() for path in CHAPTERS}
@@ -107,7 +108,7 @@ def build():
         sections.append(chapter_html(path))
     document = '''<!doctype html>
 <html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Robot Motion C++ 0.12.3 — Integrationshandbuch</title>
+<title>Robot Motion C++ 0.13.0 — Integrationshandbuch</title>
 <style>
 body{font:16px/1.6 system-ui,sans-serif;color:#172033;background:#fff;margin:0 auto;max-width:1100px;padding:24px}
 h1,h2,h3{line-height:1.25;color:#102a43}h1{margin-top:1.5em}h2{margin-top:1.8em}
@@ -118,7 +119,7 @@ figure{margin:24px 0;overflow:auto}figure svg{max-width:100%;height:auto}figcapt
 @media print{body{max-width:none;font-size:10pt;padding:0}nav{break-after:page}section{break-before:page;border:0}pre{white-space:pre-wrap;overflow-wrap:anywhere}tr,figure{break-inside:avoid}a{color:inherit;text-decoration:none}}
 @page{size:A4;margin:15mm}
 </style></head><body>
-<h1 id="handbook-top">Robot Motion C++ 0.12.3</h1>
+<h1 id="handbook-top">Robot Motion C++ 0.13.0</h1>
 <p>Integrationsgrundlage für eine selbst entwickelte Steuerung, Zyklusbereich 1–20 ms.
 Diese Datei enthält Texte, UML- und Tutorial-Ablaufdiagramme sowie die Lehrkurve offline.
 Weitere Mermaid-Ablaufquellen sind als Code erhalten;

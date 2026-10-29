@@ -1,0 +1,19 @@
+digraph uml {
+graph [rankdir=LR, bgcolor="white", pad="0.25", nodesep="0.35", ranksep="0.8"];
+node [shape=plain, fontname="DejaVu Sans", fontsize=10];
+edge [fontname="DejaVu Sans", fontsize=9, color="#475569"];
+instruction [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5"><TR><TD BGCOLOR="#dbeafe"><B>ProgramInstruction</B></TD></TR><TR><TD ALIGN="LEFT">operation, location, speed</TD></TR><TR><TD ALIGN="LEFT">dxf, drawing_location</TD></TR></TABLE>>];
+command [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5"><TR><TD BGCOLOR="#dbeafe"><B>DxfProgramCommand</B></TD></TR><TR><TD ALIGN="LEFT">file, import, placement</TD></TR><TR><TD ALIGN="LEFT">relative_to_tcp, travel</TD></TR></TABLE>>];
+options [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5"><TR><TD BGCOLOR="#dbeafe"><B>DxfImportOptions</B></TD></TR><TR><TD ALIGN="LEFT">units, layer</TD></TR></TABLE>>];
+drawing [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5"><TR><TD BGCOLOR="#dbeafe"><B>DxfDrawing</B></TD></TR><TR><TD ALIGN="LEFT">strokes, metres_per_unit, curve_count</TD></TR></TABLE>>];
+stroke [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5"><TR><TD BGCOLOR="#dbeafe"><B>DxfStroke</B></TD></TR><TR><TD ALIGN="LEFT">start, curves, location</TD></TR></TABLE>>];
+curve [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5"><TR><TD BGCOLOR="#dbeafe"><B>DxfCurve</B></TD></TR><TR><TD ALIGN="LEFT">type, start, end, center, sweep_rad</TD></TR></TABLE>>];
+location [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5"><TR><TD BGCOLOR="#dbeafe"><B>DxfLocation</B></TD></TR><TR><TD ALIGN="LEFT">file, layer, entity_type, line, entity</TD></TR></TABLE>>];
+instruction -> command [dir=both, arrowtail=diamond, arrowhead=none, label="optional: source command"];
+command -> options [dir=both, arrowtail=diamond, arrowhead=none, label="import policy"];
+options -> drawing [style=dashed, arrowhead=vee, label="parse_dxf_path(); Non-RT"];
+drawing -> stroke [dir=both, arrowtail=diamond, arrowhead=none, label="ordered vector"];
+stroke -> curve [dir=both, arrowtail=diamond, arrowhead=none, label="LINE/ARC; empty for POINT"];
+curve -> location [dir=both, arrowtail=diamond, arrowhead=none, label="CAD source"];
+drawing -> instruction [style=dashed, arrowhead=vee, label="expand_dxf(); LIN/CIRC/PTP"];
+}

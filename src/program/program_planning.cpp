@@ -1,5 +1,8 @@
 #include "motion/planning/envelope_constraints.hpp"
 #include "motion/program/robot_program.hpp"
+#include "program_dxf.hpp"
+#include <filesystem>
+#include <map>
 namespace motion {
 namespace {
 class HoldTrajectory final : public ITrajectory {
@@ -64,6 +67,10 @@ TimedPathSample RobotProgram::sample_motion(std::size_t i, double t) const {
   return out;
 }
 PreparedRobotProgram compile_robot_program(const RobotProgramSource &source, ImportedSerialRobot robot) {
+  return compile_robot_program(source, std::move(robot), {});
+}
+PreparedRobotProgram compile_robot_program(const RobotProgramSource &source, ImportedSerialRobot robot,
+                                           const ProgramAssetLoader &loader) {
   const ProgramLocation root{source.filename(), "program", 1, 1, 0};
   if (!robot.kinematics)
     throw RobotProgramError(root, "Missing robot kinematics");
@@ -80,10 +87,16 @@ PreparedRobotProgram compile_robot_program(const RobotProgramSource &source, Imp
     program->initial_ = initial;
     auto state = initial;
     double total = 0;
-    for (const auto &instruction : source.instructions()) {
+    const auto plan_instruction = [&](const ProgramInstruction &instruction) {
       try {
+        if (program->segment_count() >= 10000)
+          throw std::invalid_argument("Expanded program instruction budget exceeded");
         const auto limits = scaled(program->robot_.joint_limits, instruction.speed);
         const auto tcp = scaled(program->robot_.tcp_limits, instruction.speed);
+        if (instruction.drawing_start &&
+            kinematic_detail::norm(kinematic_detail::sub(program->robot_.kinematics->fk(state.q).position,
+                                                         *instruction.drawing_start)) > 1e-6)
+          throw std::domain_error("DXF start deviates more than 1 um from the nominal CAD contour");
         TrajectoryPtr segment;
         const auto target_pose = [&]() {
           if (const auto *p = std::get_if<Pose>(&instruction.target))
@@ -131,16 +144,20 @@ PreparedRobotProgram compile_robot_program(const RobotProgramSource &source, Imp
             auto goal = target_pose();
             orientation = goal.orientation;
             geometry = std::make_shared<CartesianLinePath>(first, Pose{goal.position, first.orientation});
-          } else {
+          } else if (instruction.operation == ProgramOperation::Circle) {
             geometry = std::make_shared<CartesianArcPath>(
                 instruction.relative_center ? kinematic_detail::add(first.position, instruction.center)
                                             : instruction.center,
                 first, instruction.normal, instruction.sweep_rad);
             if (instruction.orientation)
               orientation = *instruction.orientation;
-          }
-          const auto path = map_cartesian_spline(
-              program->robot_.kinematics, std::make_shared<PoseSweepPath>(geometry, orientation), state.q);
+          } else
+            throw std::logic_error("Unexpanded program operation");
+          CartesianSplineOptions path_options;
+          path_options.position_tolerance_m = instruction.path_tolerance_m;
+          const auto path = map_cartesian_spline(program->robot_.kinematics,
+                                                 std::make_shared<PoseSweepPath>(geometry, orientation),
+                                                 state.q, path_options);
           if (!path)
             throw std::domain_error(path.diagnostic);
           auto timed = PathTimeParameterizer(limits).plan(path.path, state, tcp);
@@ -155,6 +172,10 @@ PreparedRobotProgram compile_robot_program(const RobotProgramSource &source, Imp
           throw std::domain_error("Program duration/clock budget exceeded");
         const auto first = segment->sample(0);
         auto last = segment->sample(segment->duration());
+        if (instruction.drawing_start &&
+            kinematic_detail::norm(kinematic_detail::sub(program->robot_.kinematics->fk(last.q).position,
+                                                         std::get<Pose>(instruction.target).position)) > 1e-6)
+          throw std::domain_error("DXF endpoint deviates more than 1 um from the nominal CAD contour");
         if (!is_rest(first, 0) || !is_rest(last, 0))
           throw std::domain_error("Program endpoints must be rest");
         for (std::size_t i = 0; i < n; ++i)
@@ -169,7 +190,44 @@ PreparedRobotProgram compile_robot_program(const RobotProgramSource &source, Imp
       } catch (const RobotProgramError &) {
         throw;
       } catch (const std::exception &e) {
-        throw RobotProgramError(instruction.location, e.what());
+        const auto detail = instruction.drawing_location
+                                ? std::string(DxfImportError(*instruction.drawing_location, e.what()).what())
+                                : std::string(e.what());
+        throw RobotProgramError(instruction.location, detail);
+      }
+    };
+    std::map<std::string, std::string> assets;
+    std::size_t asset_bytes = 0;
+    for (const auto &instruction : source.instructions()) {
+      if (instruction.operation != ProgramOperation::Dxf) {
+        plan_instruction(instruction);
+        continue;
+      }
+      try {
+        if (!instruction.dxf)
+          throw std::invalid_argument("Missing DXF command configuration");
+        const auto &command = *instruction.dxf;
+        if (!assets.count(command.file)) {
+          if (assets.size() >= 8)
+            throw std::invalid_argument("DXF asset count budget exceeded (8)");
+          auto text =
+              loader ? loader(command.file)
+                     : read_dxf_text_file(
+                           (std::filesystem::path(source.filename()).parent_path() / command.file).string());
+          if (text.size() > dxf_max_bytes || text.size() > 16 * 1024 * 1024 - asset_bytes)
+            throw std::invalid_argument("DXF total asset byte budget exceeded (16 MiB)");
+          asset_bytes += text.size();
+          assets.emplace(command.file, std::move(text));
+        }
+        const auto drawing = parse_dxf_path(assets.at(command.file), command.import, command.file);
+        const auto steps =
+            program_detail::expand_dxf(instruction, drawing, program->robot_.kinematics->fk(state.q));
+        for (const auto &step : steps)
+          plan_instruction(step);
+      } catch (const RobotProgramError &) {
+        throw;
+      } catch (const std::exception &error) {
+        throw RobotProgramError(instruction.location, error.what());
       }
     }
     if (!program->segment_count())

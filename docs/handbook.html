@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Robot Motion C++ 0.12.3 — Integrationshandbuch</title>
+<title>Robot Motion C++ 0.13.0 — Integrationshandbuch</title>
 <style>
 body{font:16px/1.6 system-ui,sans-serif;color:#172033;background:#fff;margin:0 auto;max-width:1100px;padding:24px}
 h1,h2,h3{line-height:1.25;color:#102a43}h1{margin-top:1.5em}h2{margin-top:1.8em}
@@ -11,12 +11,12 @@ figure{margin:24px 0;overflow:auto}figure svg{max-width:100%;height:auto}figcapt
 @media print{body{max-width:none;font-size:10pt;padding:0}nav{break-after:page}section{break-before:page;border:0}pre{white-space:pre-wrap;overflow-wrap:anywhere}tr,figure{break-inside:avoid}a{color:inherit;text-decoration:none}}
 @page{size:A4;margin:15mm}
 </style></head><body>
-<h1 id="handbook-top">Robot Motion C++ 0.12.3</h1>
+<h1 id="handbook-top">Robot Motion C++ 0.13.0</h1>
 <p>Integrationsgrundlage für eine selbst entwickelte Steuerung, Zyklusbereich 1–20 ms.
 Diese Datei enthält Texte, UML- und Tutorial-Ablaufdiagramme sowie die Lehrkurve offline.
 Weitere Mermaid-Ablaufquellen sind als Code erhalten;
 GitHub rendert sie in der Markdown-Ausgabe. Druck/PDF ist über die Druckfunktion des Browsers möglich.</p>
-<nav><ol><li><a href="#chapter-readme">Dokumentation für Entwicklung und Steuerungseinbindung</a></li><li><a href="#chapter-motion_planning_basics">Bewegungsplanung verstehen – ein kleines Tutorial</a></li><li><a href="#chapter-controller_integration">Integrationshandbuch für die eigene Steuerung</a></li><li><a href="#chapter-interface_contracts">Daten- und Schnittstellenverträge</a></li><li><a href="#chapter-class_diagrams">UML-Klassendiagramme</a></li><li><a href="#chapter-runtime_flows">Laufzeitabläufe und Zustände</a></li><li><a href="#chapter-module_catalog">Ordner und Modulzuständigkeiten</a></li><li><a href="#chapter-naming_and_migration">Benennung und Migration ab 0.12.3</a></li><li><a href="#chapter-acceptance_plan">Test- und Abnahmeplan für die spätere Integration</a></li><li><a href="#chapter-robot_model_yaml">Kinematikbeschreibung und SI-Motion-Profil</a></li><li><a href="#chapter-robot_program_yaml">Eigene Roboterprogramme importieren</a></li><li><a href="#chapter-validation">Struktur- und Integrationsgrundlage — 0.12.3, 29.10.2026</a></li></ol></nav><section id="chapter-readme"><h1 id="chapter-readme--dokumentation-für-entwicklung-und-steuerungseinbindung">Dokumentation für Entwicklung und Steuerungseinbindung</h1>
+<nav><ol><li><a href="#chapter-readme">Dokumentation für Entwicklung und Steuerungseinbindung</a></li><li><a href="#chapter-motion_planning_basics">Bewegungsplanung verstehen – ein kleines Tutorial</a></li><li><a href="#chapter-controller_integration">Integrationshandbuch für die eigene Steuerung</a></li><li><a href="#chapter-interface_contracts">Daten- und Schnittstellenverträge</a></li><li><a href="#chapter-class_diagrams">UML-Klassendiagramme</a></li><li><a href="#chapter-runtime_flows">Laufzeitabläufe und Zustände</a></li><li><a href="#chapter-module_catalog">Ordner und Modulzuständigkeiten</a></li><li><a href="#chapter-naming_and_migration">Benennung und Migration ab 0.12.3</a></li><li><a href="#chapter-acceptance_plan">Test- und Abnahmeplan für die spätere Integration</a></li><li><a href="#chapter-robot_model_yaml">Kinematikbeschreibung und SI-Motion-Profil</a></li><li><a href="#chapter-robot_program_yaml">Eigene Roboterprogramme importieren</a></li><li><a href="#chapter-dxf_program_command">DXF als Programmbefehl</a></li><li><a href="#chapter-validation">Aktuelle Ergänzung — DXF-Befehl 0.13.0, 29.10.2026</a></li></ol></nav><section id="chapter-readme"><h1 id="chapter-readme--dokumentation-für-entwicklung-und-steuerungseinbindung">Dokumentation für Entwicklung und Steuerungseinbindung</h1>
 <p>Stand: <strong>0.12.3</strong>. Die Zielsteuerung ist eine Eigenentwicklung; die konkrete
 Adapterplanung folgt später. Der betrachtete Zyklusbereich beträgt <strong>1–20 ms</strong>.
 Die Dokumente beschreiben die vorhandene Bibliothek und benennen noch offene
@@ -48,7 +48,7 @@ Integrationsaufgaben ausdrücklich.</p>
 <tr>
 <td>4</td>
 <td><a href="#chapter-class_diagrams">Architektur und Klassendiagramme</a></td>
-<td>Sieben UML-Sichten als SVG; Vererbung, Besitz und geliehene Referenzen</td>
+<td>Acht UML-Sichten als SVG; Vererbung, Besitz und geliehene Referenzen</td>
 </tr>
 <tr>
 <td>5</td>
@@ -87,6 +87,10 @@ Integrationsaufgaben ausdrücklich.</p>
 </tr>
 </tbody>
 </table>
+<p>Neu ab 0.13.0: <a href="#chapter-dxf_program_command">DXF als Programmbefehl</a>,
+einschließlich Layern, Einheiten, Platzierung, Genauigkeit, Ablauf und Klassensicht.
+Der <a href="../tools/motion_viewer/EDITOR.md">separate Editor</a> kann DXF-Dateien öffnen
+und zusammen mit dem Programm simulieren. Es gibt jetzt acht UML-Sichten.</p>
 <p>Die Diagramme sind eingecheckt. Zum Lesen wird weder Python noch Graphviz
 benötigt; die SVG-Dateien lassen sich im Browser öffnen. Für eine zusammenhängende
 Offline-Ausgabe siehe <a href="#chapter-naming_and_migration--dokumentation-prüfen-und-erzeugen">Handbuch erzeugen</a>.
@@ -2334,12 +2338,134 @@ ist deshalb eine spätere explizite Host-Policy.</p>
 3D-Positionen. Es wird ein starrer Transform, keine Skalierung, keine bewegte
 Framefusion und keine Gelenknullpunktkalibrierung geschätzt. Residuen und
 ausgelagerte Validierungspunkte vor Übernahme prüfen.</p></section><section id="chapter-class_diagrams"><h1 id="chapter-class_diagrams--uml-klassendiagramme">UML-Klassendiagramme</h1>
-<p>Die folgenden sieben Sichten beschreiben vorhandene Typen. Eine leere
+<p>Die folgenden acht Sichten beschreiben vorhandene Typen. Eine leere
 Dreieckspitze bezeichnet Vererbung; eine ausgefüllte Raute den Besitzer der
 enthaltenen Werte oder <code>shared_ptr</code>. Gestrichelte Pfeile zeigen Nutzung bzw.
 geliehene Referenzen. Geteiltes Eigentum ist zusätzlich beschriftet.
 Funktionen, die Objekte erzeugen, stehen an den Pfeilen; ausgewählte Methoden
 sind verkürzt dargestellt. Vollständige Signaturen stehen in den Headern.</p>
+<h2 id="chapter-class_diagrams--dxf-geometrie-und-befehlsvorbereitung-ab-0130">DXF-Geometrie und Befehlsvorbereitung (ab 0.13.0)</h2>
+<figure><svg width="2054pt" height="151pt"
+ viewBox="0.00 0.00 2054.00 151.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="chapter-class_diagrams--figure-dxf-graph0" class="graph" transform="scale(1 1) rotate(0) translate(18 133)">
+<title>uml</title>
+<polygon fill="white" stroke="transparent" points="-18,18 -18,-133 2036,-133 2036,18 -18,18"/>
+<!-- instruction -->
+<g id="chapter-class_diagrams--figure-dxf-node1" class="node">
+<title>instruction</title>
+<polygon fill="#dbeafe" stroke="transparent" points="1.5,-42.5 1.5,-63.5 138.5,-63.5 138.5,-42.5 1.5,-42.5"/>
+<text text-anchor="start" x="14.5" y="-51.5" font-family="DejaVu Sans" font-weight="bold" font-size="10.00">ProgramInstruction</text>
+<text text-anchor="start" x="6.5" y="-29.5" font-family="DejaVu Sans" font-size="10.00">operation, location, speed</text>
+<text text-anchor="start" x="6.5" y="-8.5" font-family="DejaVu Sans" font-size="10.00">dxf, drawing_location</text>
+<polygon fill="none" stroke="black" points="0,0 0,-65 139,-65 139,0 0,0"/>
+</g>
+<!-- command -->
+<g id="chapter-class_diagrams--figure-dxf-node2" class="node">
+<title>command</title>
+<polygon fill="#dbeafe" stroke="transparent" points="319,-92.5 319,-113.5 455,-113.5 455,-92.5 319,-92.5"/>
+<text text-anchor="start" x="324" y="-101.5" font-family="DejaVu Sans" font-weight="bold" font-size="10.00">DxfProgramCommand</text>
+<text text-anchor="start" x="324" y="-79.5" font-family="DejaVu Sans" font-size="10.00">file, import, placement</text>
+<text text-anchor="start" x="324" y="-58.5" font-family="DejaVu Sans" font-size="10.00">relative_to_tcp, travel</text>
+<polygon fill="none" stroke="black" points="318,-50 318,-115 456,-115 456,-50 318,-50"/>
+</g>
+<!-- instruction&#45;&gt;command -->
+<g id="chapter-class_diagrams--figure-dxf-edge1" class="edge">
+<title>instruction&#45;&gt;command</title>
+<path fill="none" stroke="#475569" d="M151.45,-45.33C202.98,-53.5 268.99,-63.96 317.84,-71.7"/>
+<polygon fill="#475569" stroke="#475569" points="151.2,-45.29 144.65,-48.3 139.35,-43.41 145.9,-40.4 151.2,-45.29"/>
+<text text-anchor="middle" x="228.5" y="-68.3" font-family="DejaVu Sans" font-size="9.00">optional: source command</text>
+</g>
+<!-- options -->
+<g id="chapter-class_diagrams--figure-dxf-node3" class="node">
+<title>options</title>
+<polygon fill="#dbeafe" stroke="transparent" points="639,-76.5 639,-97.5 751,-97.5 751,-76.5 639,-76.5"/>
+<text text-anchor="start" x="644" y="-85.5" font-family="DejaVu Sans" font-weight="bold" font-size="10.00">DxfImportOptions</text>
+<text text-anchor="start" x="644" y="-63.5" font-family="DejaVu Sans" font-size="10.00">units, layer</text>
+<polygon fill="none" stroke="black" points="638,-54.5 638,-98.5 752,-98.5 752,-54.5 638,-54.5"/>
+</g>
+<!-- command&#45;&gt;options -->
+<g id="chapter-class_diagrams--figure-dxf-edge2" class="edge">
+<title>command&#45;&gt;options</title>
+<path fill="none" stroke="#475569" d="M468.44,-80.92C521.7,-79.88 590.22,-78.53 637.69,-77.6"/>
+<polygon fill="#475569" stroke="#475569" points="468.29,-80.93 462.37,-85.04 456.29,-81.16 462.21,-77.04 468.29,-80.93"/>
+<text text-anchor="middle" x="547" y="-83.3" font-family="DejaVu Sans" font-size="9.00">import policy</text>
+</g>
+<!-- drawing -->
+<g id="chapter-class_diagrams--figure-dxf-node4" class="node">
+<title>drawing</title>
+<polygon fill="#dbeafe" stroke="transparent" points="926.5,-32.5 926.5,-53.5 1123.5,-53.5 1123.5,-32.5 926.5,-32.5"/>
+<text text-anchor="start" x="991.5" y="-41.5" font-family="DejaVu Sans" font-weight="bold" font-size="10.00">DxfDrawing</text>
+<text text-anchor="start" x="931.5" y="-19.5" font-family="DejaVu Sans" font-size="10.00">strokes, metres_per_unit, curve_count</text>
+<polygon fill="none" stroke="black" points="925,-10.5 925,-54.5 1124,-54.5 1124,-10.5 925,-10.5"/>
+</g>
+<!-- options&#45;&gt;drawing -->
+<g id="chapter-class_diagrams--figure-dxf-edge3" class="edge">
+<title>options&#45;&gt;drawing</title>
+<path fill="none" stroke="#475569" stroke-dasharray="5,2" d="M752.3,-68.94C796.89,-62.95 860.52,-54.4 914.93,-47.09"/>
+<polygon fill="#475569" stroke="#475569" points="924.98,-45.74 915.67,-51.53 920.03,-46.4 915.07,-47.07 915.07,-47.07 915.07,-47.07 920.03,-46.4 914.47,-42.61 924.98,-45.74 924.98,-45.74"/>
+<text text-anchor="middle" x="838.5" y="-67.3" font-family="DejaVu Sans" font-size="9.00">parse_dxf_path(); Non&#45;RT</text>
+</g>
+<!-- drawing&#45;&gt;instruction -->
+<g id="chapter-class_diagrams--figure-dxf-edge7" class="edge">
+<title>drawing&#45;&gt;instruction</title>
+<path fill="none" stroke="#475569" stroke-dasharray="5,2" d="M924.76,-32.5C734.78,-32.5 321.91,-32.5 149.08,-32.5"/>
+<polygon fill="#475569" stroke="#475569" points="139.04,-32.5 149.04,-28 144.04,-32.5 149.04,-32.5 149.04,-32.5 149.04,-32.5 144.04,-32.5 149.04,-37 139.04,-32.5 139.04,-32.5"/>
+<text text-anchor="middle" x="547" y="-35.3" font-family="DejaVu Sans" font-size="9.00">expand_dxf(); LIN/CIRC/PTP</text>
+</g>
+<!-- stroke -->
+<g id="chapter-class_diagrams--figure-dxf-node5" class="node">
+<title>stroke</title>
+<polygon fill="#dbeafe" stroke="transparent" points="1250,-32.5 1250,-53.5 1366,-53.5 1366,-32.5 1250,-32.5"/>
+<text text-anchor="start" x="1279" y="-41.5" font-family="DejaVu Sans" font-weight="bold" font-size="10.00">DxfStroke</text>
+<text text-anchor="start" x="1255" y="-19.5" font-family="DejaVu Sans" font-size="10.00">start, curves, location</text>
+<polygon fill="none" stroke="black" points="1249,-10.5 1249,-54.5 1367,-54.5 1367,-10.5 1249,-10.5"/>
+</g>
+<!-- drawing&#45;&gt;stroke -->
+<g id="chapter-class_diagrams--figure-dxf-edge4" class="edge">
+<title>drawing&#45;&gt;stroke</title>
+<path fill="none" stroke="#475569" d="M1136.7,-32.5C1175.1,-32.5 1216.58,-32.5 1248.98,-32.5"/>
+<polygon fill="#475569" stroke="#475569" points="1136.35,-32.5 1130.35,-36.5 1124.35,-32.5 1130.35,-28.5 1136.35,-32.5"/>
+<text text-anchor="middle" x="1186.5" y="-35.3" font-family="DejaVu Sans" font-size="9.00">ordered vector</text>
+</g>
+<!-- curve -->
+<g id="chapter-class_diagrams--figure-dxf-node6" class="node">
+<title>curve</title>
+<polygon fill="#dbeafe" stroke="transparent" points="1549,-32.5 1549,-53.5 1729,-53.5 1729,-32.5 1549,-32.5"/>
+<text text-anchor="start" x="1612.5" y="-41.5" font-family="DejaVu Sans" font-weight="bold" font-size="10.00">DxfCurve</text>
+<text text-anchor="start" x="1554" y="-19.5" font-family="DejaVu Sans" font-size="10.00">type, start, end, center, sweep_rad</text>
+<polygon fill="none" stroke="black" points="1548,-10.5 1548,-54.5 1730,-54.5 1730,-10.5 1548,-10.5"/>
+</g>
+<!-- stroke&#45;&gt;curve -->
+<g id="chapter-class_diagrams--figure-dxf-edge5" class="edge">
+<title>stroke&#45;&gt;curve</title>
+<path fill="none" stroke="#475569" d="M1379.2,-32.5C1428.48,-32.5 1494.8,-32.5 1547.97,-32.5"/>
+<polygon fill="#475569" stroke="#475569" points="1379.06,-32.5 1373.06,-36.5 1367.06,-32.5 1373.06,-28.5 1379.06,-32.5"/>
+<text text-anchor="middle" x="1457.5" y="-35.3" font-family="DejaVu Sans" font-size="9.00">LINE/ARC; empty for POINT</text>
+</g>
+<!-- location -->
+<g id="chapter-class_diagrams--figure-dxf-node7" class="node">
+<title>location</title>
+<polygon fill="#dbeafe" stroke="transparent" points="1841,-32.5 1841,-53.5 2017,-53.5 2017,-32.5 1841,-32.5"/>
+<text text-anchor="start" x="1895.5" y="-41.5" font-family="DejaVu Sans" font-weight="bold" font-size="10.00">DxfLocation</text>
+<text text-anchor="start" x="1846" y="-19.5" font-family="DejaVu Sans" font-size="10.00">file, layer, entity_type, line, entity</text>
+<polygon fill="none" stroke="black" points="1840,-10.5 1840,-54.5 2018,-54.5 2018,-10.5 1840,-10.5"/>
+</g>
+<!-- curve&#45;&gt;location -->
+<g id="chapter-class_diagrams--figure-dxf-edge6" class="edge">
+<title>curve&#45;&gt;location</title>
+<path fill="none" stroke="#475569" d="M1742.39,-32.5C1774.28,-32.5 1809.14,-32.5 1839.96,-32.5"/>
+<polygon fill="#475569" stroke="#475569" points="1742.33,-32.5 1736.33,-36.5 1730.33,-32.5 1736.33,-28.5 1742.33,-32.5"/>
+<text text-anchor="middle" x="1785" y="-35.3" font-family="DejaVu Sans" font-size="9.00">CAD source</text>
+</g>
+</g>
+</svg>
+<figcaption>DXF-Geometrie und Programmbezug</figcaption></figure>
+
+<p>Der Quellbefehl besitzt seine Importoptionen. Der Import liefert geordnete
+Konturen mit CAD-Quellorten; die Vorbereitung erzeugt daraus gewöhnliche
+Programmschritte und bewahrt deren Herkunft. Dateien werden ausschließlich
+in der Vorbereitung geladen. <a href="#chapter-dxf_program_command">DXF-Vertrag</a>,
+<a href="architecture/diagrams/dxf.dot">DOT-Quelle</a>.</p>
 <h2 id="chapter-class_diagrams--1-kinematik-und-zustände">1. Kinematik und Zustände</h2>
 <figure><svg width="533pt" height="413pt"
  viewBox="0.00 0.00 533.00 413.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
@@ -3551,6 +3677,11 @@ in den zyklischen Thread.</p>
 <td>URDF/SI-YAML; Datei- und Parserarbeit außerhalb RT</td>
 </tr>
 <tr>
+<td><code>io/dxf_path_import.hpp</code></td>
+<td><code>DxfDrawing</code>, <code>DxfImportOptions</code>, <code>parse_dxf_path()</code>, <code>load_dxf_path_file()</code></td>
+<td>Begrenzter Text-DXF-Geometrieimport; ausschließlich Vorbereitung</td>
+</tr>
+<tr>
 <td><code>program/robot_program.hpp</code></td>
 <td><code>RobotProgramSource</code>, <code>RobotProgram</code>, <code>PreparedRobotProgram</code></td>
 <td>Strikter Programmimport, Gesamtplanung und Simulation</td>
@@ -4174,6 +4305,9 @@ werden. Für die spätere Host-Zuordnung gilt der
 <p>Programmformat v1 aus dem Gespräch, neu implementiert und geprüft. Der Import
 benötigt den Standard-Build mit <code>MOTION_WITH_SERIAL=ON</code>, keinen Ruckig- oder
 CANopen-Anschluss.</p>
+<p>Ab 0.13.0 kann ein einzelner <strong><code>DXF</code>-Befehl</strong> zusätzlich eine externe Zeichnung
+einlesen und mit der vorhandenen Bewegungsplanung abfahren. Beispiele, Einheiten,
+Platzierung und Grenzen stehen unter <a href="#chapter-dxf_program_command">DXF als Programmbefehl</a>.</p>
 <h2 id="chapter-robot_program_yaml--vollständiges-kleines-beispiel">Vollständiges kleines Beispiel</h2>
 <p>Speichere diese Datei unter <code>programs/mein_programm.yaml</code>:</p>
 <pre><code class="language-yaml">schema_version: 1
@@ -4325,7 +4459,338 @@ die kontinuierliche Zulassung erfolgt vorher.</p>
 100.000 endliche, streng zeitlich geordnete Samples. Es handelt sich um
 Sollreferenzen, keine Hardwaremessungen. Digitale I/O, eingangsabhängige WAITs,
 Hersteller-/G-Code-Import und sensorabhängige Programmverzweigungen sind nicht
-Bestandteil dieses Formats.</p></section><section id="chapter-validation"><h1 id="chapter-validation--struktur-und-integrationsgrundlage-0123-29102026">Struktur- und Integrationsgrundlage — 0.12.3, 29.10.2026</h1>
+Bestandteil dieses Formats.</p></section><section id="chapter-dxf_program_command"><h1 id="chapter-dxf_program_command--dxf-als-programmbefehl">DXF als Programmbefehl</h1>
+<p>Ab Bibliothek <strong>0.13.0</strong> liest der YAML-Befehl <code>DXF</code> eine externe Zeichnung und
+plant deren Punkte beziehungsweise Mittellinien mit dem vorhandenen C++-Planer.
+Der Editor <strong>0.4.0</strong> bietet Dateiimport und Befehlseinfügung. DXF-Einlesen und
+Planung finden vollständig vor der Ausführung statt; im zyklischen Dispatcher
+wird keine CAD-Datei geöffnet oder interpretiert.</p>
+<h2 id="chapter-dxf_program_command--direkt-ausprobieren">Direkt ausprobieren</h2>
+<pre><code class="language-sh">python3 tools/motion_viewer/run_editor.py --open
+</code></pre>
+<p>Im Browser <strong>„UR5e · DXF-Kontur abfahren“ → Vorlage laden → Simulieren</strong> wählen.
+Das Beispiel enthält genau einen DXF-Befehl und danach WAIT. Der Befehl ergibt
+vier LIN-Stücke und einen echten Viertelkreis als CIRC. Im Viewer bleiben
+Programmzeile, DXF-Datei, DXF-Zeile, Entity und Layer nachvollziehbar.
+<strong>Bahn fokussieren</strong> vergrößert die TCP-Bahn; <strong>Ansicht zurücksetzen</strong> zeigt
+wieder den ganzen Roboter.</p>
+<p>Eine eigene Zeichnung mit <strong>DXF öffnen</strong> laden, Einheit/Layer/Bezug und
+Verbindungsfahrten einstellen, dann <strong>DXF-Befehl einfügen</strong> drücken. Der Helfer
+ergänzt den mehrzeiligen <code>steps:</code>-Block; die Parameter bleiben als normaler
+Programmtext sichtbar. Die Änderung wird erst mit <strong>Simulieren</strong> geplant.</p>
+<p>Für den C++-Simulator ohne Editor:</p>
+<pre><code class="language-sh">./build/program_simulator programs/examples/ur5e_dxf_demo.yaml --check
+./build/program_simulator programs/examples/ur5e_dxf_demo.yaml --csv build/dxf_trace.csv
+</code></pre>
+<h2 id="chapter-dxf_program_command--befehl-und-koordinaten">Befehl und Koordinaten</h2>
+<pre><code class="language-yaml">steps:
+  - type: DXF
+    file: kontur.dxf
+    units: mm
+    layer: PATH
+    reference: tcp
+    travel: LIN
+    speed: 0.5
+    path_tolerance_m: 0.0002
+  - {type: WAIT, seconds: 0.2}
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Bedeutung / Standard</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>file</code></td>
+<td>DXF-Datei; CLI relativ zur YAML-Datei, Editor nur geladener Dateiname ohne Verzeichnisse</td>
+</tr>
+<tr>
+<td><code>units</code></td>
+<td><code>auto</code> (Standard), <code>mm</code>, <code>cm</code>, <code>m</code>, <code>inch</code>, <code>ft</code>; explizite Auswahl hat Vorrang vor <code>$INSUNITS</code></td>
+</tr>
+<tr>
+<td><code>layer</code></td>
+<td>Optionaler exakter Layername; ohne Auswahl werden alle Entities geprüft</td>
+</tr>
+<tr>
+<td><code>reference</code></td>
+<td><code>tcp</code> (Standard) oder <code>world</code></td>
+</tr>
+<tr>
+<td><code>placement</code></td>
+<td>Optionale Pose <code>{position: [x,y,z], orientation: [w,x,y,z]}</code>; Standard Identität</td>
+</tr>
+<tr>
+<td><code>travel</code></td>
+<td><code>reject</code> (Standard), <code>LIN</code> oder <code>PTP</code> für Anfahren und Verbindungen zwischen getrennten Stücken/Punkten</td>
+</tr>
+<tr>
+<td><code>orientation</code></td>
+<td>Optionales normiertes TCP-Quaternion in Weltkoordinaten; sonst TCP-Orientierung am Befehlsstart beibehalten</td>
+</tr>
+<tr>
+<td><code>speed</code></td>
+<td>Bisheriger Geschwindigkeitsfaktor; mit globalem <code>speed</code> kombiniert, effektiv 0,001–1</td>
+</tr>
+<tr>
+<td><code>path_tolerance_m</code></td>
+<td>Positionstoleranz der vorhandenen Spline-Abbildung; Standard 0,0002 m, zulässig 0,000001–0,001 m</td>
+</tr>
+</tbody>
+</table>
+<p><code>units: SI</code> im YAML bleibt unverändert. Nur die DXF-Zahlen erhalten die gewählte
+Zeichnungseinheit. <strong><code>placement.position</code> steht immer in Metern.</strong>
+Die DXF-Ebene ist lokal XY, +Z ist ihre Normale. Eine Platzierung kann diese
+Ebene beliebig starr im Raum drehen und verschieben:</p>
+<pre><code class="language-text">reference: tcp   Weltpunkt = TCP_am_Befehlsstart × placement × DXF-Punkt_in_m
+reference: world Weltpunkt = placement × DXF-Punkt_in_m
+</code></pre>
+<p>TCP-Bezug wird <strong>einmal pro DXF-Befehl</strong> am Anfang bestimmt, nicht bei jedem
+Vertex neu. Ein wiederholter CALL mit TCP-Bezug kann deshalb eine weitere Kontur
+relativ zur dann erreichten Stellung erzeugen. Weltbezug bleibt ortsfest.
+Die Werkzeugorientierung folgt keiner Tangente und wird durch <code>placement</code>
+nicht automatisch geändert.</p>
+<p>Beispiel für eine ortsfeste Zeichnung, um 90° um Welt-Z gedreht:</p>
+<pre><code class="language-yaml">  - type: DXF
+    file: kontur.dxf
+    units: mm
+    reference: world
+    placement:
+      position: [0.7, 0.3, 0.25]
+      orientation: [0.7071067811865476, 0, 0, 0.7071067811865475]
+    travel: LIN
+    speed: 0.5
+</code></pre>
+<p>Diese Beispielplatzierung ist kein universell erreichbarer Arbeitsbereich.
+Die vollständige IK-/Gelenk-/TCP-Zulassung entscheidet anhand des importierten
+Roboters und seiner Grenzen.</p>
+<h2 id="chapter-dxf_program_command--unterstützte-zeichnungselemente">Unterstützte Zeichnungselemente</h2>
+<table>
+<thead>
+<tr>
+<th>Entity</th>
+<th>Interpretation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>POINT</code></td>
+<td>Wegpunkt; Fahrt dorthin gemäß <code>travel</code>, kein automatisch eingefügter Haltzeit-Befehl</td>
+</tr>
+<tr>
+<td><code>LINE</code></td>
+<td>Räumliche Gerade vom Anfangs- zum Endpunkt</td>
+</tr>
+<tr>
+<td><code>LWPOLYLINE</code></td>
+<td>Offene/geschlossene 2D-Polylinie mit Elevation und signierten Bulge-Bögen</td>
+</tr>
+<tr>
+<td><code>POLYLINE</code> / <code>VERTEX</code> / <code>SEQEND</code></td>
+<td>Einfache offene/geschlossene 2D- oder 3D-Polylinie; 3D ohne Bulge</td>
+</tr>
+<tr>
+<td><code>ARC</code></td>
+<td>Kreisbogen gegen den Uhrzeigersinn; Winkel in DXF-Grad, einschließlich Umschlag über 0°</td>
+</tr>
+<tr>
+<td><code>CIRCLE</code></td>
+<td>Vollkreis, Start am lokalen positiven X-Radius</td>
+</tr>
+</tbody>
+</table>
+<p>Eine positive Bulge läuft gegen, eine negative mit dem Uhrzeigersinn; auch
+Bögen über 180° bleiben echte Kreisgeometrie. Polylinien-Schließkanten werden
+berücksichtigt. Breiten und Strichdarstellung werden als Darstellungseigenschaften
+behandelt: gefahren wird die <strong>Mittellinie</strong>, ohne Werkzeugradiuskorrektur.</p>
+<p>Entities werden in Dateireihenfolge, Polylinien in Vertex-Reihenfolge bearbeitet.
+Es gibt keine automatische Sortierung, Umkehrung oder Wegeoptimierung.
+Ein Eintritt oder Sprung zu einer anderen Kontur wird bei <code>travel: reject</code>
+abgelehnt, wenn die Posen nicht zusammenpassen. Mit <code>travel: LIN/PTP</code> werden
+diese Verbindungen ausdrücklich Bestandteil der geprüften Bewegung. Der
+Einfügehelfer zeigt seine Auswahl und schreibt sie in das YAML.</p>
+<p>Jede erzeugte LIN-/CIRC-/PTP-Bewegung hat nach dem bestehenden Programmvertrag
+Stillstandsgrenzen. Das ist eine geometrisch und dynamisch geprüfte Abfolge,
+noch keine durchgehende Bearbeitungsbahn mit Verschleifen oder Prozess-I/O.</p>
+<p>Nicht unterstützt werden binäre DXF, DWG, SPLINE, ELLIPSE, INSERT/BLOCK-Auflösung,
+Mesh-/Polyface-/Fit-Polylinien, Papierbereich und andere Extrusionsnormalen als
+lokal +Z. Solche <strong>ausgewählten</strong> Entities führen zu einer Diagnose; sie werden
+nicht still ausgelassen. Beschriftungen auf anderen Layern können durch eine
+Layerauswahl ausgeschlossen werden. Einheitenlose Zeichnungen benötigen eine
+explizite Einheit. Der Editor erwartet ASCII-/UTF-8-Text, keine beliebige
+Legacy-Zeichencodierung.</p>
+<h2 id="chapter-dxf_program_command--planung-genauigkeit-und-datenhaltung">Planung, Genauigkeit und Datenhaltung</h2>
+<p>Der Importer erzeugt SI-Geometrie, keine vorab berechneten Achsbefehle. Erst
+danach werden die existierenden LIN-/CIRC-/PTP-Planer, IK-Abbildung, Hüllen und
+Sollwertsimulation aufgerufen. Auch ein späterer fehlerhafter DXF-Abschnitt
+verhindert die Freigabe des gesamten neuen Programms.</p>
+<p>Serielle IK-Endpunkte können vom idealen CAD-Anschluss geringfügig abweichen.
+Ein importierter Bogen verwendet deshalb den exakten CAD-Radiusvektor relativ
+zum tatsächlich erreichten Anfangspunkt. Anfang und Ende jedes importierten
+Kurvenstücks müssen innerhalb <strong>1 µm</strong> ihrer nominalen CAD-Punkte liegen;
+sonst wird abgelehnt. Das ersetzt nicht die separate Spline-Pose-Abbildung:
+deren Positionstoleranz ist über <code>path_tolerance_m</code> einstellbar, standardmäßig
+<strong>0,2 mm</strong>. Diese Einstellungen sind Modell-/Planungsgrößen, kein Nachweis der
+realen Maschinengenauigkeit. Kollisionen, Werkzeugradius, Schnittkräfte,
+Spindel-/Ventilsteuerung und eine sichere Zustellung werden nicht erzeugt.</p>
+<p>Im Editor werden YAML und DXF-Text gemeinsam zum Auftrag eingefroren. Das
+Ersetzen/Entfernen einer DXF kennzeichnet die vorhandene Simulation als älteren
+Stand. Die letzte gültige Ansicht bleibt bei Fehlern erhalten. Der Download
+<strong>Programm + DXF als ZIP</strong> enthält den exakt simulierten YAML-Stand und seine
+Anhänge. Ein reiner YAML-Download enthält die Zeichnung nicht.</p>
+<p>Der Browser versucht, DXF-Anhänge mit dem Entwurf lokal zu speichern. Bei
+Speicherplatzmangel zeigt er eine Meldung; Originaldateien beziehungsweise das
+ZIP müssen dann separat aufbewahrt werden. Für den CLI-Import das Bundle so
+ablegen, dass seine relativen Profilpfade stimmen; im Editor ist das Modell
+relativ zum Projekt-Hauptordner, der DXF-Dateiname relativ zum Auftrag.</p>
+<h2 id="chapter-dxf_program_command--c-api-und-grenzen">C++-API und Grenzen</h2>
+<pre><code class="language-cpp">#include &quot;motion/io/dxf_path_import.hpp&quot;
+#include &quot;motion/program/robot_program.hpp&quot;
+
+auto drawing = motion::load_dxf_path_file(&quot;kontur.dxf&quot;,
+    {motion::DxfUnit::Millimetre, std::string(&quot;PATH&quot;)});
+auto source = motion::parse_robot_program_yaml(yaml_text, &quot;programm.yaml&quot;);
+auto prepared = motion::compile_robot_program(source, imported_robot,
+    [] (const std::string&amp; name) { return my_asset_snapshot.at(name); });
+</code></pre>
+<p>Der optionale <code>ProgramAssetLoader</code> liefert DXF-Text, beispielsweise aus einem
+bereits geprüften Speicherabbild. Wiederholte Referenzen auf denselben Dateinamen
+werden innerhalb einer Kompilierung nur einmal geladen. Ohne Callback liest
+die Bibliothek relativ zur Programmdatei. Parsing, Dateizugriff, Speicherbelegung
+und Planung gehören vollständig außerhalb des Echtzeitthreads.</p>
+<p>Grenzen: 4 MiB pro nativer DXF, 16 MiB/acht Dateinamen pro Kompilierung,
+250.000 Gruppen, 20.000 Entity-Records, 5.000 ausgewählte Entities,
+10.000 Kurvenstücke sowie insgesamt 10.000 expandierte Programmschritte.
+Der Editor begrenzt Anhänge zusätzlich auf vier Dateien mit je 1 MiB;
+die vollständige JSON-Anfrage ist auf 12 MiB begrenzt. Seine bisherigen
+Simulations-/Zeitbudgets bleiben bestehen.</p>
+<figure><svg width="2054pt" height="151pt"
+ viewBox="0.00 0.00 2054.00 151.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="chapter-dxf_program_command--figure-dxf-graph0" class="graph" transform="scale(1 1) rotate(0) translate(18 133)">
+<title>uml</title>
+<polygon fill="white" stroke="transparent" points="-18,18 -18,-133 2036,-133 2036,18 -18,18"/>
+<!-- instruction -->
+<g id="chapter-dxf_program_command--figure-dxf-node1" class="node">
+<title>instruction</title>
+<polygon fill="#dbeafe" stroke="transparent" points="1.5,-42.5 1.5,-63.5 138.5,-63.5 138.5,-42.5 1.5,-42.5"/>
+<text text-anchor="start" x="14.5" y="-51.5" font-family="DejaVu Sans" font-weight="bold" font-size="10.00">ProgramInstruction</text>
+<text text-anchor="start" x="6.5" y="-29.5" font-family="DejaVu Sans" font-size="10.00">operation, location, speed</text>
+<text text-anchor="start" x="6.5" y="-8.5" font-family="DejaVu Sans" font-size="10.00">dxf, drawing_location</text>
+<polygon fill="none" stroke="black" points="0,0 0,-65 139,-65 139,0 0,0"/>
+</g>
+<!-- command -->
+<g id="chapter-dxf_program_command--figure-dxf-node2" class="node">
+<title>command</title>
+<polygon fill="#dbeafe" stroke="transparent" points="319,-92.5 319,-113.5 455,-113.5 455,-92.5 319,-92.5"/>
+<text text-anchor="start" x="324" y="-101.5" font-family="DejaVu Sans" font-weight="bold" font-size="10.00">DxfProgramCommand</text>
+<text text-anchor="start" x="324" y="-79.5" font-family="DejaVu Sans" font-size="10.00">file, import, placement</text>
+<text text-anchor="start" x="324" y="-58.5" font-family="DejaVu Sans" font-size="10.00">relative_to_tcp, travel</text>
+<polygon fill="none" stroke="black" points="318,-50 318,-115 456,-115 456,-50 318,-50"/>
+</g>
+<!-- instruction&#45;&gt;command -->
+<g id="chapter-dxf_program_command--figure-dxf-edge1" class="edge">
+<title>instruction&#45;&gt;command</title>
+<path fill="none" stroke="#475569" d="M151.45,-45.33C202.98,-53.5 268.99,-63.96 317.84,-71.7"/>
+<polygon fill="#475569" stroke="#475569" points="151.2,-45.29 144.65,-48.3 139.35,-43.41 145.9,-40.4 151.2,-45.29"/>
+<text text-anchor="middle" x="228.5" y="-68.3" font-family="DejaVu Sans" font-size="9.00">optional: source command</text>
+</g>
+<!-- options -->
+<g id="chapter-dxf_program_command--figure-dxf-node3" class="node">
+<title>options</title>
+<polygon fill="#dbeafe" stroke="transparent" points="639,-76.5 639,-97.5 751,-97.5 751,-76.5 639,-76.5"/>
+<text text-anchor="start" x="644" y="-85.5" font-family="DejaVu Sans" font-weight="bold" font-size="10.00">DxfImportOptions</text>
+<text text-anchor="start" x="644" y="-63.5" font-family="DejaVu Sans" font-size="10.00">units, layer</text>
+<polygon fill="none" stroke="black" points="638,-54.5 638,-98.5 752,-98.5 752,-54.5 638,-54.5"/>
+</g>
+<!-- command&#45;&gt;options -->
+<g id="chapter-dxf_program_command--figure-dxf-edge2" class="edge">
+<title>command&#45;&gt;options</title>
+<path fill="none" stroke="#475569" d="M468.44,-80.92C521.7,-79.88 590.22,-78.53 637.69,-77.6"/>
+<polygon fill="#475569" stroke="#475569" points="468.29,-80.93 462.37,-85.04 456.29,-81.16 462.21,-77.04 468.29,-80.93"/>
+<text text-anchor="middle" x="547" y="-83.3" font-family="DejaVu Sans" font-size="9.00">import policy</text>
+</g>
+<!-- drawing -->
+<g id="chapter-dxf_program_command--figure-dxf-node4" class="node">
+<title>drawing</title>
+<polygon fill="#dbeafe" stroke="transparent" points="926.5,-32.5 926.5,-53.5 1123.5,-53.5 1123.5,-32.5 926.5,-32.5"/>
+<text text-anchor="start" x="991.5" y="-41.5" font-family="DejaVu Sans" font-weight="bold" font-size="10.00">DxfDrawing</text>
+<text text-anchor="start" x="931.5" y="-19.5" font-family="DejaVu Sans" font-size="10.00">strokes, metres_per_unit, curve_count</text>
+<polygon fill="none" stroke="black" points="925,-10.5 925,-54.5 1124,-54.5 1124,-10.5 925,-10.5"/>
+</g>
+<!-- options&#45;&gt;drawing -->
+<g id="chapter-dxf_program_command--figure-dxf-edge3" class="edge">
+<title>options&#45;&gt;drawing</title>
+<path fill="none" stroke="#475569" stroke-dasharray="5,2" d="M752.3,-68.94C796.89,-62.95 860.52,-54.4 914.93,-47.09"/>
+<polygon fill="#475569" stroke="#475569" points="924.98,-45.74 915.67,-51.53 920.03,-46.4 915.07,-47.07 915.07,-47.07 915.07,-47.07 920.03,-46.4 914.47,-42.61 924.98,-45.74 924.98,-45.74"/>
+<text text-anchor="middle" x="838.5" y="-67.3" font-family="DejaVu Sans" font-size="9.00">parse_dxf_path(); Non&#45;RT</text>
+</g>
+<!-- drawing&#45;&gt;instruction -->
+<g id="chapter-dxf_program_command--figure-dxf-edge7" class="edge">
+<title>drawing&#45;&gt;instruction</title>
+<path fill="none" stroke="#475569" stroke-dasharray="5,2" d="M924.76,-32.5C734.78,-32.5 321.91,-32.5 149.08,-32.5"/>
+<polygon fill="#475569" stroke="#475569" points="139.04,-32.5 149.04,-28 144.04,-32.5 149.04,-32.5 149.04,-32.5 149.04,-32.5 144.04,-32.5 149.04,-37 139.04,-32.5 139.04,-32.5"/>
+<text text-anchor="middle" x="547" y="-35.3" font-family="DejaVu Sans" font-size="9.00">expand_dxf(); LIN/CIRC/PTP</text>
+</g>
+<!-- stroke -->
+<g id="chapter-dxf_program_command--figure-dxf-node5" class="node">
+<title>stroke</title>
+<polygon fill="#dbeafe" stroke="transparent" points="1250,-32.5 1250,-53.5 1366,-53.5 1366,-32.5 1250,-32.5"/>
+<text text-anchor="start" x="1279" y="-41.5" font-family="DejaVu Sans" font-weight="bold" font-size="10.00">DxfStroke</text>
+<text text-anchor="start" x="1255" y="-19.5" font-family="DejaVu Sans" font-size="10.00">start, curves, location</text>
+<polygon fill="none" stroke="black" points="1249,-10.5 1249,-54.5 1367,-54.5 1367,-10.5 1249,-10.5"/>
+</g>
+<!-- drawing&#45;&gt;stroke -->
+<g id="chapter-dxf_program_command--figure-dxf-edge4" class="edge">
+<title>drawing&#45;&gt;stroke</title>
+<path fill="none" stroke="#475569" d="M1136.7,-32.5C1175.1,-32.5 1216.58,-32.5 1248.98,-32.5"/>
+<polygon fill="#475569" stroke="#475569" points="1136.35,-32.5 1130.35,-36.5 1124.35,-32.5 1130.35,-28.5 1136.35,-32.5"/>
+<text text-anchor="middle" x="1186.5" y="-35.3" font-family="DejaVu Sans" font-size="9.00">ordered vector</text>
+</g>
+<!-- curve -->
+<g id="chapter-dxf_program_command--figure-dxf-node6" class="node">
+<title>curve</title>
+<polygon fill="#dbeafe" stroke="transparent" points="1549,-32.5 1549,-53.5 1729,-53.5 1729,-32.5 1549,-32.5"/>
+<text text-anchor="start" x="1612.5" y="-41.5" font-family="DejaVu Sans" font-weight="bold" font-size="10.00">DxfCurve</text>
+<text text-anchor="start" x="1554" y="-19.5" font-family="DejaVu Sans" font-size="10.00">type, start, end, center, sweep_rad</text>
+<polygon fill="none" stroke="black" points="1548,-10.5 1548,-54.5 1730,-54.5 1730,-10.5 1548,-10.5"/>
+</g>
+<!-- stroke&#45;&gt;curve -->
+<g id="chapter-dxf_program_command--figure-dxf-edge5" class="edge">
+<title>stroke&#45;&gt;curve</title>
+<path fill="none" stroke="#475569" d="M1379.2,-32.5C1428.48,-32.5 1494.8,-32.5 1547.97,-32.5"/>
+<polygon fill="#475569" stroke="#475569" points="1379.06,-32.5 1373.06,-36.5 1367.06,-32.5 1373.06,-28.5 1379.06,-32.5"/>
+<text text-anchor="middle" x="1457.5" y="-35.3" font-family="DejaVu Sans" font-size="9.00">LINE/ARC; empty for POINT</text>
+</g>
+<!-- location -->
+<g id="chapter-dxf_program_command--figure-dxf-node7" class="node">
+<title>location</title>
+<polygon fill="#dbeafe" stroke="transparent" points="1841,-32.5 1841,-53.5 2017,-53.5 2017,-32.5 1841,-32.5"/>
+<text text-anchor="start" x="1895.5" y="-41.5" font-family="DejaVu Sans" font-weight="bold" font-size="10.00">DxfLocation</text>
+<text text-anchor="start" x="1846" y="-19.5" font-family="DejaVu Sans" font-size="10.00">file, layer, entity_type, line, entity</text>
+<polygon fill="none" stroke="black" points="1840,-10.5 1840,-54.5 2018,-54.5 2018,-10.5 1840,-10.5"/>
+</g>
+<!-- curve&#45;&gt;location -->
+<g id="chapter-dxf_program_command--figure-dxf-edge6" class="edge">
+<title>curve&#45;&gt;location</title>
+<path fill="none" stroke="#475569" d="M1742.39,-32.5C1774.28,-32.5 1809.14,-32.5 1839.96,-32.5"/>
+<polygon fill="#475569" stroke="#475569" points="1742.33,-32.5 1736.33,-36.5 1730.33,-32.5 1736.33,-28.5 1742.33,-32.5"/>
+<text text-anchor="middle" x="1785" y="-35.3" font-family="DejaVu Sans" font-size="9.00">CAD source</text>
+</g>
+</g>
+</svg>
+<figcaption>DXF-Klassen und Programmbezug</figcaption></figure>
+
+<p>Der native Importer ist in <code>io/</code>, die Befehlsexpansion in <code>program/</code> getrennt.
+Editor und Visualisierung bleiben unter <code>tools/motion_viewer/</code>.</p></section><section id="chapter-validation"><h1 id="chapter-validation--aktuelle-ergänzung-dxf-befehl-0130-29102026">Aktuelle Ergänzung — DXF-Befehl 0.13.0, 29.10.2026</h1>
+<p>Die Vollkonfiguration mit Serial/Ruckig/KDL besteht <strong>29/29</strong> CTests im Release-
+und ASan/UBSan-Build. Die getrennte Werkzeugprüfung umfasst zusätzlich <strong>30</strong>
+Python-Tests für Viewer und lokalen Editor. DXF-Geometrie, Programmbefehl,
+Quelldateien und Browserablauf: <a href="testing/dxf_validation.md">DXF-Prüfbericht</a>.
+Die bisherige Struktur-/Integrationsabnahme bleibt nachstehend als eigener
+Versionsnachweis erhalten.</p>
+<h2 id="chapter-validation--struktur-und-integrationsgrundlage-0123-29102026">Struktur- und Integrationsgrundlage — 0.12.3, 29.10.2026</h2>
 <p>Aufgabenbezogene Projektstruktur, Benennungsregeln und Integrationsverträge für
 eine selbst entwickelte Steuerung mit <strong>1–20 ms</strong>. Die konkrete Anbindung wird
 später geplant. Einstieg: <a href="#chapter-readme">Dokumentation</a>,

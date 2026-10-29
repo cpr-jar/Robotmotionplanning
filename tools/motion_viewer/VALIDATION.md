@@ -1,4 +1,20 @@
-# Werkzeugprüfung 0.3.0 · 29.10.2026
+# Werkzeugprüfung 0.4.0 · 29.10.2026
+
+DXF-Erweiterung: drei zusätzliche Python-Tests (insgesamt **30**), native
+DXF-Befehle, bytegleiche YAML+DXF-ZIP-Bündel, Asset-/Pfadgrenzen und Erhalt der
+vorherigen Ansicht bei späteren CAD-Fehlern. Release und ASan/UBSan bestehen
+jeweils alle 30 Tests. Die Bibliothek besteht zusätzlich 29/29 CTests in beiden
+Konfigurationen. Details: [DXF-Prüfbericht](../../docs/testing/dxf_validation.md).
+
+Der zusätzliche echte DXF-Browsertest prüft Dateiimport, Einfügen eines einzigen
+YAML-Befehls vor nachfolgenden Root-Feldern, LIN/CIRC-Planung, CAD-Quellorte,
+Mesh-Wiedergabe, Bahnfokus, Bundledownload, Wiederherstellung samt Zeichnung und
+Stale-Markierung bei CAD-Wechsel. Fehlerhafte beziehungsweise entfernte Anhänge
+ersetzen keine gültige Ansicht. Die unabhängige Dateiprüfung erfolgt mit
+ezdxf 1.4.2; die Anwendung braucht dieses Paket nicht.
+
+Die nachstehenden bisherigen Prüfungen bleiben enthalten; die Tabelle zeigt
+die aktualisierte Werkzeug-Testzahl.
 
 Der gesamte neue Viewer liegt unter `tools/motion_viewer/`. Die Implementierung,
 öffentlichen Header und CMake-Konfiguration der Bewegungsbibliothek wurden für
@@ -7,8 +23,8 @@ Import-/Planungs-/Simulations-APIs, nicht durch eine zweite Bewegungsplanung.
 
 | Prüfung | Tatsächlich ausgeführt |
 | --- | --- |
-| Standalone-CMake, GCC 14.2, Release | Gebaut; 27 Werkzeugtests bestanden |
-| Standalone-CMake, Debug -O1 -g1, ASan/UBSan | Gebaut; dieselben 27 Werkzeugtests bestanden |
+| Standalone-CMake, GCC 14.2, Release | Gebaut; 30 Werkzeugtests bestanden |
+| Standalone-CMake, Debug -O1 -g1, ASan/UBSan | Gebaut; dieselben 30 Werkzeugtests bestanden |
 | Ein-Befehl-Einstieg `run_demo.py` | Build und fertige HTML erfolgreich erzeugt |
 | Sollwertraster | 1 und 20 ms mit Referenzprogramm; Visual-Demo mit 10 ms und zusätzlich 1 ms (30.018 Befehle, 3.762 angezeigte Samples) |
 | Visual-Demo | 3.007 ausgegebene Befehle, sechs Schritte, 30,06 s, vollständiger Kreis und terminale Ruhe |

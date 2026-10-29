@@ -3,8 +3,10 @@ add_library(robot_motion_serial STATIC
   kinematics/inverse_differential.cpp
   calibration/rigid_calibration.cpp
   io/robot_model_import.cpp
+  io/dxf_path_import.cpp
   program/program_import.cpp
   program/program_planning.cpp
+  program/program_dxf.cpp
   program/program_simulation.cpp)
 add_library(RobotMotion::serial ALIAS robot_motion_serial)
 target_include_directories(robot_motion_serial PUBLIC ${PROJECT_SOURCE_DIR}/include)

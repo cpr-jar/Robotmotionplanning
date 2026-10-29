@@ -1,5 +1,10 @@
 # Implementierungs- und Integrationsroadmap
 
+Mit **0.13.0** ist DXF-Geometrie als YAML-Programmbefehl ergänzt: Import,
+Einheiten/Layer, TCP-/Weltplatzierung und Planung über LIN/CIRC/PTP. Der getrennte
+Testeditor unterstützt Dateiimport, Simulation und YAML+DXF-Bündel.
+Details und bewusst begrenzter Formatumfang: [DXF-Befehl](../formats/dxf_program_command.md).
+
 Mit 0.12.3 sind die aufgabenbezogene Struktur, Benennungs-/Migrationsregeln,
 sieben UML-Klassendiagramme, das Integrations-/Datenhandbuch und ausführbare
 Vertragstests für 1/10/20 ms ergänzt. Die konkrete Anbindung an die selbst

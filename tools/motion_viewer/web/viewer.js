@@ -45,6 +45,8 @@
         ? x.toExponential(3)
         : x.toLocaleString("de-DE", { minimumFractionDigits: digits, maximumFractionDigits: digits });
     const colors = { PTP: "#276ac1", LIN: "#07866d", CIRC: "#9253b4", WAIT: "#758798" };
+    const operationLabel = (segment) =>
+      (segment.source_command === "DXF" ? "DXF · " : "") + segment.operation;
     const state = {
       index: 0,
       axis: 0,
@@ -143,7 +145,7 @@
       button.style.setProperty("--segment", colors[segment.operation]);
       button.style.setProperty("--wash", colors[segment.operation] + "12");
       const title = document.createElement("strong");
-      title.textContent = segment.index + " · " + segment.operation;
+      title.textContent = segment.index + " · " + operationLabel(segment);
       const duration = document.createElement("small");
       duration.textContent = number(segment.end_s - segment.start_s, 2) + " s";
       button.append(title, duration);
@@ -292,6 +294,15 @@
     }
     $("reset-camera").addEventListener("click", () => {
       resetCamera();
+      paint();
+    });
+    $("focus-path").addEventListener("click", () => {
+      const points = frames.map(tcp);
+      const low = [0, 1, 2].map((axis) => Math.min(...points.map((point) => point[axis])));
+      const high = [0, 1, 2].map((axis) => Math.max(...points.map((point) => point[axis])));
+      state.target = low.map((x, axis) => (x + high[axis]) / 2);
+      state.radius = Math.max(0.005, Math.hypot(...low.map((x, axis) => high[axis] - x)) / 2);
+      state.distance = state.radius * 2.7;
       paint();
     });
     let drag = null;
@@ -531,10 +542,10 @@
         number(value(frame, "time_s"), 3) + " / " + number(program.duration_s, 3) + " s";
       $("tick-label").textContent = "Tick " + value(frame, "tick");
       $("step-label").textContent =
-        segment.index + " · " + segment.operation + " · speed " + number(segment.speed, 2);
+        segment.index + " · " + operationLabel(segment) + " · speed " + number(segment.speed, 2);
       $("pose-label").textContent = "TCP [m]  " + geometry.tcp.map((x) => number(x, 5)).join(" / ");
       $("operation-label").textContent =
-        segment.operation + (state.index === frames.length - 1 ? " · Ende im Stillstand" : "");
+        operationLabel(segment) + (state.index === frames.length - 1 ? " · Ende im Stillstand" : "");
       $("source-label").textContent =
         segment.source_file +
         ":" +
@@ -543,6 +554,18 @@
         segment.source_block +
         " / " +
         segment.source_step;
+      if (segment.source_command === "DXF")
+        $("source-label").textContent +=
+          " · " +
+          segment.dxf_file +
+          ":" +
+          segment.dxf_line +
+          " · " +
+          segment.dxf_type +
+          " #" +
+          segment.dxf_entity +
+          " · Layer " +
+          segment.dxf_layer;
       rows.forEach(({ row, cells, unitLabel }, axis) => {
         row.classList.toggle("selected", axis === state.axis);
         ["q", "dq", "ddq", "jerk"].forEach((prefix, order) => {

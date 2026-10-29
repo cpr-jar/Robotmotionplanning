@@ -1,4 +1,13 @@
-# Struktur- und Integrationsgrundlage — 0.12.3, 29.10.2026
+# Aktuelle Ergänzung — DXF-Befehl 0.13.0, 29.10.2026
+
+Die Vollkonfiguration mit Serial/Ruckig/KDL besteht **29/29** CTests im Release-
+und ASan/UBSan-Build. Die getrennte Werkzeugprüfung umfasst zusätzlich **30**
+Python-Tests für Viewer und lokalen Editor. DXF-Geometrie, Programmbefehl,
+Quelldateien und Browserablauf: [DXF-Prüfbericht](dxf_validation.md).
+Die bisherige Struktur-/Integrationsabnahme bleibt nachstehend als eigener
+Versionsnachweis erhalten.
+
+## Struktur- und Integrationsgrundlage — 0.12.3, 29.10.2026
 
 Aufgabenbezogene Projektstruktur, Benennungsregeln und Integrationsverträge für
 eine selbst entwickelte Steuerung mit **1–20 ms**. Die konkrete Anbindung wird

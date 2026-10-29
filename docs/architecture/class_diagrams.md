@@ -1,11 +1,21 @@
 # UML-Klassendiagramme
 
-Die folgenden sieben Sichten beschreiben vorhandene Typen. Eine leere
+Die folgenden acht Sichten beschreiben vorhandene Typen. Eine leere
 Dreieckspitze bezeichnet Vererbung; eine ausgefüllte Raute den Besitzer der
 enthaltenen Werte oder `shared_ptr`. Gestrichelte Pfeile zeigen Nutzung bzw.
 geliehene Referenzen. Geteiltes Eigentum ist zusätzlich beschriftet.
 Funktionen, die Objekte erzeugen, stehen an den Pfeilen; ausgewählte Methoden
 sind verkürzt dargestellt. Vollständige Signaturen stehen in den Headern.
+
+## DXF-Geometrie und Befehlsvorbereitung (ab 0.13.0)
+
+![DXF-Geometrie und Programmbezug](diagrams/dxf.svg)
+
+Der Quellbefehl besitzt seine Importoptionen. Der Import liefert geordnete
+Konturen mit CAD-Quellorten; die Vorbereitung erzeugt daraus gewöhnliche
+Programmschritte und bewahrt deren Herkunft. Dateien werden ausschließlich
+in der Vorbereitung geladen. [DXF-Vertrag](../formats/dxf_program_command.md),
+[DOT-Quelle](diagrams/dxf.dot).
 
 ## 1. Kinematik und Zustände
 

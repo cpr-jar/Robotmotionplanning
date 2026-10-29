@@ -48,17 +48,27 @@ jobs:
       - name: Build instrumented parser and dependencies
         run: |
           cmake -S . -B build-fuzz -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS_DEBUG="-O1 -g1" -DMOTION_SANITIZE=ON -DMOTION_BUILD_FUZZER=ON -DMOTION_WITH_KDL_REFERENCE=OFF
-          cmake --build build-fuzz --target program_parser_fuzzer --parallel 2
+          cmake --build build-fuzz --target program_parser_fuzzer dxf_parser_fuzzer --parallel 2
       - name: Bounded coverage-guided fuzz run
         run: |
           mkdir -p build-fuzz/corpus build-fuzz/findings
           cp tests/fuzz/corpus/*.yaml build-fuzz/corpus/
           ./build-fuzz/program_parser_fuzzer build-fuzz/corpus -runs=50000 -max_len=8192 -timeout=5 -rss_limit_mb=1024 -seed=4028751910 -artifact_prefix=build-fuzz/findings/
+          mkdir -p build-fuzz/dxf-corpus
+          cp programs/dxf/rounded_path.dxf build-fuzz/dxf-corpus/
+          ./build-fuzz/dxf_parser_fuzzer build-fuzz/dxf-corpus -runs=50000 -max_len=32768 -timeout=5 -rss_limit_mb=1024 -seed=4028751910 -artifact_prefix=build-fuzz/findings/
       - uses: actions/upload-artifact@v4
         if: failure()
         with:
           name: parser-fuzz-findings
           path: build-fuzz/findings/
+  viewer-tool:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: cmake -S tools/motion_viewer -B build-motion-viewer -DCMAKE_BUILD_TYPE=Release
+      - run: cmake --build build-motion-viewer --parallel 2
+      - run: ctest --test-dir build-motion-viewer --output-on-failure
   structure-and-consumer:
     runs-on: ubuntu-latest
     steps:

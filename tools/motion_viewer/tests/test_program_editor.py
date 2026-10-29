@@ -2,12 +2,14 @@
 
 from pathlib import Path
 import http.client
+import io
 import json
 import os
 import subprocess
 import tempfile
 import threading
 import unittest
+import zipfile
 from unittest.mock import patch
 
 from create_viewer import ROOT
@@ -148,6 +150,66 @@ class ProgramEditorTests(unittest.TestCase):
                 self.assertFalse(result["full_model"])
         with self.assertRaises(EditorError):
             self.service.example("../../etc/passwd")
+
+    def test_dxf_command_simulates_and_bundle_retains_exact_assets(self):
+        example = self.service.example("ur5e_dxf")
+        request = {key: example[key] for key in ("source", "filename", "assets")}
+        request["cycle_ms"] = 10
+        result = self.service.simulate(request)
+        self.assertEqual(result["dxf_files"], 1)
+        self.assertEqual(result["segments"], 6)
+        html = self.service.result_file(result["id"])[0]
+        self.assertIn(b'"source_command":"DXF"', html)
+        self.assertIn(b'"dxf_layer":"PATH"', html)
+        self.assertIn(b'"operation":"CIRC"', html)
+        raw, _ = self.service.result_file(result["id"], bundle=True)
+        with zipfile.ZipFile(io.BytesIO(raw)) as bundle:
+            self.assertEqual(set(bundle.namelist()), {example["filename"], "rounded_path.dxf"})
+            self.assertEqual(bundle.read(example["filename"]).decode(), example["source"])
+            self.assertEqual(bundle.read("rounded_path.dxf").decode(), example["assets"][0]["content"])
+        request["assets"] = []
+        with self.assertRaises(EditorError) as caught:
+            self.service.simulate(request)
+        self.assertIn("DXF attachment", caught.exception.diagnostic["message"])
+        self.assertEqual(caught.exception.diagnostic["step"], 1)
+        self.assertEqual(self.service.result_file(result["id"])[0], html)
+
+    def test_dxf_assets_validation_and_native_path_boundaries(self):
+        content = "0\nSECTION\n2\nENTITIES\n0\nPOINT\n10\n1\n0\nENDSEC\n0\nEOF\n"
+        base = {**request_for(), "assets": [{"filename": "shape.dxf", "content": content}]}
+        for assets in (
+            [{"filename": "../shape.dxf", "content": content}],
+            [{"filename": "a.dxf", "content": content}, {"filename": "A.DXF", "content": content}],
+            [{"filename": "a.dxf", "content": "\0binary"}],
+            [{"filename": "a.dxf", "content": "\ud800"}],
+            [{"filename": "a.dxf", "content": "x" * (1024 * 1024 + 1)}],
+            [{"filename": str(i) + ".dxf", "content": content} for i in range(5)],
+        ):
+            with self.assertRaises(EditorError):
+                validate_request({**base, "assets": assets})
+        for filename in ("../outside.dxf", "/etc/passwd", "models/ur5e/profile.yaml"):
+            source = (
+                SHORT_PROGRAM[: SHORT_PROGRAM.index("steps:")]
+                + "steps: [{type: DXF, file: "
+                + filename
+                + ", units: mm, travel: LIN}]\n"
+            )
+            with self.assertRaises(EditorError) as caught:
+                self.service.simulate(request_for(source))
+            self.assertIn("without directories", caught.exception.diagnostic["message"])
+
+    def test_dxf_rejected_geometry_keeps_prior_preview_and_reports_cad_location(self):
+        prior = self.service.simulate(request_for())
+        example = self.service.example("ur5e_dxf")
+        example["assets"][0]["content"] = example["assets"][0]["content"].replace("LWPOLYLINE", "SPLINE")
+        with self.assertRaises(EditorError) as caught:
+            self.service.simulate(
+                {key: example[key] for key in ("source", "filename", "assets")} | {"cycle_ms": 10}
+            )
+        self.assertIn("DXF SPLINE", caught.exception.diagnostic["message"])
+        self.assertIn("rounded_path.dxf:", caught.exception.diagnostic["message"])
+        self.assertTrue(self.service.result_file(prior["id"])[0])
+        self.assertEqual(len(list(self.service.folder.iterdir())), 1)
 
 
 class EditorHttpTests(unittest.TestCase):

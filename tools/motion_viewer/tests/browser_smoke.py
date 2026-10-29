@@ -133,8 +133,11 @@ def main():
             "#scrubber", "e=>{e.value=e.max;e.dispatchEvent(new Event('input',{bubbles:true}));}"
         )
         assert "Ende im Stillstand" in page.locator("#operation-label").inner_text()
+        terminal_tick = int(page.locator("body").get_attribute("data-current-tick"))
         page.locator("#play").click()
-        page.wait_for_function("Number(document.body.dataset.currentTick)<10")
+        # Software WebGL can render the first restarted frame after >100 ms.
+        # Verify a return to the first tenth, not a wall-clock-dependent tick <10.
+        page.wait_for_function("end=>Number(document.body.dataset.currentTick)<end/10", arg=terminal_tick)
         page.locator("#play").click()
         # Set a moving pose for the review image and choose readable velocity charts.
         page.locator("#degrees").uncheck()

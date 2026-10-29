@@ -248,6 +248,60 @@ RobotProgramSource parse_robot_program_yaml(std::string_view content, const std:
                 r.fail(n, "Invalid CIRC sweep/normal");
               if (n["orientation"])
                 op.orientation = r.quaternion(n["orientation"]);
+            } else if (type == "DXF") {
+              r.keys(n, {"type", "file", "units", "layer", "reference", "placement", "travel", "orientation",
+                         "speed", "path_tolerance_m"});
+              op.operation = ProgramOperation::Dxf;
+              DxfProgramCommand drawing;
+              drawing.file = r.text(n["file"]);
+              if (n["units"]) {
+                const auto units = r.text(n["units"]);
+                if (units == "auto")
+                  drawing.import.units = DxfUnit::Header;
+                else if (units == "mm")
+                  drawing.import.units = DxfUnit::Millimetre;
+                else if (units == "cm")
+                  drawing.import.units = DxfUnit::Centimetre;
+                else if (units == "m")
+                  drawing.import.units = DxfUnit::Metre;
+                else if (units == "inch")
+                  drawing.import.units = DxfUnit::Inch;
+                else if (units == "ft")
+                  drawing.import.units = DxfUnit::Foot;
+                else
+                  r.fail(n["units"], "DXF units must be auto, mm, cm, m, inch or ft");
+              }
+              if (n["layer"])
+                drawing.import.layer = r.text(n["layer"]);
+              if (n["reference"]) {
+                const auto reference = r.text(n["reference"]);
+                if (reference != "tcp" && reference != "world")
+                  r.fail(n["reference"], "DXF reference must be tcp or world");
+                drawing.relative_to_tcp = reference == "tcp";
+              }
+              if (n["placement"]) {
+                const auto placement = r.point(n["placement"]);
+                if (!std::holds_alternative<Pose>(placement))
+                  r.fail(n["placement"], "DXF placement must be a pose");
+                drawing.placement = std::get<Pose>(placement);
+              }
+              if (n["travel"]) {
+                const auto travel = r.text(n["travel"]);
+                if (travel == "LIN")
+                  drawing.travel = DxfTravel::Line;
+                else if (travel == "PTP")
+                  drawing.travel = DxfTravel::Ptp;
+                else if (travel != "reject")
+                  r.fail(n["travel"], "DXF travel must be reject, LIN or PTP");
+              }
+              if (n["orientation"])
+                op.orientation = r.quaternion(n["orientation"]);
+              op.dxf = std::move(drawing);
+              if (n["path_tolerance_m"]) {
+                op.path_tolerance_m = r.positive(n["path_tolerance_m"]);
+                if (op.path_tolerance_m < 1e-6 || op.path_tolerance_m > .001)
+                  r.fail(n["path_tolerance_m"], "DXF path_tolerance_m must be within 1e-6..0.001 m");
+              }
             } else if (type == "WAIT") {
               r.keys(n, {"type", "seconds"});
               op.operation = ProgramOperation::Wait;

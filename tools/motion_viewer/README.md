@@ -1,4 +1,4 @@
-# Motion Viewer · separates Werkzeug 0.3.0
+# Motion Viewer · separates Werkzeug 0.4.0
 
 Ein **Offline-Viewer für die vorhandenen Bewegungsprogramme**, vollständig unter
 `tools/motion_viewer/`. Bibliothek, Steuerungsschnittstellen und deren Build-
@@ -7,7 +7,7 @@ benutzt ausschließlich die öffentlichen Bibliotheksschnittstellen.
 
 ## Sofort ansehen – ohne Build
 
-1. [Projekt mit Viewer und Programmeditor herunterladen](https://github.com/cpr-jar/Robotmotionplanning/archive/refs/tags/motion-viewer-v0.3.0.zip) und entpacken.
+1. [Projekt mit Viewer, Editor und DXF-Befehl herunterladen](https://github.com/cpr-jar/Robotmotionplanning/archive/refs/tags/motion-viewer-v0.4.0.zip) und entpacken.
 2. **`tools/motion_viewer/demo/ur5e_motion.html`** im Browser öffnen.
 3. **Abspielen** drücken. Mit dem Zeitregler oder den Programmschritten gezielt
    zu einer Stelle springen; die 3D-Ansicht mit der Maus drehen und zoomen.
@@ -59,6 +59,24 @@ Viewer-HTML kann weiterhin ohne Dienst geöffnet und abgespielt werden. Ein Brow
 allein führt die native C++-Planung nicht aus. Die Steuerung wird nicht angesprochen.
 
 ## Was sichtbar wird
+
+### DXF als ein Programmbefehl
+
+Im Editor **„UR5e · DXF-Kontur abfahren“** laden und **Simulieren** drücken.
+Eigene Zeichnungen mit **DXF öffnen** laden; **DXF-Befehl einfügen** schreibt
+einen normalen YAML-Befehl mit Einheit, Layer, Bezug und Verbindungsfahrten.
+POINT/LINE/Polylinien/Bögen/Kreise werden vom nativen Importer verarbeitet und
+über die vorhandene C++-Planung abgefahren. Nicht unterstützte ausgewählte
+Geometrie ergibt eine Diagnose. [Vollständige DXF-Anleitung](../../docs/formats/dxf_program_command.md).
+
+![DXF-Programm im Editor und nativen Viewer](demo/dxf_editor_preview.png)
+
+**Programm + DXF als ZIP speichern** sichert den exakt simulierten Stand samt
+Zeichnungen. Änderungen an einer geladenen DXF kennzeichnen das alte Ergebnis
+als veraltet. Eine fertige Offline-Ansicht der Beispielkontur liegt unter
+`demo/ur5e_dxf.html`. **Bahn fokussieren** vergrößert kleine Konturen.
+
+### Bewegung und Diagnose
 
 - Vollständiges **UR5e-Visual-Modell** mit sieben bewegten Baugruppen und
   121.789 Dreiecken aus der offiziellen UR-Beschreibung. Umschaltbare Kinematik
@@ -207,7 +225,7 @@ Stands 0.12.3 umfasst in der Vollkonfiguration 27 CTests.
 ctest --test-dir build-motion-viewer --output-on-failure
 ```
 
-Ein CTest führt 27 Python-Tests aus: Vollständigkeit und Grenzen, Raster
+Ein CTest führt 30 Python-Tests aus: Vollständigkeit und Grenzen, Raster
 1/20 ms, Ausdünnung mit erhaltenen Übergängen, Parser-/Metadatenfehler,
 transaktionale Ausgaben, sichere Einbettung von Texten, Geometrieintegrität,
 Modellzuordnung, Einheiten, Transformationen und Lizenzen sowie native

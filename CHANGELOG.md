@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.13.0 — DXF program command and test-tool import, 2026-10-29
+
+- Added a bounded preparation-time text DXF importer for POINT, LINE,
+  LWPOLYLINE, 2D/3D POLYLINE, ARC and CIRCLE, including signed bulges.
+- Added a real `DXF` YAML instruction, including CALL expansion, units/layer,
+  TCP/world placement, explicit entry/connection policy, path tolerance and CAD provenance.
+  Geometry uses the existing LIN/CIRC/PTP planning, limits and virtual execution.
+- Added editor DXF attachments, command insertion, stale-result tracking for CAD
+  edits, exact YAML+DXF bundles and path-focus controls. Tool version is 0.4.0.
+- Added native geometric/program/fuzz tests, editor HTTP/browser regressions,
+  an audited ezdxf reference fixture and separate DXF libFuzzer/CI coverage.
+  Native/library work is under io/program; editor and visual work stay in tools.
+
 ## 0.12.3 — Integration groundwork and project structure, 2026-10-29
 
 - Grouped public headers, sources, tests, examples, programs, tools and documentation

@@ -14,6 +14,7 @@ import shutil
 import subprocess
 import tempfile
 import threading
+import zipfile
 
 from create_viewer import (
     ROOT,
@@ -26,16 +27,24 @@ from create_viewer import (
     reject_constant,
 )
 
-MAX_REQUEST_BYTES = 2 * 1024 * 1024
+MAX_REQUEST_BYTES = 12 * 1024 * 1024
 MAX_SOURCE_BYTES = 1024 * 1024
+MAX_ASSET_BYTES = 1024 * 1024
+MAX_ASSETS = 4
 MAX_DIAGNOSTIC_BYTES = 16384
 RESULT_LIMIT = 3
 EXAMPLES = {
-    "ur5e": ("UR5e · PTP / LIN / Vollkreis / WAIT", TOOL_DIR / "demo/ur5e_visual_demo.yaml"),
-    "abb_irb120": ("ABB IRB120 · Unterprogramm", ROOT / "programs/examples/abb_irb120_demo.yaml"),
+    "ur5e": ("UR5e · PTP / LIN / Vollkreis / WAIT", TOOL_DIR / "demo/ur5e_visual_demo.yaml", "ur5e"),
+    "ur5e_dxf": ("UR5e · DXF-Kontur abfahren", ROOT / "programs/examples/ur5e_dxf_demo.yaml", "ur5e"),
+    "abb_irb120": (
+        "ABB IRB120 · Unterprogramm",
+        ROOT / "programs/examples/abb_irb120_demo.yaml",
+        "abb_irb120",
+    ),
     "fanuc_lrmate200id": (
         "FANUC LR Mate · Unterprogramm",
         ROOT / "programs/examples/fanuc_lrmate200id_demo.yaml",
+        "fanuc_lrmate200id",
     ),
 }
 
@@ -48,8 +57,9 @@ class EditorError(Exception):
 
 
 def validate_request(value):
-    if not isinstance(value, dict) or set(value) != {"source", "filename", "cycle_ms"}:
-        raise EditorError(400, "Erwartet werden source, filename und cycle_ms.")
+    required = {"source", "filename", "cycle_ms"}
+    if not isinstance(value, dict) or not required.issubset(value) or set(value) - required - {"assets"}:
+        raise EditorError(400, "Erwartet werden source, filename, cycle_ms und optional assets.")
     source, filename, cycle = value["source"], value["filename"], value["cycle_ms"]
     try:
         valid_source = (
@@ -68,7 +78,31 @@ def validate_request(value):
         )
     if type(cycle) is not int or not 1 <= cycle <= 20:
         raise EditorError(400, "Das Sollwertraster muss eine ganze Zahl von 1 bis 20 ms sein.")
-    return source, filename, cycle
+    assets = value.get("assets", [])
+    if not isinstance(assets, list) or len(assets) > MAX_ASSETS:
+        raise EditorError(400, "Höchstens vier DXF-Dateien pro Programm.")
+    names = set()
+    for asset in assets:
+        if not isinstance(asset, dict) or set(asset) != {"filename", "content"}:
+            raise EditorError(400, "DXF-Anhang benötigt filename und content.")
+        name, content = asset["filename"], asset["content"]
+        if not isinstance(name, str) or not re.fullmatch(r"[a-zA-Z0-9][a-zA-Z0-9_.-]{0,75}\.dxf", name, re.I):
+            raise EditorError(400, "DXF-Dateiname: maximal 80 Zeichen, ohne Verzeichnisse, Endung .dxf.")
+        if name.casefold() in names:
+            raise EditorError(400, "Doppelte DXF-Dateinamen sind nicht zulässig.")
+        names.add(name.casefold())
+        try:
+            valid = (
+                isinstance(content, str)
+                and content.strip()
+                and "\0" not in content
+                and len(content.encode("utf-8")) <= MAX_ASSET_BYTES
+            )
+        except UnicodeError:
+            valid = False
+        if not valid:
+            raise EditorError(400, "DXF-Anhänge müssen UTF-8-Text mit höchstens 1 MiB pro Datei sein.")
+    return source, filename, cycle, assets
 
 
 class SimulationService:
@@ -92,16 +126,25 @@ class SimulationService:
     def example(self, name):
         if name not in EXAMPLES:
             raise EditorError(404, "Unbekanntes Beispiel.")
-        label, path = EXAMPLES[name]
+        label, path, robot = EXAMPLES[name]
         source = path.read_text(encoding="utf-8")
         # Known checked-in examples use paths relative to their original folder.
         # Replace only that exact line; preserve all program lines and comments.
         profile_line = next(line for line in source.splitlines() if line.startswith("robot_profile:"))
-        source = source.replace(profile_line, f"robot_profile: models/{name}/profile.yaml", 1)
-        return {"label": label, "filename": name + "_programm.yaml", "source": source}
+        source = source.replace(profile_line, f"robot_profile: models/{robot}/profile.yaml", 1)
+        assets = []
+        if name == "ur5e_dxf":
+            source = source.replace("file: ../dxf/rounded_path.dxf", "file: rounded_path.dxf", 1)
+            assets = [
+                {
+                    "filename": "rounded_path.dxf",
+                    "content": (ROOT / "programs/dxf/rounded_path.dxf").read_text(encoding="utf-8"),
+                }
+            ]
+        return {"label": label, "filename": name + "_programm.yaml", "source": source, "assets": assets}
 
     def simulate(self, request):
-        source, filename, cycle = validate_request(request)
+        source, filename, cycle, assets = validate_request(request)
         if not self._simulation_lock.acquire(blocking=False):
             raise EditorError(409, "Eine Simulation läuft bereits. Bitte deren Abschluss abwarten.")
         run = None
@@ -112,6 +155,8 @@ class SimulationService:
             run.mkdir()
             program = run / filename
             program.write_bytes(source.encode("utf-8"))
+            for asset in assets:
+                (run / asset["filename"]).write_bytes(asset["content"].encode("utf-8"))
             exported = run / "scene.json"
             with tempfile.TemporaryFile() as diagnostics:
                 try:
@@ -154,6 +199,10 @@ class SimulationService:
                     "Die vollständige Simulationsspur verletzt Profilgrenzen; keine neue Ansicht freigegeben.",
                 )
             atomic_write(run / "viewer.html", render_html(data))
+            with zipfile.ZipFile(run / "program.zip", "w", compression=zipfile.ZIP_DEFLATED) as bundle:
+                bundle.write(program, filename)
+                for asset in assets:
+                    bundle.write(run / asset["filename"], asset["filename"])
             exported.unlink()  # Keep just the source snapshot and the finished viewer.
             summary = {
                 "id": result_id,
@@ -168,6 +217,8 @@ class SimulationService:
                 "preview_url": f"/results/{result_id}/viewer.html",
                 "html_url": f"/downloads/{result_id}/viewer.html",
                 "source_url": f"/downloads/{result_id}/program.yaml",
+                "bundle_url": f"/downloads/{result_id}/program.zip",
+                "dxf_files": len(assets),
             }
             with self._results_lock:
                 self._results[result_id] = (run, filename)
@@ -187,7 +238,7 @@ class SimulationService:
                 shutil.rmtree(run, ignore_errors=True)
             self._simulation_lock.release()
 
-    def result_file(self, result_id, source=False):
+    def result_file(self, result_id, source=False, bundle=False):
         with self._results_lock:
             if result_id not in self._results:
                 raise EditorError(
@@ -195,7 +246,9 @@ class SimulationService:
                     "Simulation nicht vorhanden oder abgelaufen. Erneut simulieren; die letzten drei gültigen Stände bleiben verfügbar.",
                 )
             run, filename = self._results[result_id]
-            return (run / (filename if source else "viewer.html")).read_bytes(), filename
+            return (
+                run / ("program.zip" if bundle else filename if source else "viewer.html")
+            ).read_bytes(), filename
 
 
 class EditorServer(ThreadingHTTPServer):
@@ -211,7 +264,7 @@ class EditorServer(ThreadingHTTPServer):
 
 
 class EditorHandler(BaseHTTPRequestHandler):
-    server_version = "MotionEditor/0.3.0"
+    server_version = "MotionEditor/0.4.0"
 
     def setup(self):
         super().setup()
@@ -265,6 +318,8 @@ class EditorHandler(BaseHTTPRequestHandler):
                     {
                         "token": self.server.token,
                         "max_source_bytes": MAX_SOURCE_BYTES,
+                        "max_asset_bytes": MAX_ASSET_BYTES,
+                        "max_assets": MAX_ASSETS,
                         "timeout_s": self.server.service.timeout_s,
                         "result_limit": RESULT_LIMIT,
                         "examples": [{"id": key, "label": value[0]} for key, value in EXAMPLES.items()],
@@ -272,19 +327,30 @@ class EditorHandler(BaseHTTPRequestHandler):
                 )
             if path.startswith("/api/examples/"):
                 return self.respond(200, self.server.service.example(path.rsplit("/", 1)[1]))
-            match = re.fullmatch(r"/(results|downloads)/([a-f0-9]{32})/(viewer\.html|program\.yaml)", path)
+            match = re.fullmatch(
+                r"/(results|downloads)/([a-f0-9]{32})/(viewer\.html|program\.yaml|program\.zip)", path
+            )
             if match:
                 kind, result_id, name = match.groups()
                 source = name == "program.yaml"
-                if kind == "results" and source:
+                bundle = name == "program.zip"
+                if kind == "results" and (source or bundle):
                     raise EditorError(404, "Unbekannte Ansicht.")
-                raw, filename = self.server.service.result_file(result_id, source)
+                raw, filename = self.server.service.result_file(result_id, source, bundle)
                 return self.respond(
                     200,
                     raw,
-                    "text/yaml; charset=utf-8" if source else "text/html; charset=utf-8",
                     (
-                        (filename if source else Path(filename).stem + "_simulation.html")
+                        "application/zip"
+                        if bundle
+                        else "text/yaml; charset=utf-8" if source else "text/html; charset=utf-8"
+                    ),
+                    (
+                        (
+                            Path(filename).stem + "_programm.zip"
+                            if bundle
+                            else filename if source else Path(filename).stem + "_simulation.html"
+                        )
                         if kind == "downloads"
                         else None
                     ),
@@ -312,7 +378,7 @@ class EditorHandler(BaseHTTPRequestHandler):
                 or not length.isdigit()
                 or not 0 < int(length) <= MAX_REQUEST_BYTES
             ):
-                raise EditorError(413, "Ungültige Anfragegröße; maximal 2 MiB.")
+                raise EditorError(413, "Ungültige Anfragegröße; maximal 12 MiB.")
             raw = self.rfile.read(int(length))
             if len(raw) != int(length):
                 raise EditorError(400, "Unvollständige Anfrage.")

@@ -69,6 +69,7 @@ in den zyklischen Thread.
 | `planning/online_joint_generator.hpp` | `IOnlineJointGenerator`, `RestOnlyOnlineGenerator` | Allgemeiner Generatorvertrag; `step()` ist kein Dispatcher |
 | `planning/ruckig_joint_generator.hpp` | `OnlineJointPlanner` | Optionaler geprüfter Ruckig-Generator; außerhalb RT |
 | `io/robot_model_import.hpp` | `ImportedSerialRobot`, `load_serial_robot_files()` | URDF/SI-YAML; Datei- und Parserarbeit außerhalb RT |
+| `io/dxf_path_import.hpp` | `DxfDrawing`, `DxfImportOptions`, `parse_dxf_path()`, `load_dxf_path_file()` | Begrenzter Text-DXF-Geometrieimport; ausschließlich Vorbereitung |
 | `program/robot_program.hpp` | `RobotProgramSource`, `RobotProgram`, `PreparedRobotProgram` | Strikter Programmimport, Gesamtplanung und Simulation |
 | `program/joint_program.hpp` | `IJointProgram` | Segmentierte unveränderliche Referenz; Sampling außerhalb RT |
 | `execution/execution_types.hpp` | `ExecutionStatus`, `ExecutionFault`, `ExecutionTimingPolicy` | Werttypen und Timingvertrag |

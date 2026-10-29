@@ -7,15 +7,59 @@
     lastResult = null,
     lastSubmission = null,
     errorSubmission = null,
-    draftTimer;
+    draftTimer,
+    assets = [];
   const snapshot = () => ({
     source: $("source").value,
     filename: $("filename").value,
     cycle_ms: Number($("cycle-ms").value),
+    assets: assets.map((asset) => ({ ...asset })),
   });
   const same = (a, b) =>
-    a && b && a.source === b.source && a.filename === b.filename && a.cycle_ms === b.cycle_ms;
+    a &&
+    b &&
+    a.source === b.source &&
+    a.filename === b.filename &&
+    a.cycle_ms === b.cycle_ms &&
+    (a.assets || []).length === (b.assets || []).length &&
+    (a.assets || []).every(
+      (asset, index) =>
+        asset.filename === b.assets[index].filename && asset.content === b.assets[index].content,
+    );
   const localFilename = (value) => /^[a-zA-Z0-9][a-zA-Z0-9_.-]{0,74}\.ya?ml$/.test(value);
+  const dxfFilename = (value) => /^[a-zA-Z0-9][a-zA-Z0-9_.-]{0,75}\.dxf$/i.test(value);
+  function validAssets(values) {
+    return (
+      Array.isArray(values) &&
+      values.length <= config.max_assets &&
+      values.every(
+        (asset) =>
+          asset &&
+          typeof asset.filename === "string" &&
+          dxfFilename(asset.filename) &&
+          typeof asset.content === "string" &&
+          asset.content.trim() &&
+          !asset.content.includes("\0") &&
+          new TextEncoder().encode(asset.content).length <= config.max_asset_bytes,
+      ) &&
+      new Set(values.map((asset) => asset.filename.toLowerCase())).size === values.length
+    );
+  }
+  function renderAssets() {
+    const previous = $("dxf-file").value;
+    $("dxf-file").replaceChildren();
+    for (const asset of assets) {
+      const option = document.createElement("option");
+      option.value = option.textContent = asset.filename;
+      $("dxf-file").appendChild(option);
+    }
+    if (assets.some((asset) => asset.filename === previous)) $("dxf-file").value = previous;
+    $("insert-dxf").disabled = $("remove-dxf").disabled = assets.length === 0;
+    $("dxf-note").textContent = assets.length
+      ? assets.length + " DXF-Datei(en) geladen. Einfügen ergänzt einen Befehl; Simulieren plant die Bahn."
+      : "Eine Text-DXF laden oder das DXF-Beispiel wählen. Der Befehl wird am Ende des steps-Blocks ergänzt.";
+    document.body.dataset.dxfFiles = String(assets.length);
+  }
 
   async function request(url, options) {
     const response = await fetch(url, { cache: "no-store", ...options });
@@ -54,7 +98,7 @@
       localStorage.setItem(storageKey, JSON.stringify(snapshot()));
       $("draft-note").textContent = "Entwurf im Browser gespeichert";
     } catch (_) {
-      $("draft-note").textContent = "Entwurf bitte als YAML speichern";
+      $("draft-note").textContent = "Entwurf bitte sichern; DXF-Dateien zusätzlich aufbewahren";
     }
   }
   function changed() {
@@ -69,6 +113,8 @@
           : "Programm bereit – mit Simulieren vollständig prüfen und ausführen.";
   }
   function setDraft(draft) {
+    assets = (draft.assets || []).map((asset) => ({ ...asset }));
+    renderAssets();
     $("source").value = draft.source;
     $("filename").value = draft.filename;
     $("cycle-ms").value = String(draft.cycle_ms ?? 10);
@@ -157,11 +203,13 @@
       for (const [id, url] of [
         ["download-html", result.html_url],
         ["download-snapshot", result.source_url],
+        ["download-bundle", result.bundle_url],
       ]) {
         $(id).href = url;
         $(id).hidden = false;
         $(id).setAttribute("download", "");
       }
+      $("download-bundle").hidden = !result.dxf_files;
       $("run-status").textContent = same(snapshot(), submitted)
         ? "Simulation erfolgreich. Im Viewer Abspielen drücken."
         : "Simulation erfolgreich. Der Entwurf wurde währenddessen geändert – für diesen Stand erneut simulieren.";
@@ -198,6 +246,75 @@
     }
   });
   $("simulate").addEventListener("click", simulate);
+  $("open-dxf").addEventListener("click", () => $("dxf-import").click());
+  $("dxf-import").addEventListener("change", async () => {
+    try {
+      if (!config) throw Error("Editor wird noch geladen.");
+      const next = assets.map((asset) => ({ ...asset }));
+      for (const file of $("dxf-import").files) {
+        if (!dxfFilename(file.name) || file.size > config.max_asset_bytes)
+          throw Error("DXF-Dateien: einfacher Dateiname ohne Pfad, UTF-8-Text, maximal 1 MiB pro Datei.");
+        const content = new TextDecoder("utf-8", { fatal: true }).decode(await file.arrayBuffer());
+        const asset = { filename: file.name, content };
+        const previous = next.findIndex((item) => item.filename === file.name);
+        if (previous >= 0) next[previous] = asset;
+        else next.push(asset);
+      }
+      if (!validAssets(next))
+        throw Error("Maximal vier eindeutige DXF-Dateien mit Textinhalt laden (keine binäre DXF).");
+      assets = next;
+      renderAssets();
+      changed();
+    } catch (error) {
+      showError(error);
+    } finally {
+      $("dxf-import").value = "";
+    }
+  });
+  $("remove-dxf").addEventListener("click", () => {
+    assets = assets.filter((asset) => asset.filename !== $("dxf-file").value);
+    renderAssets();
+    changed();
+  });
+  $("insert-dxf").addEventListener("click", () => {
+    try {
+      const source = $("source").value,
+        lines = source.split("\n");
+      const start = lines.findIndex((line) => /^steps:\s*(?:#.*)?$/.test(line));
+      if (start < 0 || !$("dxf-file").value)
+        throw Error("Zum Einfügen muss steps: auf einer eigenen Zeile stehen und eine DXF geladen sein.");
+      let end = start + 1;
+      while (end < lines.length && !/^[^\s#-][^:]*:/.test(lines[end])) end++;
+      const item = lines.slice(start + 1, end).find((line) => /^\s*-/.test(line));
+      const indent = item ? item.match(/^\s*/)[0] : "  ";
+      const detail = indent + "  ";
+      const command = [
+        indent + "- type: DXF",
+        detail + "file: " + JSON.stringify($("dxf-file").value),
+        detail + "units: " + $("dxf-units").value,
+        detail + "reference: " + $("dxf-reference").value,
+        detail + "travel: " + $("dxf-travel").value,
+        detail + "speed: 0.5",
+      ];
+      if ($("dxf-layer").value.trim())
+        command.push(detail + "layer: " + JSON.stringify($("dxf-layer").value.trim()));
+      if ($("dxf-reference").value === "world")
+        command.push(detail + "placement: {position: [0,0,0], orientation: [1,0,0,0]}");
+      const before = lines.slice(0, end).join("\n");
+      const offset = before.length + (before.endsWith("\n") ? 0 : 1);
+      $("source").value =
+        before +
+        (before.endsWith("\n") ? "" : "\n") +
+        command.join("\n") +
+        "\n" +
+        lines.slice(end).join("\n");
+      $("source").focus();
+      $("source").setSelectionRange(offset, offset);
+      changed();
+    } catch (error) {
+      showError(error);
+    }
+  });
   $("save").addEventListener("click", () => {
     const draft = snapshot();
     if (!localFilename(draft.filename)) {
@@ -223,7 +340,7 @@
         throw Error("Programmdatei ist zu groß (maximal 1 MiB).");
       if (!localFilename(file.name)) throw Error("Bitte eine YAML-Datei mit einfachem Dateinamen wählen.");
       const source = new TextDecoder("utf-8", { fatal: true }).decode(await file.arrayBuffer());
-      setDraft({ source, filename: file.name, cycle_ms: Number($("cycle-ms").value) });
+      setDraft({ source, filename: file.name, cycle_ms: Number($("cycle-ms").value), assets });
     } catch (error) {
       showError(error);
     } finally {
@@ -259,7 +376,8 @@
           !localFilename(draft.filename) ||
           !Number.isInteger(draft.cycle_ms) ||
           draft.cycle_ms < 1 ||
-          draft.cycle_ms > 20
+          draft.cycle_ms > 20 ||
+          !validAssets(draft.assets || [])
         )
           draft = null;
       } catch (_) {

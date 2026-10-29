@@ -1,4 +1,4 @@
-# Robot Motion C++ — 0.12.3
+# Robot Motion C++ — 0.13.0
 
 C++20-Bibliothek für Roboterkinematik, Bewegungsplanung, Anwenderprogramme und
 zeitlich geprüfte Sollwertausgabe. Der Quellcode ist nach Aufgaben gegliedert;
@@ -35,6 +35,17 @@ Weitere vollständige Beispiele:
 `programs/examples/abb_irb120_demo.yaml` und `programs/examples/fanuc_lrmate200id_demo.yaml`.
 Kopiere eine passende Beispieldatei und passe Punkte und Schritte an.
 Der Simulator verbindet sich mit keiner Hardware.
+
+Neu: **DXF als Programmbefehl**. `programs/examples/ur5e_dxf_demo.yaml` fährt
+eine CAD-Kontur über die vorhandene LIN-/CIRC-Planung ab. Text-DXF mit Punkten,
+Linien, Polylinien und Kreisen/Bögen; Einheiten, Layer und starre Platzierung
+sind einstellbar. [DXF-Anleitung](docs/formats/dxf_program_command.md).
+Der separate [Programmeditor](tools/motion_viewer/EDITOR.md) kann DXF-Dateien
+öffnen, den Befehl einfügen und das Ergebnis mit dem vollständigen UR5e darstellen:
+
+```sh
+python3 tools/motion_viewer/run_editor.py --open
+```
 
 Der Vertragstest für eine spätere Eigensteuerung verwendet eine ideale virtuelle
 Uhr und simulierte Achsen:

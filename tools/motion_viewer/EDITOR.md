@@ -1,5 +1,34 @@
 # Lokaler Programmeditor und Simulation
 
+## DXF-Dateien und ein Bahnbefehl (0.4.0)
+
+**DXF öffnen** lädt bis zu vier Text-DXF-Dateien mit je maximal 1 MiB.
+Einheit, Layer, TCP-/Weltbezug und Verbindungsfahrten einstellen und
+**DXF-Befehl einfügen** drücken. Der Helfer ergänzt das Ende eines mehrzeiligen
+`steps:`-Blocks, auch vor späteren `points:`-/`subprograms:`-Feldern. Bei einer
+einzeiligen Flow-Liste den Befehl manuell eintragen oder zuerst auf einen
+mehrzeiligen Block umstellen.
+
+Das Beispiel **„UR5e · DXF-Kontur abfahren“** enthält Zeichnung und fertigen
+Befehl. **Simulieren** liest die Geometrie nativ ein und plant sie mit den
+bestehenden LIN-/CIRC-/PTP-Planern. **Bahn fokussieren** vergrößert die Kontur.
+Die Anzeige nennt auch CAD-Datei, Entity, DXF-Zeile und Layer.
+
+Im Editor muss `file` ein geladener **Dateiname ohne Verzeichnisse** sein.
+Beim Öffnen vorhandener CLI-Programme also beispielsweise
+`file: ../dxf/rounded_path.dxf` auf `file: rounded_path.dxf` anpassen und die Datei
+zusätzlich laden. Beim YAML-Import bleiben bereits geladene DXF-Dateien erhalten.
+Eine Beispielvorlage ersetzt dagegen bewusst den kompletten Entwurf samt Anhängen.
+
+**Programm + DXF als ZIP speichern** sichert den exakt simulierten Stand samt
+Anhängen. Ein reiner YAML-Download enthält die DXF-Dateien nicht. Die lokale
+Entwurfsspeicherung berücksichtigt auch DXF-Inhalte; bei einem vollen Browserspeicher
+bleiben Originaldateien/ZIP die Sicherung. Wird eine DXF ersetzt oder entfernt,
+ist die alte Simulation nicht mehr als aktueller Stand markiert.
+
+Unterstützte Entities, Einheiten, Genauigkeit und Anschlussverhalten:
+[DXF-Befehlsvertrag](../../docs/formats/dxf_program_command.md).
+
 Der Editor liegt vollständig unter `tools/motion_viewer/`. Er nutzt den
 vorhandenen C++-Programmimport, Planer und virtuellen Dispatcher. Es gibt keinen
 zweiten Bewegungsplaner im JavaScript und keine Verbindung zu Achsen oder CANopen.
@@ -178,7 +207,7 @@ classDiagram
 
 Die interne HTTP-Schnittstelle liefert Konfiguration und Vorlagen über
 `GET /api/config` beziehungsweise `GET /api/examples/<id>`.
-`POST /api/simulate` erwartet `{source, filename, cycle_ms}` und den Header
+`POST /api/simulate` erwartet `{source, filename, cycle_ms, assets?}` und den Header
 `X-Motion-Token` aus der lokalen Konfiguration. Eine erfolgreiche Antwort enthält
 Zusammenfassung, Vorschau-URL und Download-URLs; Fehler liefern
 `{error: {message, line?, column?, step?, block?, filename?}}`.
@@ -186,7 +215,12 @@ Diese Werkzeug-API ist kein Steuerungs- oder Feldbusprotokoll.
 
 ### Grenzen des lokalen Dienstes
 
-Maximal 1 MiB Programmtext / 2 MiB JSON-Anfrage, 99.999 Ticks / 100.000 Samples,
+`assets` ist eine Liste `{filename, content}` mit UTF-8-DXF-Text. YAML und
+Anhänge werden zusammen eingefroren; die Ergebnisantwort liefert zusätzlich
+`bundle_url` für das passende ZIP.
+
+Maximal 1 MiB Programmtext / vier DXF-Dateien mit je 1 MiB / 12 MiB JSON-Anfrage,
+99.999 Ticks / 100.000 Samples,
 64 MiB CSV, 128 MiB beim JSON-Einlesen und standardmäßig 4.000 angezeigte Samples.
 Das native Zeitbudget beträgt 120 s; `--timeout-s 30` ändert es (1–600 s).
 Der Exporter ist ein fest vorgegebenes Executable ohne Shell-Aufruf; Programmtext

@@ -1,7 +1,9 @@
 #pragma once
 #include "motion/execution/cycle_aligned_program.hpp"
+#include "motion/io/dxf_path_import.hpp"
 #include "motion/io/robot_model_import.hpp"
 #include "motion/planning/path_time_parameterization.hpp"
+#include <functional>
 #include <iosfwd>
 #include <variant>
 namespace motion {
@@ -20,15 +22,27 @@ private:
   std::string detail_;
 };
 using ProgramPoint = std::variant<Vector, Pose>;
-enum class ProgramOperation { Ptp, Line, Circle, Wait };
+enum class ProgramOperation { Ptp, Line, Circle, Wait, Dxf };
+enum class DxfTravel { Reject, Line, Ptp };
+struct DxfProgramCommand {
+  std::string file;
+  DxfImportOptions import;
+  bool relative_to_tcp{true};
+  Pose placement;
+  DxfTravel travel{DxfTravel::Reject};
+};
 struct ProgramInstruction {
   ProgramOperation operation{};
   ProgramPoint target{Vector{}};
   bool relative_center{};
   PathVector3 center{}, normal{};
   double sweep_rad{}, seconds{}, speed{1};
+  double path_tolerance_m{.0002};
   std::optional<std::array<double, 4>> orientation;
   ProgramLocation location;
+  std::optional<DxfProgramCommand> dxf;
+  std::optional<DxfLocation> drawing_location;
+  std::optional<PathVector3> drawing_start; // Nominal CAD start; preparation checks start/end within 1 um.
 };
 class RobotProgramSource {
 public:
@@ -59,6 +73,11 @@ struct PreparedRobotProgram {
   std::shared_ptr<const CycleAlignedProgram> schedule;
 };
 PreparedRobotProgram compile_robot_program(const RobotProgramSource &, ImportedSerialRobot);
+// Optional asset loader snapshots external DXF text during preparation. No IO
+// happens when the finished program is sampled or executed.
+using ProgramAssetLoader = std::function<std::string(const std::string &)>;
+PreparedRobotProgram compile_robot_program(const RobotProgramSource &, ImportedSerialRobot,
+                                           const ProgramAssetLoader &);
 PreparedRobotProgram load_robot_program(const std::string &);
 class RobotProgram final : public IJointProgram {
 public:
@@ -76,6 +95,8 @@ public:
 
 private:
   friend PreparedRobotProgram compile_robot_program(const RobotProgramSource &, ImportedSerialRobot);
+  friend PreparedRobotProgram compile_robot_program(const RobotProgramSource &, ImportedSerialRobot,
+                                                    const ProgramAssetLoader &);
   explicit RobotProgram(ImportedSerialRobot robot) : robot_(std::move(robot)) {}
   ImportedSerialRobot robot_;
   JointState initial_;

@@ -132,6 +132,15 @@ def prepare_data(exported, max_frames=4000, visuals="auto"):
         require(finite_number(segment["speed"]) and 0.001 <= segment["speed"] <= 1, "Invalid speed factor")
         for key in ("source_file", "source_block"):
             require(isinstance(segment[key], str) and len(segment[key]) <= 8192, "Invalid source label")
+        if "source_command" in segment:
+            require(segment["source_command"] == "DXF", "Unsupported source command")
+            for key in ("dxf_file", "dxf_layer", "dxf_type"):
+                require(
+                    isinstance(segment.get(key), str) and len(segment[key]) <= 4096,
+                    "Invalid DXF source label",
+                )
+            for key in ("dxf_entity", "dxf_line"):
+                require(type(segment.get(key)) is int and segment[key] > 0, "Invalid DXF source location")
         previous_end = segment["end_s"]
     require(previous_end == program["duration_s"], "Segment duration mismatch")
     trace = exported["trace_csv"]

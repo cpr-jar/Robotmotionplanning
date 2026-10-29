@@ -4,6 +4,10 @@ Programmformat v1 aus dem Gespräch, neu implementiert und geprüft. Der Import
 benötigt den Standard-Build mit `MOTION_WITH_SERIAL=ON`, keinen Ruckig- oder
 CANopen-Anschluss.
 
+Ab 0.13.0 kann ein einzelner **`DXF`-Befehl** zusätzlich eine externe Zeichnung
+einlesen und mit der vorhandenen Bewegungsplanung abfahren. Beispiele, Einheiten,
+Platzierung und Grenzen stehen unter [DXF als Programmbefehl](dxf_program_command.md).
+
 ## Vollständiges kleines Beispiel
 
 Speichere diese Datei unter `programs/mein_programm.yaml`:

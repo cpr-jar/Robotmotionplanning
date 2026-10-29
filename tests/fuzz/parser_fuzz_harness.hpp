@@ -38,6 +38,11 @@ inline bool fuzz_parse(std::string_view bytes) {
         require_parser_invariant(
             std::any_of(step.normal.begin(), step.normal.end(), [](double x) { return x != 0; }));
       }
+      if (step.operation == ProgramOperation::Dxf) {
+        require_parser_invariant(step.dxf && !step.dxf->file.empty());
+        require_parser_invariant(kinematic_detail::finite_pose(step.dxf->placement));
+        require_parser_invariant(step.path_tolerance_m >= 1e-6 && step.path_tolerance_m <= .001);
+      }
     }
     return true;
   } catch (const RobotProgramError &e) {

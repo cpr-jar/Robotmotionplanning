@@ -159,6 +159,20 @@ textarea:focus-visible {
   height: 510px;
   background: #f8fbfd;
 }
+.dxf-panel {
+  background: #f5fafc;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  padding: 10px;
+  margin-bottom: 12px;
+  font-size: 12px;
+}
+#dxf-layer {
+  width: 100px;
+}
+#dxf-file {
+  max-width: 205px;
+}
 #line-numbers,
 #source {
   margin: 0;

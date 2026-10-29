@@ -10,7 +10,7 @@ Integrationsaufgaben ausdrücklich.
 | 1 | [Einsteiger-Tutorial mit Ablaufdiagrammen](tutorials/motion_planning_basics.md) | Vom Bewegungsauftrag zur Sollwertausgabe; FK/IK, PTP/LIN/CIRC, Grenzen und ein Zahlenbeispiel |
 | 2 | [Integrationshandbuch](integration/controller_integration.md) | Verantwortlichkeiten, Build, Vorbereitung, zyklische Übergabe, Lebensdauer, Timing und Fehler |
 | 3 | [Daten- und Schnittstellenvertrag](integration/interface_contracts.md) | Einheiten, Achsreihenfolge, Zustände, Rückgabewerte, Uhrdomänen und Threadzuordnung |
-| 4 | [Architektur und Klassendiagramme](architecture/class_diagrams.md) | Sieben UML-Sichten als SVG; Vererbung, Besitz und geliehene Referenzen |
+| 4 | [Architektur und Klassendiagramme](architecture/class_diagrams.md) | Acht UML-Sichten als SVG; Vererbung, Besitz und geliehene Referenzen |
 | 5 | [Laufzeitabläufe](architecture/runtime_flows.md) | Sequenzen, Zustandstabelle und Live-Handshake |
 | 6 | [Ordner- und Modulkatalog](architecture/module_catalog.md) | Zuständigkeit jedes Moduls und relevante Dateien |
 | 7 | [Benennungsregeln](development/naming_and_migration.md) | Dateinamen, Variablennamen, mathematische Notation und Altpfad-Migration |
@@ -18,6 +18,11 @@ Integrationsaufgaben ausdrücklich.
 | 9 | [Modellformat](formats/robot_model_yaml.md) / [Programmformat](formats/robot_program_yaml.md) | URDF/SI-Profil, Modellreferenzen, PTP/LIN/CIRC, WAIT/CALL und Quellorte |
 | 10 | [Prüfbericht](testing/validation.md) / [Robustheitstests](testing/robustness.md) | Tatsächlich ausgeführte Prüfungen und reproduzierbare Seeds |
 | 11 | [Roadmap](planning/roadmap.md) | Noch offene Funktionspakete und Hardwaregrenzen |
+
+Neu ab 0.13.0: [DXF als Programmbefehl](formats/dxf_program_command.md),
+einschließlich Layern, Einheiten, Platzierung, Genauigkeit, Ablauf und Klassensicht.
+Der [separate Editor](../tools/motion_viewer/EDITOR.md) kann DXF-Dateien öffnen
+und zusammen mit dem Programm simulieren. Es gibt jetzt acht UML-Sichten.
 
 Die Diagramme sind eingecheckt. Zum Lesen wird weder Python noch Graphviz
 benötigt; die SVG-Dateien lassen sich im Browser öffnen. Für eine zusammenhängende
