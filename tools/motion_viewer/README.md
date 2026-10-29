@@ -1,4 +1,4 @@
-# Motion Viewer · separates Werkzeug 0.2.0
+# Motion Viewer · separates Werkzeug 0.3.0
 
 Ein **Offline-Viewer für die vorhandenen Bewegungsprogramme**, vollständig unter
 `tools/motion_viewer/`. Bibliothek, Steuerungsschnittstellen und deren Build-
@@ -7,7 +7,7 @@ benutzt ausschließlich die öffentlichen Bibliotheksschnittstellen.
 
 ## Sofort ansehen – ohne Build
 
-1. [Projekt mit vollständigem UR5e-Viewer herunterladen](https://github.com/cpr-jar/Robotmotionplanning/archive/refs/tags/motion-viewer-v0.2.0.zip) und entpacken.
+1. [Projekt mit Viewer und Programmeditor herunterladen](https://github.com/cpr-jar/Robotmotionplanning/archive/refs/tags/motion-viewer-v0.3.0.zip) und entpacken.
 2. **`tools/motion_viewer/demo/ur5e_motion.html`** im Browser öffnen.
 3. **Abspielen** drücken. Mit dem Zeitregler oder den Programmschritten gezielt
    zu einer Stelle springen; die 3D-Ansicht mit der Maus drehen und zoomen.
@@ -29,6 +29,34 @@ mit einer verständlichen Meldung bedienbar. Es werden keine Modelle nachgeladen
 Die Demo zeigt größere PTP-Bewegungen, LIN, einen **vollständigen CIRC-Kreis**,
 WAIT und die Rückkehr zum Start. Sie dauert ungefähr 30 s bei 10 ms Raster.
 Ihre Grenzen sind die nominalen Beispielgrenzen des UR5e-Referenzmodells.
+
+## Programme bearbeiten und direkt simulieren
+
+Aus dem Projekt-Hauptordner:
+
+```sh
+python3 tools/motion_viewer/run_editor.py --open
+```
+
+Der Befehl baut den separaten C++-Exporter und startet den lokalen Editor unter
+**http://127.0.0.1:8765/**. Im Editor YAML bearbeiten oder öffnen, ein Sollwertraster
+zwischen **1 und 20 ms** wählen und **Simulieren** drücken. Nach erfolgreicher
+Planung erscheint der vorhandene Bewegungsviewer mit dem vollständigen UR5e-Modell.
+Mit **Abspielen** lässt sich die freigegebene Simulation ansehen. Vorlagen für
+ABB und FANUC sind ebenfalls vorhanden; ihre Ansicht verwendet die Kinematik.
+
+![Programmeditor mit echter simulierter UR5e-Bewegung](demo/editor_preview.png)
+
+Fehler erscheinen mit Zeile und gegebenenfalls Schritt. Die letzte gültige
+Simulation bleibt sichtbar. Der Editor kennzeichnet Änderungen seit dem
+simulierten Stand, auch wenn sie während einer laufenden Planung erfolgen.
+YAML-Entwürfe, das exakt simulierte YAML und fertige Offline-HTML können separat
+gespeichert werden. Die [Editoranleitung](EDITOR.md) erklärt Importpfade,
+Startoptionen, Datenhaltung und den Ablauf.
+
+**Zum erneuten Planen muss der lokale Dienst laufen.** Die einzeln gespeicherte
+Viewer-HTML kann weiterhin ohne Dienst geöffnet und abgespielt werden. Ein Browser
+allein führt die native C++-Planung nicht aus. Die Steuerung wird nicht angesprochen.
 
 ## Was sichtbar wird
 
@@ -179,10 +207,13 @@ Stands 0.12.3 umfasst in der Vollkonfiguration 27 CTests.
 ctest --test-dir build-motion-viewer --output-on-failure
 ```
 
-Ein CTest führt 17 Python-Tests aus: Vollständigkeit und Grenzen, Raster
+Ein CTest führt 27 Python-Tests aus: Vollständigkeit und Grenzen, Raster
 1/20 ms, Ausdünnung mit erhaltenen Übergängen, Parser-/Metadatenfehler,
 transaktionale Ausgaben, sichere Einbettung von Texten, Geometrieintegrität,
-Modellzuordnung, Einheiten, Transformationen und Lizenzen. Falls Node installiert
+Modellzuordnung, Einheiten, Transformationen und Lizenzen sowie native
+Editorsimulationen, Fehlerorte, Modellpfade, Zeitbudget, Ergebnisaufbewahrung
+und die lokale HTTP-Schnittstelle. Die HTTP-Tests benötigen lokale Loopback-Sockets,
+keine Internetverbindung. Falls Node installiert
 ist, wird außerdem die Renderer-FK gegen die native Ausgabe von drei Robotern
 und einer gemischten Kette verglichen. Node ist nur für diesen Entwicklercheck
 optional; der Viewer selbst braucht es nicht.
@@ -203,12 +234,22 @@ gegen die eigene Matrixrechnung von Three.js, Modellwechsel, fehlendes WebGL,
 Grafikkontextverlust, Bedienung, Kamera und mobiles Layout. Die normale
 Benutzung benötigt diese Testabhängigkeiten nicht. Ergebnisse: [VALIDATION.md](VALIDATION.md).
 
+Der zusätzliche `tests/editor_browser_smoke.py` startet seinen eigenen temporären
+lokalen Dienst und prüft den vollständigen Ablauf mit echten nativen Simulationen:
+
+```sh
+python3 tools/motion_viewer/tests/editor_browser_smoke.py
+```
+
 ## Dateien und Zuständigkeiten
 
 ```text
 tools/motion_viewer/
 ├── CMakeLists.txt                  Eigenständiger Tool-Build
 ├── run_demo.py                     Ein Befehl für Build und Demo
+├── run_editor.py                   Ein Befehl für Build und lokalen Programmeditor
+├── tool_build.py                   Gemeinsamer, separater Exporter-Build
+├── editor_server.py                Lokale HTTP-API und begrenzte Simulationsaufträge
 ├── create_viewer.py                Validierung, Ausdünnung und atomare HTML-Ausgabe
 ├── visual_assets.py                Sichere Modellzuordnung und Lizenztexte
 ├── build_visual_assets.py          Optionale Regeneration aus offiziellen COLLADA-Dateien
@@ -220,6 +261,9 @@ tools/motion_viewer/
 │   ├── viewer.css                  Darstellung
 │   ├── viewer.js                   Wiedergabe, Bedienung und Diagramme
 │   ├── kinematics.js               Ausschließlich Renderer-FK, kein Motion-Solver
+│   ├── editor.html                 Getrennte Editoroberfläche
+│   ├── editor.css                  Layout des Editors
+│   ├── editor.js                   Text, Dateien, Aufträge und Programmstände
 │   └── mesh_renderer.js            WebGL-Geometrien, Materialien und Linktransformationen
 ├── tests/                          Daten-, FK- und optionale Browsertests
 └── demo/                           YAML, fertige Offline-HTML und Vorschau

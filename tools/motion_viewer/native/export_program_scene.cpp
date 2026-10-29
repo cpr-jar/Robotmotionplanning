@@ -1,6 +1,7 @@
 // Viewer-only exporter: use the admitted model and the existing virtual dispatcher.
 // No library implementation is duplicated and no hardware is contacted.
 #include "motion/program/robot_program.hpp"
+#include <algorithm>
 #include <charconv>
 #include <chrono>
 #include <filesystem>
@@ -185,14 +186,62 @@ void write_scene(const motion::PreparedRobotProgram &prepared, std::ostream &out
   if (!output)
     throw std::runtime_error("Cannot finish visualization export");
 }
+
+// Local editor programs resolve paths from the project root, never from a
+// temporary run folder. Only actual files below models/ may be imported.
+motion::PreparedRobotProgram prepare_editor_program(const std::filesystem::path &filename,
+                                                    const std::filesystem::path &workspace) {
+  const auto source = motion::load_robot_program_source(filename.string());
+  const auto root = std::filesystem::canonical(workspace);
+  const auto models = std::filesystem::canonical(root / "models");
+  const auto model_file = [&](const std::filesystem::path &relative) {
+    if (relative.is_absolute())
+      throw motion::RobotProgramError(
+          source.robot_location(),
+          "Editor model paths must be relative to the project root: models/<robot>/profile.yaml");
+    const auto file = std::filesystem::weakly_canonical(root / relative);
+    const auto prefix = std::mismatch(models.begin(), models.end(), file.begin(), file.end());
+    if (prefix.first != models.end() || !std::filesystem::is_regular_file(file))
+      throw motion::RobotProgramError(
+          source.robot_location(),
+          "Editor model file must exist inside models/; paths are relative to the project root");
+    return file;
+  };
+  const auto profile = model_file(source.robot_profile());
+  const auto urdf = source.robot_urdf().empty()
+                        ? model_file(std::filesystem::relative(profile.parent_path() / "robot.urdf", root))
+                        : model_file(source.robot_urdf());
+  auto robot = [&]() {
+    try {
+      return motion::load_serial_robot_files(urdf.string(), profile.string());
+    } catch (const std::exception &error) {
+      throw motion::RobotProgramError(source.robot_location(), error.what());
+    }
+  }();
+  return motion::compile_robot_program(source, std::move(robot));
+}
+
+void editor_diagnostic(const std::exception &error, const motion::ProgramLocation *location = nullptr) {
+  std::cerr << "{\"message\":";
+  text(std::cerr, error.what());
+  if (location) {
+    std::cerr << ",\"filename\":";
+    text(std::cerr, std::filesystem::path(location->file).filename().string());
+    std::cerr << ",\"line\":" << location->line << ",\"column\":" << location->column
+              << ",\"step\":" << location->step << ",\"block\":";
+    text(std::cerr, location->block);
+  }
+  std::cerr << "}\n";
+}
 } // namespace
 
 int main(int argc, char **argv) {
   std::filesystem::path temporary;
+  const bool editor_mode = argc == 7 && std::string_view(argv[5]) == "--workspace";
   try {
-    if (argc < 3 || argc > 5)
-      throw std::invalid_argument(
-          "Usage: motion_viewer_exporter PROGRAM.yaml OUTPUT.json [cycle_ms:1..20] [max_ticks:1..99999]");
+    if ((argc < 3 || argc > 5) && !editor_mode)
+      throw std::invalid_argument("Usage: motion_viewer_exporter PROGRAM.yaml OUTPUT.json [cycle_ms:1..20] "
+                                  "[max_ticks:1..99999] [--workspace PROJECT_ROOT]");
     const std::filesystem::path destination = argv[2];
     if (destination.extension() != ".json")
       throw std::invalid_argument("Output needs .json extension");
@@ -202,7 +251,8 @@ int main(int argc, char **argv) {
             std::filesystem::absolute(destination).lexically_normal() ||
         std::filesystem::equivalent(source, destination, equivalence_error))
       throw std::invalid_argument("Input and output must differ");
-    auto prepared = motion::load_robot_program(argv[1]);
+    auto prepared =
+        editor_mode ? prepare_editor_program(source, argv[6]) : motion::load_robot_program(argv[1]);
     const auto integer = [](const char *value, unsigned lower, unsigned upper) {
       const std::string_view input(value);
       unsigned result = 0;
@@ -218,7 +268,7 @@ int main(int argc, char **argv) {
         throw std::invalid_argument(aligned.diagnostic);
       prepared.schedule = aligned.program;
     }
-    const unsigned max_ticks = argc == 5 ? integer(argv[4], 1, 99999) : 99999;
+    const unsigned max_ticks = argc >= 5 ? integer(argv[4], 1, 99999) : 99999;
     BudgetedTraceBuffer trace_buffer;
     std::ostream trace_stream(&trace_buffer);
     motion::ProgramSimulationReport report;
@@ -248,7 +298,15 @@ int main(int argc, char **argv) {
       std::error_code ignored;
       std::filesystem::remove(temporary, ignored);
     }
-    std::cerr << error.what() << '\n';
+    if (editor_mode) {
+      const auto *program_error = dynamic_cast<const motion::RobotProgramError *>(&error);
+      if (program_error) {
+        const std::runtime_error detail(program_error->detail());
+        editor_diagnostic(detail, &program_error->location());
+      } else
+        editor_diagnostic(error);
+    } else
+      std::cerr << error.what() << '\n';
     return 1;
   }
 }

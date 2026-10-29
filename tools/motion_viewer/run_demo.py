@@ -2,10 +2,9 @@
 
 from pathlib import Path
 import argparse
-import os
-import subprocess
 import webbrowser
 from create_viewer import TOOL_DIR, ROOT, export_and_render
+from tool_build import build_exporter
 
 
 def main():
@@ -23,26 +22,10 @@ def main():
     options.output = options.output or options.build_dir / "motion.html"
     if options.output.suffix.lower() != ".html":
         parser.error("Output needs .html extension")
-    subprocess.run(
-        [options.cmake, "-S", str(TOOL_DIR), "-B", str(options.build_dir), "-DCMAKE_BUILD_TYPE=Release"],
-        check=True,
-    )
-    subprocess.run(
-        [
-            options.cmake,
-            "--build",
-            str(options.build_dir),
-            "--target",
-            "motion_viewer_exporter",
-            "--parallel",
-            "2",
-        ],
-        check=True,
-    )
-    suffix = ".exe" if os.name == "nt" else ""
+    exporter = build_exporter(options.build_dir, options.cmake)
     data = export_and_render(
         options.program,
-        options.build_dir / ("motion_viewer_exporter" + suffix),
+        exporter,
         options.output,
         options.cycle_ms,
         visuals=options.visuals,

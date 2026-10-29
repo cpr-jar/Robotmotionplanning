@@ -1,4 +1,4 @@
-# Werkzeugprüfung 0.2.0 · 29.10.2026
+# Werkzeugprüfung 0.3.0 · 29.10.2026
 
 Der gesamte neue Viewer liegt unter `tools/motion_viewer/`. Die Implementierung,
 öffentlichen Header und CMake-Konfiguration der Bewegungsbibliothek wurden für
@@ -7,8 +7,8 @@ Import-/Planungs-/Simulations-APIs, nicht durch eine zweite Bewegungsplanung.
 
 | Prüfung | Tatsächlich ausgeführt |
 | --- | --- |
-| Standalone-CMake, GCC 14.2, Release | Gebaut; 17 Werkzeugtests bestanden |
-| Standalone-CMake, Debug -O1 -g1, ASan/UBSan | Gebaut; dieselben 17 Werkzeugtests bestanden |
+| Standalone-CMake, GCC 14.2, Release | Gebaut; 27 Werkzeugtests bestanden |
+| Standalone-CMake, Debug -O1 -g1, ASan/UBSan | Gebaut; dieselben 27 Werkzeugtests bestanden |
 | Ein-Befehl-Einstieg `run_demo.py` | Build und fertige HTML erfolgreich erzeugt |
 | Sollwertraster | 1 und 20 ms mit Referenzprogramm; Visual-Demo mit 10 ms und zusätzlich 1 ms (30.018 Befehle, 3.762 angezeigte Samples) |
 | Visual-Demo | 3.007 ausgegebene Befehle, sechs Schritte, 30,06 s, vollständiger Kreis und terminale Ruhe |
@@ -30,6 +30,23 @@ Import-/Planungs-/Simulations-APIs, nicht durch eine zweite Bewegungsplanung.
 | Einzeldatei und Lizenzen | Keine externen Laufzeitanfragen; vollständige BSD-/MIT-Bedingungen und ursprüngliche Autorennennungen im HTML enthalten |
 | Kinematik ohne Mesh-Renderer | UR5e mit `--visuals none` und ABB im Auto-Modus im Browser bedienbar; Three.js nicht eingebettet, keine JavaScript-Fehler oder Netzwerkanfragen |
 | Reproduzierbare Assets | Erneute Konvertierung erzeugt `visuals.json`, `manifest.json` und `ur5e_visual.urdf` bytegleich; regulärer `run_demo.py`-Einstieg erzeugt dieselbe HTML-Datei wie die mitgelieferte Demo |
+| Editor-Startbefehl | `run_editor.py` mit Build gestartet, tatsächlich ausgegebenen Loopback-Port per HTTP abgefragt und mit Strg+C sauber beendet |
+| Editor: reale native Ausführung | Erfolgreiche Simulationen mit 1/20-ms-Raster, exakt erhaltene YAML-Schnappschüsse und unveränderliche HTML-Downloads geprüft |
+| Editor: native Fehler | Später ungültiger PTP liefert Datei, Zeile und Schritt; vorige gültige HTML bleibt bytegleich, fehlgeschlagene Läufe hinterlassen keine Teilresultate |
+| Editor: Importgrenzen | Fehlende/absolute/nach außen führende Modellpfade und Symlinks abgelehnt; Parser-Duplikate, ungültige Unicode-Eingaben, falsche Raster und Größenbudgets geprüft |
+| Editor: Auftragsgrenzen | Belegter Platz liefert 409; injizierter nativer Timeout publiziert nichts und gibt den Platz frei; spätere echte Simulation erfolgreich |
+| Editor: Ergebnisspeicher | Maximal drei erfolgreiche Ergebnisse; ältere URLs liefern 404; Vorschau und Download enthalten denselben Stand |
+| Editor: HTTP | Echte Requests/Downloads; Host, Origin, Token einschließlich Nicht-ASCII-Token, JSON-Duplikate/NaN, Requestgröße und feste Dateirouten geprüft |
+| Editor: Browser / Chromium | Echte UR5e-Simulation und Mesh-Wiedergabe, YAML-Import, Entwurf-/Schnappschuss-/HTML-Download, Fehlerzeilensprung, Entwurfswiederherstellung und Änderungen während einer echten Simulation geprüft |
+| Editor: zweites Modell und Layout | ABB-Vorlage mit 20 ms simuliert; Kinematikfallback; 420 px ohne horizontalen Seitenüberlauf |
+
+Die zehn neuen Editor-/HTTP-Tests ergänzen die 17 vorhandenen Werkzeugtests.
+Der Editor-Browsertest lief mit einem echten temporären Loopback-Dienst und
+dem realen Release-Exporter; externe Anfragen wurden blockiert und es entstanden
+keine JavaScript-Fehler oder externen Netzwerkanfragen. Der Timeout selbst wurde
+gezielt injiziert, um den Fehlerpfad ohne langes Warten reproduzierbar zu prüfen;
+anschließend wurde derselbe Auftragsplatz mit dem echten Exporter verwendet.
+Die Editorvorschau wurde aus diesem getesteten Browser aufgenommen.
 
 Der Mesh-Browsertest lief mit Chromium und dessen Software-WebGL-Renderer
 SwiftShader. Die Vorschau wurde aus dem tatsächlich gerenderten Viewer aufgenommen.

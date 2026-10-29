@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Robot Motion · Programmeditor</title>
+    <link rel="stylesheet" href="/static/editor.css" />
+    <script defer src="/static/editor.js"></script>
+  </head>
+  <body data-editor-state="loading" data-result-state="none">
+    <header>
+      <div>
+        <p class="eyebrow">ROBOT MOTION · LOKALES TESTWERKZEUG</p>
+        <h1>Programmieren &amp; simulieren</h1>
+        <p>Programm bearbeiten, mit dem C++-Planer prüfen und die Bewegung ansehen.</p>
+      </div>
+      <span class="badge">SIMULATION · SOLLWERTE</span>
+    </header>
+    <main>
+      <section class="card editor-panel" aria-label="Programmeditor">
+        <div class="panel-head">
+          <h2>Dein Programm</h2>
+          <span id="draft-note" class="muted" role="status"></span>
+        </div>
+        <div class="toolbar">
+          <label
+            >Beispiel
+            <select id="example" aria-label="Beispielprogramm"></select
+          ></label>
+          <button id="load-example" type="button">Vorlage laden</button>
+          <button id="import" type="button">YAML öffnen</button>
+          <input id="import-file" type="file" accept=".yaml,.yml,text/yaml" hidden />
+          <button id="save" type="button">YAML speichern</button>
+        </div>
+        <label class="filename"
+          >Dateiname
+          <input id="filename" type="text" value="ur5e_programm.yaml" maxlength="80" spellcheck="false"
+        /></label>
+        <div class="code-wrap">
+          <pre id="line-numbers" aria-hidden="true">1</pre>
+          <textarea
+            id="source"
+            spellcheck="false"
+            wrap="off"
+            aria-label="YAML-Programm"
+            autocapitalize="off"
+            autocomplete="off"
+            autocorrect="off"
+          ></textarea>
+        </div>
+        <div class="code-status">
+          <span id="cursor">Zeile 1 · Spalte 1</span><span>YAML · SI · Winkel in rad</span>
+        </div>
+        <div class="run-toolbar">
+          <label
+            >Sollwertraster
+            <input id="cycle-ms" type="number" min="1" max="20" step="1" value="10" /> ms</label
+          >
+          <button id="simulate" class="primary" type="button" disabled>▶ Simulieren</button>
+        </div>
+        <p id="run-status" class="run-status" role="status" aria-live="polite">Editor wird geladen …</p>
+        <div id="diagnostic" class="diagnostic" role="alert" hidden>
+          <strong id="diagnostic-title">Programm nicht simuliert</strong>
+          <p id="diagnostic-text"></p>
+          <button id="go-to-error" type="button" hidden>Fehlerstelle anzeigen</button>
+        </div>
+        <details class="help">
+          <summary>Kurzhilfe zum Programmformat</summary>
+          <p>
+            <code>robot_profile</code> ist im Editor relativ zum Projekt-Hauptordner, z. B.
+            <code>models/ur5e/profile.yaml</code>. Auch eigene Modelle müssen unter
+            <code>models/</code> liegen.
+          </p>
+          <p>
+            <code>start</code> beschreibt die simulierte Anfangsstellung. PTP nutzt Gelenke in rad; LIN nutzt
+            Positionen in m und Quaternionen <code>[w,x,y,z]</code>. <code>speed</code> liegt zwischen 0,001
+            und 1.
+          </p>
+          <pre>
+steps:
+  - {type: PTP, joints: [0.21,-0.6,0.7,0.3,0.8,-0.2], speed: 0.5}
+  - {type: WAIT, seconds: 0.3}</pre
+          >
+          <p>
+            Die UR5e-Vorlage zeigt zusätzlich LIN und einen vollständigen CIRC-Kreis. Die ABB- und
+            FANUC-Beispiele zeigen Unterprogramme.
+          </p>
+          <p>
+            <kbd>Tab</kbd>: zwei Leerzeichen · <kbd>Strg/⌘ + Enter</kbd>: simulieren · <kbd>Strg/⌘ + S</kbd>:
+            YAML speichern.
+          </p>
+          <p>
+            Das Sollwertraster richtet die zugelassene Referenz auf 1–20 ms aus. Das YAML-Feld
+            <code>cycle_s</code> bleibt das Planungsraster der ursprünglichen Referenz.
+          </p>
+        </details>
+      </section>
+      <section class="card preview-panel" aria-label="Simulationsergebnis">
+        <div class="panel-head">
+          <h2>Simulation</h2>
+          <span id="result-state" class="result-state">Noch kein Ergebnis</span>
+        </div>
+        <p id="result-summary" class="muted">
+          Nach erfolgreicher Prüfung erscheint hier der Bewegungsviewer.
+        </p>
+        <div class="result-actions">
+          <a id="download-html" hidden>Viewer-HTML speichern</a>
+          <a id="download-snapshot" hidden>Simuliertes YAML speichern</a>
+        </div>
+        <div id="preview-placeholder" class="placeholder">
+          <span class="placeholder-icon" aria-hidden="true">▷</span>
+          <h3>Vom Programm zur Bewegung</h3>
+          <p>
+            Links eine Vorlage laden oder ein eigenes YAML-Programm öffnen.<br />Dann
+            <strong>Simulieren</strong> drücken.
+          </p>
+          <p>Die vollständige Planung und Simulation laufen vor der Freigabe der Ansicht.</p>
+        </div>
+        <iframe
+          id="preview"
+          title="Bewegungsviewer der letzten gültigen Simulation"
+          sandbox="allow-scripts"
+          hidden
+        ></iframe>
+      </section>
+    </main>
+    <footer>
+      Entwürfe werden lokal in diesem Browser gespeichert. YAML und fertige Viewer-HTML bei Bedarf
+      herunterladen; die letzten drei gültigen Simulationen bleiben bis zum Beenden des lokalen Dienstes
+      verfügbar. Keine Hardwareverbindung und keine automatische Kollisionsprüfung.
+    </footer>
+  </body>
+</html>
