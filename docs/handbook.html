@@ -1,0 +1,3161 @@
+<!doctype html>
+<html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Robot Motion C++ 0.12.3 — Integrationshandbuch</title>
+<style>
+body{font:16px/1.6 system-ui,sans-serif;color:#172033;background:#fff;margin:0 auto;max-width:1100px;padding:24px}
+h1,h2,h3{line-height:1.25;color:#102a43}h1{margin-top:1.5em}h2{margin-top:1.8em}
+a{color:#165ca3}nav{padding:16px 24px;background:#eff6ff;border-radius:8px}section{border-top:1px solid #cbd5e1;margin-top:48px}
+table{border-collapse:collapse;width:100%;margin:20px 0}th,td{border:1px solid #cbd5e1;text-align:left;padding:8px;vertical-align:top}th{background:#eff6ff}
+code{font:0.9em ui-monospace,monospace;background:#f1f5f9;padding:2px 4px}pre{overflow:auto;background:#f1f5f9;padding:16px;line-height:1.45}pre code{padding:0}
+figure{margin:24px 0;overflow:auto}figure svg{max-width:100%;height:auto}figcaption{color:#475569;font-size:0.9em}
+@media print{body{max-width:none;font-size:10pt;padding:0}nav{break-after:page}section{break-before:page;border:0}pre{white-space:pre-wrap;overflow-wrap:anywhere}tr,figure{break-inside:avoid}a{color:inherit;text-decoration:none}}
+@page{size:A4;margin:15mm}
+</style></head><body>
+<h1 id="handbook-top">Robot Motion C++ 0.12.3</h1>
+<p>Integrationsgrundlage für eine selbst entwickelte Steuerung, Zyklusbereich 1–20 ms.
+Diese Datei enthält Texte und UML-SVGs offline. Die Mermaid-Ablaufquellen sind als Code erhalten;
+GitHub rendert sie in der Markdown-Ausgabe. Druck/PDF ist über die Druckfunktion des Browsers möglich.</p>
+<nav><ol><li><a href="#chapter-readme">Dokumentation für Entwicklung und Steuerungseinbindung</a></li><li><a href="#chapter-controller_integration">Integrationshandbuch für die eigene Steuerung</a></li><li><a href="#chapter-interface_contracts">Daten- und Schnittstellenverträge</a></li><li><a href="#chapter-class_diagrams">UML-Klassendiagramme</a></li><li><a href="#chapter-runtime_flows">Laufzeitabläufe und Zustände</a></li><li><a href="#chapter-module_catalog">Ordner und Modulzuständigkeiten</a></li><li><a href="#chapter-naming_and_migration">Benennung und Migration ab 0.12.3</a></li><li><a href="#chapter-acceptance_plan">Test- und Abnahmeplan für die spätere Integration</a></li><li><a href="#chapter-robot_model_yaml">Kinematikbeschreibung und SI-Motion-Profil</a></li><li><a href="#chapter-robot_program_yaml">Eigene Roboterprogramme importieren</a></li><li><a href="#chapter-validation">Struktur- und Integrationsgrundlage — 0.12.3, 29.10.2026</a></li></ol></nav><section id="chapter-readme"><h1 id="chapter-readme--dokumentation-für-entwicklung-und-steuerungseinbindung">Dokumentation für Entwicklung und Steuerungseinbindung</h1>
+<p>Stand: <strong>0.12.3</strong>. Die Zielsteuerung ist eine Eigenentwicklung; die konkrete
+Adapterplanung folgt später. Der betrachtete Zyklusbereich beträgt <strong>1–20 ms</strong>.
+Die Dokumente beschreiben die vorhandene Bibliothek und benennen noch offene
+Integrationsaufgaben ausdrücklich.</p>
+<table>
+<thead>
+<tr>
+<th>Lesereihenfolge</th>
+<th>Dokument</th>
+<th>Inhalt</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><a href="#chapter-controller_integration">Integrationshandbuch</a></td>
+<td>Verantwortlichkeiten, Build, Vorbereitung, zyklische Übergabe, Lebensdauer, Timing und Fehler</td>
+</tr>
+<tr>
+<td>2</td>
+<td><a href="#chapter-interface_contracts">Daten- und Schnittstellenvertrag</a></td>
+<td>Einheiten, Achsreihenfolge, Zustände, Rückgabewerte, Uhrdomänen und Threadzuordnung</td>
+</tr>
+<tr>
+<td>3</td>
+<td><a href="#chapter-class_diagrams">Architektur und Klassendiagramme</a></td>
+<td>Sieben UML-Sichten als SVG; Vererbung, Besitz und geliehene Referenzen</td>
+</tr>
+<tr>
+<td>4</td>
+<td><a href="#chapter-runtime_flows">Laufzeitabläufe</a></td>
+<td>Sequenzen, Zustandstabelle und Live-Handshake</td>
+</tr>
+<tr>
+<td>5</td>
+<td><a href="#chapter-module_catalog">Ordner- und Modulkatalog</a></td>
+<td>Zuständigkeit jedes Moduls und relevante Dateien</td>
+</tr>
+<tr>
+<td>6</td>
+<td><a href="#chapter-naming_and_migration">Benennungsregeln</a></td>
+<td>Dateinamen, Variablennamen, mathematische Notation und Altpfad-Migration</td>
+</tr>
+<tr>
+<td>7</td>
+<td><a href="#chapter-acceptance_plan">Test- und Abnahmeplan</a></td>
+<td>Vorhandene Nachweise, spätere Steuerungstests und offene Entscheidungen</td>
+</tr>
+<tr>
+<td>8</td>
+<td><a href="#chapter-robot_model_yaml">Modellformat</a> / <a href="#chapter-robot_program_yaml">Programmformat</a></td>
+<td>URDF/SI-Profil, Modellreferenzen, PTP/LIN/CIRC, WAIT/CALL und Quellorte</td>
+</tr>
+<tr>
+<td>9</td>
+<td><a href="#chapter-validation">Prüfbericht</a> / <a href="testing/robustness.md">Robustheitstests</a></td>
+<td>Tatsächlich ausgeführte Prüfungen und reproduzierbare Seeds</td>
+</tr>
+<tr>
+<td>10</td>
+<td><a href="planning/roadmap.md">Roadmap</a></td>
+<td>Noch offene Funktionspakete und Hardwaregrenzen</td>
+</tr>
+</tbody>
+</table>
+<p>Die Diagramme sind eingecheckt. Zum Lesen wird weder Python noch Graphviz
+benötigt; die SVG-Dateien lassen sich im Browser öffnen. Für eine zusammenhängende
+Offline-Ausgabe siehe <a href="#chapter-naming_and_migration--dokumentation-prüfen-und-erzeugen">Handbuch erzeugen</a>.
+Historische Wiederherstellung und Sicherung stehen unter <a href="history/recovery_status.md">history</a>.</p></section><section id="chapter-controller_integration"><h1 id="chapter-controller_integration--integrationshandbuch-für-die-eigene-steuerung">Integrationshandbuch für die eigene Steuerung</h1>
+<h2 id="chapter-controller_integration--zweck-und-geltungsbereich">Zweck und Geltungsbereich</h2>
+<p>Dieses Handbuch beschreibt <strong>Robot Motion C++ 0.12.3</strong> als einbettbare C++20-
+Bibliothek. Eure Steuerung ist selbst entwickelt; konkrete Adapter, Prozesse,
+Feldbuszuordnung und Freigabelogik werden später festgelegt. Der betrachtete
+Zyklustakt liegt zwischen <strong>1 und 20 ms</strong>. Die Bibliothek plant Sollbewegungen
+und liefert zeitlich geprüfte Gelenkbefehle. Antriebsregelung, Istwertüberwachung,
+Maschinenzustände und die tatsächliche Befehlsübertragung bleiben Aufgaben der
+Steuerung. Das Referenzbeispiel benutzt eine ideale virtuelle Uhr und simulierte
+Achsen. Es schaltet keine Hardware frei.</p>
+<p>Für den Einstieg sind drei Ebenen relevant:</p>
+<ol>
+<li><strong>Import und Planung:</strong> Modelle, Profile, Anwenderprogramme vollständig lesen
+   und zulassen. Hier sind Dateizugriffe, dynamische Speicherverwaltung, IK,
+   Hüllenprüfung und Ausnahmen zulässig.</li>
+<li><strong>Ausführungsvorbereitung:</strong> Zyklusraster bestimmen, Uhrbezug festlegen und
+   entweder einen vollständigen Befehlscache oder einen Producer-Puffer aufbauen.</li>
+<li><strong>Zyklische Übergabe:</strong> Genau einen fälligen festen Befehl lesen, Rückgabestatus
+   prüfen und die Achsschnittstelle bedienen. Kein neues Planen oder Samplen.</li>
+</ol>
+<p>Die <a href="#chapter-interface_contracts">Schnittstellenverträge</a> sind die zugehörige
+Feldreferenz; <a href="#chapter-class_diagrams">Klassendiagramme</a> und
+<a href="#chapter-runtime_flows">Abläufe</a> zeigen die Beziehungen.</p>
+<h2 id="chapter-controller_integration--1-bibliothek-bauen">1. Bibliothek bauen</h2>
+<p>Voraussetzungen: C++20-Compiler und CMake ≥3.20. Eigen, yaml-cpp, TinyXML2 und
+optional Ruckig sowie die testweise KDL-Referenz liegen versions-/hashgebunden
+als lokale Quellarchive bei. Der C++-Build braucht keinen Netzwerkzugriff.
+Python und Graphviz sind nur für ergänzende Werkzeuge bzw. Dokumentation nötig.</p>
+<pre><code class="language-sh">cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DMOTION_WITH_RUCKIG=ON
+cmake --build build --parallel 2
+ctest --test-dir build --output-on-failure
+./build/program_simulator programs/examples/ur5e_demo.yaml --check
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>CMake-Option</th>
+<th>Standard im eigenständigen Projekt</th>
+<th>Wirkung</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>MOTION_WITH_SERIAL</code></td>
+<td>ON</td>
+<td>Kompilierte serielle Kinematik, Modell-/Programmimport, Kalibrierung</td>
+</tr>
+<tr>
+<td><code>MOTION_WITH_RUCKIG</code></td>
+<td>OFF</td>
+<td>Online-Gelenkgenerator, Halteplanung, vorbereitete Halte-Schedules und Following</td>
+</tr>
+<tr>
+<td><code>MOTION_BUILD_TESTS</code></td>
+<td>ON</td>
+<td>Eigene CTests; bei <code>add_subdirectory</code> standardmäßig OFF</td>
+</tr>
+<tr>
+<td><code>MOTION_BUILD_EXAMPLES</code></td>
+<td>ON</td>
+<td>Standalone-Beispiele; bei <code>add_subdirectory</code> standardmäßig OFF</td>
+</tr>
+<tr>
+<td><code>MOTION_WITH_KDL_REFERENCE</code></td>
+<td>ON</td>
+<td>Nur bei aktiven Tests: unabhängiger FK/J-Vergleich</td>
+</tr>
+<tr>
+<td><code>MOTION_SANITIZE</code></td>
+<td>OFF</td>
+<td>ASan/UBSan für Entwicklung</td>
+</tr>
+<tr>
+<td><code>MOTION_BUILD_FUZZER</code></td>
+<td>OFF</td>
+<td>Clang/libFuzzer, benötigt Tests, Serial und Sanitizer</td>
+</tr>
+</tbody>
+</table>
+<p><code>BUILD_TESTING=OFF</code> setzt den Standard von <code>MOTION_BUILD_TESTS</code> auf OFF, sofern
+keine eigene Auswahl gespeichert ist. Bereits gesetzte Cache-Optionen bleiben
+CMake-üblich erhalten. Produkt- und Testbuilds deshalb getrennt konfigurieren.</p>
+<h3 id="chapter-controller_integration--als-unterprojekt-übernehmen">Als Unterprojekt übernehmen</h3>
+<p>Im späteren Steuerungsprojekt beispielsweise:</p>
+<pre><code class="language-cmake">set(MOTION_BUILD_TESTS OFF CACHE BOOL &quot;&quot;)
+set(MOTION_BUILD_EXAMPLES OFF CACHE BOOL &quot;&quot;)
+set(MOTION_WITH_SERIAL ON CACHE BOOL &quot;&quot;)
+set(MOTION_WITH_RUCKIG OFF CACHE BOOL &quot;&quot;)
+add_subdirectory(external/robot-motion-cpp)
+target_link_libraries(eure_steuerung PRIVATE RobotMotion::motion)
+</code></pre>
+<p><code>RobotMotion::motion</code> liefert Include-Pfade, C++20 und die ausgewählten
+Bibliotheksabhängigkeiten transitiv. Eigene Include-Pfade für Eigen/yaml-cpp sind
+nicht erforderlich. Bestehende Targets <code>robot_motion</code> und <code>robot_motion_serial</code>
+bleiben vorhanden; <code>RobotMotion::serial</code> benennt die kompilierte Teilbibliothek.
+Ein installierbares <code>find_package(RobotMotion)</code>-Paket und eine C-ABI sind derzeit
+nicht enthalten. Für eine andere Host-Sprache muss später ein Adapter festgelegt
+werden; C++-Objektlayout oder <code>std::vector</code> nicht als Drahtformat verwenden.</p>
+<p>Das getrennte Anwenderprojekt überprüft diese Einbettung bereits:</p>
+<pre><code class="language-sh">cmake -S examples/integration/consumer -B build-consumer \
+  -DROBOT_MOTION_SOURCE_DIR=&quot;$PWD&quot; -DCMAKE_BUILD_TYPE=Release
+cmake --build build-consumer --parallel 2
+./build-consumer/controller_consumer
+</code></pre>
+<h2 id="chapter-controller_integration--2-modell-profil-und-programm-zuordnen">2. Modell, Profil und Programm zuordnen</h2>
+<p>Für eine serielle Kette beschreibt URDF Gelenktyp, Achse, Reihenfolge und
+Geometrie. Das SI-YAML-Profil ergänzt zulässige Beschleunigung/Ruck sowie TCP-
+Grenzen, Basis und Werkzeug. Die Bewegungsgrenzen sind von den geometrischen
+Kinematikgrenzen zu unterscheiden. Das Programm verweist auf sein Profil;
+relative Dateipfade beziehen sich auf die <strong>Programmdatei</strong>, nicht auf den
+Prozess-Arbeitsordner. Ohne das optionale Programmfeld <code>robot_urdf</code> wird
+<code>robot.urdf</code> neben der Profildatei geladen. Bei gesetztem <code>robot_urdf</code> wird auch
+dieser Pfad relativ zur Programmdatei aufgelöst; das Profil enthält keinen URDF-Pfad.</p>
+<p>Vor einem Steuerungstest festlegen und außerhalb des Zyklus prüfen:</p>
+<ul>
+<li><code>joint_names()</code> und <code>dof()</code> gegen die tatsächliche Host-Achsreihenfolge;
+  ein sechsachsiger Roboter bedeutet nicht automatisch dieselbe Achszuordnung.</li>
+<li>Winkel in rad, prismatische Wege in m, Ableitungen pro Sekunde. Encoder-
+  Skalierung, Vorzeichen, Übersetzung und Nullpunkt gehören in die spätere
+  Achsabbildung. Gelenkposition und Motorposition sind nicht austauschbar.</li>
+<li>Welt-/Basis-/Werkzeugkoordinaten und Quaternionreihenfolge <code>[w,x,y,z]</code>.</li>
+<li>Konkrete Softwaregrenzen, gültige Kalibrierungsrevision und Profilversion.
+  Öffentliche Beispielprofile sind nominale Testdaten.</li>
+<li>Der <code>start</code>-Zustand des Programms muss zum freigegebenen Anfangszustand der
+  Steuerung passen. Die Bibliothek liest keine Encoder und fährt nicht
+  automatisch auf diesen Startpunkt.</li>
+</ul>
+<p>Siehe <a href="#chapter-robot_program_yaml">Programmformat</a> und
+<a href="#chapter-interface_contracts">Datenvertrag</a>.</p>
+<h2 id="chapter-controller_integration--3-vollständigen-plan-vorbereiten">3. Vollständigen Plan vorbereiten</h2>
+<pre><code class="language-cpp">#include &lt;motion/program/robot_program.hpp&gt;
+
+const auto prepared_program = motion::load_robot_program(program_filename);
+// Ausnahmen hier abfangen, bevor ein Programm veröffentlicht wird.
+// prepared_program.reference: fachliche Referenz und Quellorte
+// prepared_program.schedule: vollständig zugelassenes Zyklusraster
+</code></pre>
+<p>Das Programm wird komplett geprüft. Ein später ungültiger Schritt verhindert die
+Rückgabe eines neuen <code>PreparedRobotProgram</code>; ein zuvor gespeichertes Programm
+bleibt unverändert. Erst nach erfolgreicher Rückgabe darf die Anwendung ihre
+aktive Programmauswahl ändern. Fehler als <code>RobotProgramError</code> samt Datei, Block,
+Schrittnummer, Zeile, Spalte und Diagnose anzeigen.</p>
+<h3 id="chapter-controller_integration--zykluszeit-festlegen">Zykluszeit festlegen</h3>
+<p>Im Programm bedeutet <code>cycle_s: 0.001</code> einen Millisekundentakt. Eine andere
+Taktzeit wird auf Basis der ursprünglichen Referenz neu ausgerichtet:</p>
+<pre><code class="language-cpp">const double cycle_period_s = 0.020;
+const auto aligned = motion::align_program_cycles(
+    prepared_program.reference, cycle_period_s);
+if (!aligned) { /* Diagnose außerhalb des zyklischen Threads behandeln */ }
+</code></pre>
+<p>Die Ausrichtung verkürzt kein Segment und erhält die Stillstandsgrenzen.
+Eine Bewegung bekommt bei gröberem Raster gegebenenfalls eine längere Dauer.
+Verringerung von v/a/Ruck erfolgt über die Zeitstreckung. Es wird nicht einfach
+jeder zehnte Sollwert verwendet. Ein Wechsel der Host-Zykluszeit während einer
+laufenden Ausführung ist kein unterstützter Live-Wechsel: Schedule und Cache
+müssen passend neu vorbereitet werden.</p>
+<h3 id="chapter-controller_integration--uhr-und-epoche-verbindlich-machen">Uhr und Epoche verbindlich machen</h3>
+<p><code>ClockTime.seconds</code> und alle <code>timestamp_s</code> müssen zu derselben monotonen Uhrdomäne
+gehören. <code>clock</code> ist deren vereinbarte ID; die Bibliothek konvertiert keine
+Uhren. Unix-Zeit oder Kamera-Zeit nicht ungeprüft einsetzen.</p>
+<p>Der Ausführungsstart steht in <code>schedule-&gt;initial_state().timestamp_s</code>. Für globale
+Ticks gilt <code>timestamp_s = execution_epoch_s + tick_time(tick)</code>.
+Für Zeitpunkte die bereitgestellte Methode <code>schedule-&gt;tick_time(tick)</code> verwenden;
+nicht durch wiederholtes Addieren der Zyklusdauer Rundungsdrift aufbauen.
+<code>prepare_live_plan()</code> verlangt diese Übereinstimmung <strong>exakt</strong>; der Parameter
+<code>epoch</code> verschiebt einen bestehenden Schedule nicht automatisch.</p>
+<p>Im Referenzbeispiel wird die Programmepoche unverändert als virtuelle Epoche
+benutzt. Für die spätere echte Steuerung muss die Host-Schicht einen stabilen
+Zeitbezug bereitstellen: entweder die gewünschte Epoche bei der Erstellung des
+Programms setzen und ausreichend Startvorlauf lassen oder einen expliziten
+Schedule-Adapter erstellen, der ausschließlich Zeitstempel konsistent neu bindet
+(<code>initial_state</code>, <code>sample</code>, <code>sample_tick</code>). Ein solcher Startadapter gehört zum
+noch zu planenden Integrationspaket. Relative Trajektorienzeiten, Tickdauer,
+Befehlsinhalt und aktuelle Zeit dürfen dabei nicht vermischt werden.</p>
+<h2 id="chapter-controller_integration--4-ausführungsmodell-auswählen">4. Ausführungsmodell auswählen</h2>
+<table>
+<thead>
+<tr>
+<th>Modell</th>
+<th>Geeignet für</th>
+<th>Vorbereitung</th>
+<th>Zyklisch</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Vollständiger Cache</td>
+<td>Erster Integrationstest, begrenzte Programmlänge</td>
+<td>Alle festen Befehle mit <code>prepare_live_plan&lt;N&gt;()</code> erzeugen</td>
+<td><code>LiveMotionExecutor&lt;N&gt;::poll_clock()</code></td>
+</tr>
+<tr>
+<td>SPSC-Puffer</td>
+<td>Längere Programme mit dauerhaft verfügbarem Producer</td>
+<td><code>BufferedMotionProducer&lt;N&gt;</code> und festen Ring anlegen/vorfüllen</td>
+<td><code>DeadlineMotionExecutor&lt;N&gt;::poll_clock()</code></td>
+</tr>
+</tbody>
+</table>
+<p>Für den ersten Test ist der vollständige Cache leichter nachzuvollziehen.
+<code>N</code> ist die statisch gewählte Achsanzahl. Der sechsachsige Beispieladapter
+verwendet <code>N=6</code>; ein anderes Modell braucht eine passende Instanziierung und
+Achsabbildung, keine stille Abschneidung oder Auffüllung.</p>
+<h3 id="chapter-controller_integration--cachepfad">Cachepfad</h3>
+<pre><code class="language-cpp">#include &lt;motion/execution/live_motion_executor.hpp&gt;
+
+constexpr std::size_t axis_count = 6;
+constexpr motion::ClockId controller_clock_id = 1;
+const auto execution_schedule = prepared_program.schedule;
+const double execution_epoch_s = execution_schedule-&gt;initial_state().timestamp_s;
+const auto prepared_cache = motion::prepare_live_plan&lt;axis_count&gt;(
+    execution_schedule, execution_epoch_s,
+    {1, 0, 0, controller_clock_id}); // generation, parent, global start tick, clock
+if (!prepared_cache) { /* Start verhindern; diagnostic ausgeben */ }
+
+motion::LivePlanMailbox&lt;axis_count&gt; plan_mailbox;
+const double cycle_period_s = execution_schedule-&gt;cycle_s();
+const motion::ExecutionTimingPolicy timing_policy{
+    0, cycle_period_s * .1, 0, 0}; // Nur ideales virtuelles Beispiel!
+motion::LiveMotionExecutor&lt;axis_count&gt; motion_executor(
+    *prepared_cache.plan, plan_mailbox, timing_policy);
+</code></pre>
+<p>Die Host-Anwendung hält <code>prepared_cache.plan</code> so lange am Leben, wie der Executor
+oder ein ausstehender Wechsel ihn referenziert. Der Executor übernimmt keinen
+<code>shared_ptr</code>. Ein Cache darf nach Beginn der Benutzung nicht verändert werden.
+Die Freigabe und damit verbundene Speicherarbeit findet außerhalb RT statt.</p>
+<h3 id="chapter-controller_integration--gepufferter-pfad">Gepufferter Pfad</h3>
+<p><code>BufferedMotionProducer&lt;N&gt;::fill(ring, budget)</code> gehört in einen eigenen
+Nicht-RT-Producer. Der Ring ist SPSC: exakt ein Producer und ein Consumer.
+Ein voller Ring erzeugt Backpressure, ohne ungelesene Werte zu überschreiben.
+Der Consumer wartet nicht auf den Producer. Ein Unterlauf zur fälligen Ausgabe
+verriegelt <code>ExecutionFault::Underflow</code>; späteres Nachfüllen setzt die Ausführung
+nicht fort. Den Worst-Case-Vorlauf des Producers gegen die Ringkapazität planen.
+Die Konstruktoren und das finale Freigeben der geteilten Schedules gehören in
+die Vor-/Nachbereitungsphase.</p>
+<h2 id="chapter-controller_integration--5-zyklische-befehlsübergabe">5. Zyklische Befehlsübergabe</h2>
+<p>Die Steuerungsuhr braucht <code>ClockTime now() noexcept</code>; sie muss eigene Fehler über
+nichtendliche Werte oder einen expliziten Host-Fehlerpfad melden. Alternativ kann
+unter Linux <code>LinuxMonotonicClock</code> benutzt werden. Der Dispatcher schreibt seinen
+Ausgabewert nur bei <code>Running</code> und <code>Finished</code>.</p>
+<pre><code class="language-cpp">// Nur der zyklische Eigentümer greift direkt auf den Executor zu.
+motion::LiveJointCommand&lt;axis_count&gt; next_command;
+const auto execution_status = motion_executor.poll_clock(clock, next_command);
+if (execution_status == motion::ExecutionStatus::Running ||
+    execution_status == motion::ExecutionStatus::Finished) {
+  // Inhalt jetzt genau einmal an die Host-Achsschnittstelle übergeben.
+  // Finished enthält den letzten Stillstandsbefehl und muss ebenfalls raus.
+} else if (execution_status == motion::ExecutionStatus::Error) {
+  // Anwendungsfehler verriegeln; vereinbarte Stop-/Fehlerreaktion auslösen.
+}
+// Inactive: nichts neu senden. Den alten Inhalt von next_command nicht wiederholen.
+</code></pre>
+<p><code>poll_clock()</code> liest die Uhr vor und nach der Prüfung. Damit kann es auch eine
+Unterbrechung während der Verarbeitung erkennen. <code>poll(now, output)</code> hat nur die
+eine vom Aufrufer bereitgestellte Zeitbeobachtung. Beide Varianten können
+zukünftige Verzögerungen der nachfolgenden Achsschnittstelle nicht messen.
+Deren garantierte maximale Annahmelatenz muss in <code>dispatch_latency_bound_s</code>
+eingerechnet und später auf der Zielsteuerung überprüft werden.</p>
+<p>Die spätere Achsschnittstelle benötigt einen klaren Vertrag: Annahme aller
+Achswerte für genau diesen Tick oder gemeldeter Fehler, begrenzte Ausführungszeit,
+kein Behalten eines Zeigers auf die wiederverwendete Ausgabestruktur und
+geklärter Umgang mit partieller Übertragung. Bei Ablehnung ist der Dispatcher
+bereits weitergeschaltet: nicht denselben Befehl erneut senden und nicht
+ungeprüft weiterpollen. Die Anwendung verriegelt diesen Übergabefehler und
+führt die vereinbarte Fehlerreaktion aus. Das Referenzbeispiel zeigt diese
+zusätzliche Anwendungssperre, ohne einen bestimmten Hardware-Stopp vorzugeben.</p>
+<h2 id="chapter-controller_integration--6-speicher-und-threadgrenzen">6. Speicher und Threadgrenzen</h2>
+<table>
+<thead>
+<tr>
+<th>Tätigkeit</th>
+<th>Kontext</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>URDF/YAML, IK, Planung, Hüllen, Kalibrierungs-Fit</td>
+<td>Vorbereitungs-/Planerthread</td>
+</tr>
+<tr>
+<td><code>sample()</code>, <code>sample_tick()</code>, Cachebau, <code>fill()</code></td>
+<td>Vorbereitungs-/Producerthread</td>
+</tr>
+<tr>
+<td><code>poll[_clock]()</code>, feste Push/Pop, Live-Aktivierung, Fence</td>
+<td>Ein zyklischer Eigentümer</td>
+</tr>
+<tr>
+<td><code>snapshot()</code></td>
+<td>Auch parallele Beobachter; begrenzte Wiederholversuche, optionales Ergebnis</td>
+</tr>
+<tr>
+<td><code>generation()</code>, <code>fault()</code>, <code>commit_delivery()</code>, <code>service_requests()</code></td>
+<td>Zyklischer Eigentümer, keine beliebigen parallelen Zugriffe</td>
+</tr>
+<tr>
+<td>Logs, Dateien, UI-Meldungen, <code>shared_ptr</code>-Freigaben</td>
+<td>Außerhalb des zyklischen Pfads</td>
+</tr>
+</tbody>
+</table>
+<p>Feste Ausgabevektoren sind <code>std::array</code>; die Trajektorienschnittstellen liefern
+häufig <code>std::vector</code> und können allokieren. <code>const</code> und unveränderlicher Besitz
+allein bedeuten keine Allokationsfreiheit. Die vorhandenen Tests beobachten
+C++-<code>new/delete</code> im Dispatcherpfad; das ist kein Beweis für beliebige Host-Callbacks.</p>
+<p>Cachebedarf ungefähr <code>(total_ticks+1) * sizeof(FixedJointCommand&lt;N&gt;)</code>, zusätzlich
+Containerkapazität und Referenzpläne. Bei sechs Achsen beträgt die Struktur im
+geprüften 64-bit-Linux-Build 176 Byte: eine Minute mit 1 ms benötigt rund
+10,1 MiB reine Befehlsdaten. Die Vektorkapazität kann größer sein; bei Live-
+Wechseln leben alter und neuer Cache zeitweise gleichzeitig. Die Standardgrenze
+von <code>prepare_live_plan()</code> beträgt 200.000 Befehle einschließlich Endbefehl.
+Sie ist explizit änderbar und kein allgemeines RAM-Budget. Tatsächliches <code>sizeof</code>
+und Spitzen-RAM auf eurem Build messen. 64-bit-Atomics müssen auf der gewählten
+Plattform lock-free sein; die betreffenden Templates verlangen das zur Compilezeit.</p>
+<h2 id="chapter-controller_integration--7-live-wechsel-erst-nach-stabilem-grundbetrieb">7. Live-Wechsel erst nach stabilem Grundbetrieb</h2>
+<p>Ein neuer Cache hat höhere Generation, exakte Vorgängergeneration, gleiche
+Uhrdomäne, Epoche, Takt und Grenzen. Sein erster globaler Tick muss mit q/dq/ddq
+und Zeitstempel <strong>exakt</strong> zum aktiven Cache passen. Anfangszustände deshalb direkt
+aus dessen Befehl übernehmen, nicht erneut mit Rundung rekonstruieren.</p>
+<p>Der Planer bietet über <code>try_offer()</code> maximal einen ausstehenden Plan an.
+Der Executor prüft Identität, Mindestvorlauf, Zeitpunkt und Übergabegrenze.
+Aktivierung erfolgt am vereinbarten Tick; die Antwort benennt die freigegebene
+Altgeneration. Nach einer Ablehnung bleibt der alte Cache aktiv. Ein belegtes
+Postfach nicht im zyklischen Thread mit einer Warteschleife bedienen.</p>
+<p>Wenn die Host-Achsschnittstelle bereits Befehle angenommen hat, wird die
+unwiderruflich übergebene Grenze mit <code>commit_delivery(generation, through_tick)</code>
+geführt. Kein Wechsel darf bereits angenommene Befehle rückwirkend ersetzen.
+Besitzdauer, Acknowledgement und Freigabe sind in den
+<a href="#chapter-runtime_flows">Live-Sequenzen</a> beschrieben.</p>
+<h2 id="chapter-controller_integration--8-timing-für-120-ms">8. Timing für 1–20 ms</h2>
+<p>Zulässig sind nur nicht überlappende Zeitfenster:</p>
+<pre><code class="language-text">0 &lt; max_early_s + max_late_s &lt; cycle_s
+2 * max_clock_uncertainty_s + dispatch_latency_bound_s
+    &lt;= max_early_s + max_late_s
+</code></pre>
+<p>Für jeden Befehl muss die gesamte beobachtete Zeitunsicherheit inklusive
+nachfolgender Dispatchlatenz in dessen Fenster passen. Beispielbudgets,
+<strong>keine gemessenen Zielplattformwerte</strong>:</p>
+<table>
+<thead>
+<tr>
+<th>Zyklus</th>
+<th>maximal früh</th>
+<th>maximal spät</th>
+<th>Uhrunsicherheit</th>
+<th>Dispatchlatenz</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1 ms</td>
+<td>20 µs</td>
+<td>180 µs</td>
+<td>5 µs</td>
+<td>40 µs</td>
+</tr>
+<tr>
+<td>10 ms</td>
+<td>200 µs</td>
+<td>1.800 µs</td>
+<td>50 µs</td>
+<td>400 µs</td>
+</tr>
+<tr>
+<td>20 ms</td>
+<td>400 µs</td>
+<td>3.600 µs</td>
+<td>100 µs</td>
+<td>800 µs</td>
+</tr>
+</tbody>
+</table>
+<p>Ein gröberer Takt erleichtert nicht automatisch jede Regelungsaufgabe; ein
+feinerer Takt erhöht Befehlszahl, Speicherbedarf und Übertragungsanforderungen.
+Die Bibliothek kann alle drei Beispielraster planen; dadurch ist ihre physische
+Einhaltung auf eurer Steuerung noch nicht bestimmt. Für den realen Aufbau müssen
+Uhrfehler, Aufwachlatenz, Dispatch, Achsannahme und Lastfälle gemeinsam gemessen
+werden. Ein Fehler wird verriegelt, es gibt kein automatisches Aufholen oder
+Überspringen von Ticks.</p>
+<h2 id="chapter-controller_integration--9-ausführbares-referenzbeispiel">9. Ausführbares Referenzbeispiel</h2>
+<pre><code class="language-sh">./build/controller_contract_example programs/examples/ur5e_demo.yaml 1 normal
+./build/controller_contract_example programs/examples/ur5e_demo.yaml 10 normal
+./build/controller_contract_example programs/examples/ur5e_demo.yaml 20 normal
+./build/controller_contract_example programs/examples/ur5e_demo.yaml 10 late-clock
+./build/controller_contract_example programs/examples/ur5e_demo.yaml 10 sink-refusal
+</code></pre>
+<p>Quelle: <a href="../examples/integration/controller_contract_example.cpp">controller_contract_example.cpp</a>.
+Bei den Fehlerszenarien bedeutet <code>CONTRACT PASS</code>, dass die <strong>erwartete
+Fehlerreaktion</strong> geprüft wurde: einmalige Stopanforderung und kein nachfolgender
+Befehl. Der normale Fall liefert den terminalen Stillstandsbefehl genau einmal.
+Alle Zeitpunkte sind virtuell; die Laufzeit des Beispiels ist kein 1-ms-Benchmark.
+Die eigene Steuerungssoftware wird durch dieses Beispiel nicht verändert.</p>
+<p>Nächster Schritt für die spätere konkrete Integration ist die Auswahl der noch
+offenen Verträge im <a href="#chapter-acceptance_plan">Abnahme- und Integrationsplan</a>.</p></section><section id="chapter-interface_contracts"><h1 id="chapter-interface_contracts--daten-und-schnittstellenverträge">Daten- und Schnittstellenverträge</h1>
+<p>Diese Referenz beschreibt öffentliche Daten und Verhaltensregeln für die spätere
+Steuerungseinbindung. Die tatsächliche Achs- und Threadzuordnung wird in eurem
+Adapter festgelegt. Die Bibliothek hat keine implizite Feldbus- oder Encoder-
+Zuordnung. Alle Beispiele beziehen sich auf die aufgabenbezogenen Header ab 0.12.3.</p>
+<h2 id="chapter-interface_contracts--maße-achsen-und-koordinaten">Maße, Achsen und Koordinaten</h2>
+<table>
+<thead>
+<tr>
+<th>Größe</th>
+<th>Bedeutung / Einheit</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>q[i]</code></td>
+<td>Rotatorisch: rad; prismatisch: m; Index gemäß <code>joint_names()</code></td>
+</tr>
+<tr>
+<td><code>dq[i]</code></td>
+<td>rad/s bzw. m/s</td>
+</tr>
+<tr>
+<td><code>ddq[i]</code></td>
+<td>rad/s² bzw. m/s²</td>
+</tr>
+<tr>
+<td>Gelenkruck</td>
+<td>rad/s³ bzw. m/s³; im Sample separat, nicht im festen Achsbefehl</td>
+</tr>
+<tr>
+<td>TCP-Position</td>
+<td>m im vereinbarten Weltkoordinatensystem</td>
+</tr>
+<tr>
+<td>TCP-Orientierung</td>
+<td>Einheitsquaternion <strong>[w,x,y,z]</strong>, gleiche Orientierung bei Q und −Q</td>
+</tr>
+<tr>
+<td><code>Twist.data[0..2]</code></td>
+<td>Linearer Weltvektor x/y/z</td>
+</tr>
+<tr>
+<td><code>Twist.data[3..5]</code></td>
+<td>Angularer Weltvektor x/y/z; kein Eulerwinkel-Zeitgradient</td>
+</tr>
+<tr>
+<td>Lineare TCP-Grenzen</td>
+<td>m/s, m/s², m/s³; Norm der jeweiligen drei Komponenten</td>
+</tr>
+<tr>
+<td>Angulare TCP-Grenzen</td>
+<td>rad/s, rad/s², rad/s³; Norm der jeweiligen drei Komponenten</td>
+</tr>
+<tr>
+<td><code>timestamp_s</code></td>
+<td>Absolute Zeit in der vereinbarten Uhrdomäne, s</td>
+</tr>
+<tr>
+<td><code>program_time_s</code></td>
+<td>Zeit ab Ausführungsepoche; im Live-Pfad zu globalem Tick gehörig</td>
+</tr>
+<tr>
+<td>Geometrieparameter <code>s</code></td>
+<td>Dimensionslos, 0 bis 1; nicht Sekunden</td>
+</tr>
+<tr>
+<td><code>speed</code></td>
+<td>Dimensionsloser Faktor; effektive Programmgeschwindigkeit 0,001 bis 1</td>
+</tr>
+</tbody>
+</table>
+<p>Eine serielle Kette kann gemischte Gelenktypen enthalten. Auch bei sechs Achsen
+muss die Zuordnung explizit geprüft werden. Für Parameter mit gemischten Einheiten
+(z. B. Gelenkfehlertoleranzen) später je Achse ein Feld vorsehen. Matrizen und
+Quaternionen nicht in herstellerspezifische Eulerwinkel umdeuten, ohne die
+Konvention separat zu vereinbaren.</p>
+<h2 id="chapter-interface_contracts--grundtypen">Grundtypen</h2>
+<table>
+<thead>
+<tr>
+<th>Typ / Felder</th>
+<th>Vertrag</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>JointState { q, dq, ddq, timestamp_s }</code></td>
+<td>Drei gleich lange dynamische Vektoren; Softwarezustand, keine automatische Istwertmessung</td>
+</tr>
+<tr>
+<td><code>JointTarget { q, dq, ddq }</code></td>
+<td>Zielrandzustand; einzelne Planer unterstützen nur Stillstand</td>
+</tr>
+<tr>
+<td><code>JointLimits { min_position, max_position, max_velocity, max_acceleration, max_jerk }</code></td>
+<td>Alle Vektoren in Achsreihenfolge; endliche Grenzen, min&lt;max und positive Ableitungsgrenzen</td>
+</tr>
+<tr>
+<td><code>Pose { position, orientation }</code></td>
+<td>Drei Positionswerte, Quaternion wxyz</td>
+</tr>
+<tr>
+<td><code>CartesianLimits</code></td>
+<td>Je drei positive lineare und angulare Grenzen bis Ruck</td>
+</tr>
+<tr>
+<td><code>KinematicJointLimits { lower, upper }</code></td>
+<td>Geometrische Kinematikgrenzen; die Motion-Grenzen dürfen zusätzlich enger sein</td>
+</tr>
+<tr>
+<td><code>ImportedSerialRobot</code></td>
+<td>Roboternamen, Basis/Tip, geteilte serielle Kinematik sowie Gelenk-/TCP-Grenzen</td>
+</tr>
+</tbody>
+</table>
+<p><code>check_state()</code> prüft im Kern nur Dimensionen. Endlichkeit und Grenzwerte werden
+in den jeweiligen Zulassungs-/Ausführungspfaden geprüft; ein bloßer erfolgreicher
+Dimensionscheck ist keine vollständige Zustandszulassung. <code>within_joint_limits()</code>
+prüft q/dq/ddq gegen Grenzen und eine numerische Toleranz, aber keinen Ist-Soll-
+Folgefehler und keine physische Bremswirkung.</p>
+<h2 id="chapter-interface_contracts--uhrvertrag">Uhrvertrag</h2>
+<pre><code class="language-cpp">struct ClockTime {
+  double seconds;
+  ClockId clock;          // vereinbarte Domänen-ID, uint64_t
+  double uncertainty_s;  // absolute Fehlergrenze, nicht Standardabweichung
+};
+</code></pre>
+<ul>
+<li>Alle Beobachtungen einer Ausführung gehören zur gleichen nichtnull Uhrdomäne.</li>
+<li>Sekunden und Unsicherheit sind endlich; Unsicherheit ist nichtnegativ und
+  liegt unter der vereinbarten Maximalgrenze.</li>
+<li>Beobachtete Zeit darf nicht zurückspringen. Sekunden sind weder CPU-Ticks noch
+  automatisch Unix-/ROS-/Kamera-Zeit.</li>
+<li>Ein eigener Clock-Adapter implementiert <code>ClockTime now() noexcept</code>.</li>
+<li><code>TrackingTime</code> bleibt ein Quellkompatibilitätsalias für <code>ClockTime</code>.</li>
+</ul>
+<p><code>ExecutionTimingPolicy</code> enthält <strong>zulässige Grenzen</strong>, keine gemessenen
+Statistikwerte. <code>max_early_s</code>/<code>max_late_s</code> begrenzen das Ausgabefenster,
+<code>max_clock_uncertainty_s</code> die jeweilige Uhrbeobachtung und
+<code>dispatch_latency_bound_s</code> den vertraglich begrenzten nachfolgenden Übergabepfad.
+Eine empirische Durchschnittslatenz ist keine obere Latenzgrenze.</p>
+<h2 id="chapter-interface_contracts--fester-achsbefehl">Fester Achsbefehl</h2>
+<pre><code class="language-cpp">template&lt;std::size_t N&gt;
+struct FixedJointCommand {
+  std::array&lt;double, N&gt; q, dq, ddq;
+  double timestamp_s, program_time_s;
+  std::uint64_t tick;
+  bool terminal;
+};
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Feld</th>
+<th>Auslegung im Host</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>q/dq/ddq</td>
+<td>Exakt N SI-Werte kopieren bzw. mit expliziter Achsabbildung umrechnen</td>
+</tr>
+<tr>
+<td><code>timestamp_s</code></td>
+<td>Geplanter Ausgabe-/Referenzzeitpunkt; nicht nachträglich auf „jetzt“ setzen</td>
+</tr>
+<tr>
+<td><code>tick</code></td>
+<td>Beginn bei 0, dann genau eins weiter; beim Live-Wechsel global fortlaufend</td>
+</tr>
+<tr>
+<td><code>terminal</code></td>
+<td>Dieser Befehl ist der letzte und liegt im Stillstand; einmal ausgeben</td>
+</tr>
+<tr>
+<td><code>LiveJointCommand::generation</code></td>
+<td>Referenzidentität zusätzlich zum globalen Tick</td>
+</tr>
+</tbody>
+</table>
+<p>Die Struktur ist ein C++-Werttyp, <strong>kein paketiertes Drahtformat</strong>. Padding,
+Endianness und <code>bool</code>-Darstellung dürfen nicht per <code>memcpy</code> als Fremdprotokoll
+festgeschrieben werden. Der Header enthält keinen Ruckkanal; wenn die Steuerung
+Ruck als separaten Sollwert benötigt, ist das später explizit zu spezifizieren.</p>
+<h2 id="chapter-interface_contracts--rückgabe-von-ausführern">Rückgabe von Ausführern</h2>
+<table>
+<thead>
+<tr>
+<th><code>ExecutionStatus</code></th>
+<th>Neuer Ausgabewert?</th>
+<th>Erforderliche Reaktion</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Running</code></td>
+<td>Ja</td>
+<td>Diesen neuen Befehl genau einmal übergeben</td>
+</tr>
+<tr>
+<td><code>Finished</code></td>
+<td>Ja, terminaler Stillstandsbefehl</td>
+<td>Einmal übergeben, anschließend Programmende melden</td>
+</tr>
+<tr>
+<td><code>Inactive</code></td>
+<td>Nein, Ausgabe unverändert</td>
+<td>Nichts erneut senden; kann „noch zu früh“ oder „bereits fertig“ bedeuten</td>
+</tr>
+<tr>
+<td><code>Error</code></td>
+<td>Nein, Ausgabe unverändert</td>
+<td>Fehler verriegeln; Stop-/Fehlerreaktion des Hosts auslösen</td>
+</tr>
+</tbody>
+</table>
+<p>Es gibt kein automatisches Wiederholen, Aufholen, Überspringen, Reset oder
+Fortsetzen nach <code>Error</code>. Nach Korrektur von Zeit/Feedback muss ein neuer Start
+mit neuen Vorbedingungen vorbereitet werden. Ein Daten- oder Zeitfehler erzeugt
+nicht automatisch eine neue Haltebahn. Ein bereits vorbereiteter Following-
+Fallback ist ein gesonderter Mechanismus.</p>
+<table>
+<thead>
+<tr>
+<th><code>ExecutionFault</code></th>
+<th>Auslöser / Bedeutung</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>None</code></td>
+<td>Bisher kein Dispatcherfehler</td>
+</tr>
+<tr>
+<td><code>InvalidClock</code></td>
+<td>Falsche Domäne, NaN/Inf oder negative Unsicherheit</td>
+</tr>
+<tr>
+<td><code>ClockRegression</code></td>
+<td>Beobachtete Sekunden laufen zurück</td>
+</tr>
+<tr>
+<td><code>ExcessUncertainty</code></td>
+<td>Beobachtete Uhrunsicherheit überschreitet die Policy</td>
+</tr>
+<tr>
+<td><code>DeadlineMissed</code></td>
+<td>Ganzes Unsicherheits-/Latenzintervall passt nicht mehr ins Fenster</td>
+</tr>
+<tr>
+<td><code>Underflow</code></td>
+<td>Gepufferter Pfad hat zur Fälligkeit keinen nächsten Befehl</td>
+</tr>
+<tr>
+<td><code>InvalidCommand</code></td>
+<td>Tick, Zeitstempel, Ableitungen, Limits oder Stillstandsmarkierung passen nicht</td>
+</tr>
+</tbody>
+</table>
+<p>Die Hardware kann eine Befehlsannahme zusätzlich ablehnen. Das ist ein
+<strong>Anwendungs-/Übergabefehler</strong>, kein neuer <code>ExecutionFault</code> im Kern. Der Host muss
+hier selbst die weitere Übergabe sperren. Das Referenzbeispiel demonstriert das.</p>
+<h2 id="chapter-interface_contracts--planung-import-und-sampling">Planung, Import und Sampling</h2>
+<table>
+<thead>
+<tr>
+<th>API</th>
+<th>Erfolg</th>
+<th>Fehler / Zusage</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>parse_robot_program_yaml()</code></td>
+<td>Unveränderliche <code>RobotProgramSource</code></td>
+<td><code>RobotProgramError</code>; keine Modell-Dateizugriffe durch reines Parsen</td>
+</tr>
+<tr>
+<td><code>compile_robot_program()</code> / <code>load_robot_program()</code></td>
+<td>Ganzes <code>PreparedRobotProgram</code></td>
+<td><code>RobotProgramError</code> mit Quellort; keine teilweise erfolgreiche Veröffentlichung</td>
+</tr>
+<tr>
+<td><code>IJointTrajectoryPlanner::plan()</code></td>
+<td><code>PlanResult</code> mit gültigem bool und Trajektorie</td>
+<td><code>PlanStatus</code>/Diagnose; nur bei Erfolg Trajektorie verwenden</td>
+</tr>
+<tr>
+<td><code>SerialChainKinematics::ik_detailed()</code></td>
+<td><code>SerialIKStatus::Success</code>, passende Lösung</td>
+<td>Begrenzte lokale Suche, detaillierter Status; keine globale Unerreichbarkeitsgarantie</td>
+</tr>
+<tr>
+<td><code>prepare_live_plan&lt;N&gt;()</code></td>
+<td><code>LivePlanResult</code> mit Cache</td>
+<td>Leerer Plan mit Diagnose bei ungültigem Raster, Randzustand, Uhr oder Kapazität</td>
+</tr>
+<tr>
+<td><code>sample()</code> / <code>sample_tick()</code></td>
+<td>Vektorhaltiger Zustand</td>
+<td>Kann allokieren und werfen; nicht als zyklischen Festwert-Dispatcher benutzen</td>
+</tr>
+</tbody>
+</table>
+<p><code>IOnlineJointGenerator::step()</code> verwendet den getrennten <code>StepStatus</code>:
+<code>Running</code>, <code>Finished</code>, <code>InvalidInput</code>, <code>Error</code>. Diese API plant/generiert und hat
+einen anderen Vertrag als <code>ExecutionStatus</code>. Der Ruckig-Adapter ist kein
+pauschaler RT-Nachweis; Planung und Prüfung bleiben außerhalb des
+Dispatcherpfads. Den Generatorstatus nicht blind in einen Achsstatus umdeuten.</p>
+<h2 id="chapter-interface_contracts--live-wechsel-und-besitz">Live-Wechsel und Besitz</h2>
+<p><code>LivePlanStamp</code> enthält <code>generation</code>, <code>parent_generation</code>, <code>start_tick</code>, <code>clock</code>.
+Die Anfangsgeneration hat Vorgänger 0 und Starttick 0. Weitere Generationen sind
+höher als die aktuelle und benennen deren Identität als Vorgänger.</p>
+<table>
+<thead>
+<tr>
+<th><code>LiveResponseStatus</code></th>
+<th>Bedeutung / Besitzfolge</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Activated</code></td>
+<td>Neuer Cache aktiv; <code>retired_generation</code> wird vom Executor nicht mehr benutzt</td>
+</tr>
+<tr>
+<td><code>IdentityMismatch</code></td>
+<td>Vorgänger, Generation, Uhr, Epoche, Takt oder Grenzen passen nicht; Kandidat kann freigegeben werden</td>
+</tr>
+<tr>
+<td><code>StateMismatch</code></td>
+<td>q/dq/ddq/Zeitstempel am Wechselpunkt nicht exakt identisch; Kandidat abgelehnt</td>
+</tr>
+<tr>
+<td><code>Late</code></td>
+<td>Zu spät, zu geringer Mindestvorlauf oder außerhalb des aktiven Bereichs</td>
+</tr>
+<tr>
+<td><code>Committed</code></td>
+<td>Wechsel würde bereits übergebene Befehle ersetzen</td>
+</tr>
+<tr>
+<td><code>Faulted</code></td>
+<td>Ausführer ist fehlerhaft/beendet oder ausstehender Wechsel wurde beim Fehler abgebrochen</td>
+</tr>
+</tbody>
+</table>
+<p>Der Planer besitzt angebotene Caches mindestens bis zur zugehörigen Antwort.
+Bei <code>Activated</code> behält er den <strong>neuen</strong> Cache; nur der nicht mehr referenzierte
+alte darf außerhalb RT freigegeben werden. Bleibt er als Host-Snapshot oder
+Diagnosereferenz anderweitig in Benutzung, ist auch dessen Lebensdauer zu
+berücksichtigen. Rohzeiger im Postfach sind keine Besitzübertragung.
+<code>PreparedLivePlan::command(tick)</code> ist ein ungeprüfter schneller Zugriff; gültig
+ist nur <code>start_tick &lt;= tick &lt;= end_tick</code>. Direkten Anwendungszugriff begrenzen.</p>
+<p><code>snapshot()</code> liefert optional einen kohärenten atomaren Snapshot. Ein leeres
+Ergebnis ist eine fehlgeschlagene begrenzte Leseprobe, kein Bewegungsfehler.
+Andere direkte Getter sind nicht für beliebige parallele Leser freigegeben.
+Ein angebotener Kandidat darf bis zur Antwort nicht geändert oder ersetzt werden.</p>
+<h2 id="chapter-interface_contracts--beobachtungen-frames-und-kalibrierung">Beobachtungen, Frames und Kalibrierung</h2>
+<p><code>ObjectObservation</code> trägt Objekt-ID, Frame, Pose, Messzeit, Empfangszeit und
+Positions-/Orientierungsfehler. <code>EncoderObservation</code> trägt Position, v/a,
+Mess-/Empfangszeit und deren Fehlergrenzen. Zeiten müssen nominal kausal sein:
+Messung ≤ Empfang ≤ jetzt ≤ Prognosezeit. Alter, Latenz, Prognosehorizont und
+Unsicherheit werden zusätzlich begrenzt.</p>
+<p><code>TrackingFrameSnapshot</code> ist ein unveränderlicher statischer Framegraph mit
+Revision und Gültigkeitsintervall. <code>ConveyorObservationHistory</code> gehört zu
+Objekt-ID und Revision. Neue Revisionen verlangen ein explizites Reset und
+neue Beobachtungen; alte Daten werden nicht still neu interpretiert. Ein bereits
+zugelassener Cache wird dadurch nicht automatisch ungültig oder sofort gestoppt.
+Wie eure Steuerung bei einem Kalibrierungswechsel mit aktiven Plänen umgeht,
+ist deshalb eine spätere explizite Host-Policy.</p>
+<p><code>fit_rigid_calibration()</code> bestimmt <code>target_from_source</code> aus
+<code>PointCorrespondence {source, target, weight}</code>. Beide Punktmengen sind metrische
+3D-Positionen. Es wird ein starrer Transform, keine Skalierung, keine bewegte
+Framefusion und keine Gelenknullpunktkalibrierung geschätzt. Residuen und
+ausgelagerte Validierungspunkte vor Übernahme prüfen.</p></section><section id="chapter-class_diagrams"><h1 id="chapter-class_diagrams--uml-klassendiagramme">UML-Klassendiagramme</h1>
+<p>Die folgenden sieben Sichten beschreiben vorhandene Typen. Eine leere
+Dreieckspitze bezeichnet Vererbung; eine ausgefüllte Raute den Besitzer der
+enthaltenen Werte oder <code>shared_ptr</code>. Gestrichelte Pfeile zeigen Nutzung bzw.
+geliehene Referenzen. Geteiltes Eigentum ist zusätzlich beschriftet.
+Funktionen, die Objekte erzeugen, stehen an den Pfeilen; ausgewählte Methoden
+sind verkürzt dargestellt. Vollständige Signaturen stehen in den Headern.</p>
+<h2 id="chapter-class_diagrams--1-kinematik-und-zustände">1. Kinematik und Zustände</h2>
+<figure><svg width="533pt" height="413pt"
+ viewBox="0.00 0.00 533.00 413.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="chapter-class_diagrams--figure-kinematics-graph0" class="graph" transform="scale(1 1) rotate(0) translate(18 395)">
+<title>uml</title>
+<polygon fill="white" stroke="transparent" points="-18,18 -18,-395 515,-395 515,18 -18,18"/>
+<!-- state -->
+<g id="chapter-class_diagrams--figure-kinematics-node1" class="node">
+<title>state</title>
+<polygon fill="#dbeafe" stroke="transparent" points="14,-42.5 14,-63.5 127,-63.5 127,-42.5 14,-42.5"/>
+<text text-anchor="start" x="42.5" y="-51.5" font-family="DejaVu Sans" font-weight="bold" font-size="10.00">JointState</text>
+<text text-anchor="start" x="19" y="-29.5" font-family="DejaVu Sans" font-size="10.00">q, dq, ddq: Vector</text>
+<text text-anchor="start" x="19" y="-8.5" font-family="DejaVu Sans" font-size="10.00">timestamp_s: double</text>
+<polygon fill="none" stroke="black" points="12.5,0 12.5,-65 127.5,-65 127.5,0 12.5,0"/>
+</g>
+<!-- ik -->
+<g id="chapter-class_diagrams--figure-kinematics-node2" class="node">
+<title>ik</title>
+<polygon fill="#dbeafe" stroke="transparent" points="410,-192.5 410,-213.5 496,-213.5 496,-192.5 410,-192.5"/>
+<text text-anchor="start" x="419.5" y="-201.5" font-family="DejaVu Sans" font-weight="bold" font-size="10.00">IKinematics</text>
+<text text-anchor="start" x="415" y="-179.5" font-family="DejaVu Sans" font-size="10.00">dof()</text>
+<text text-anchor="start" x="415" y="-158.5" font-family="DejaVu Sans" font-size="10.00">fk(q)</text>
+<text text-anchor="start" x="415" y="-137.5" font-family="DejaVu Sans" font-size="10.00">ik(target, seed)</text>
+<text text-anchor="start" x="415" y="-116.5" font-family="DejaVu Sans" font-size="10.00">jacobian(q)</text>
+<polygon fill="none" stroke="black" points="409,-108 409,-215 497,-215 497,-108 409,-108"/>
+</g>
+<!-- differential -->
+<g id="chapter-class_diagrams--figure-kinematics-node3" class="node">
+<title>differential</title>
+<polygon fill="#dbeafe" stroke="transparent" points="199.5,-233.5 199.5,-254.5 350.5,-254.5 350.5,-233.5 199.5,-233.5"/>
+<text text-anchor="start" x="209.5" y="-242.5" font-family="DejaVu Sans" font-weight="bold" font-size="10.00">IDifferentialKinematics</text>
+<text text-anchor="start" x="204.5" y="-220.5" font-family="DejaVu Sans" font-size="10.00">position_limits()</text>
+<text text-anchor="start" x="204.5" y="-199.5" font-family="DejaVu Sans" font-size="10.00">singularity(q)</text>
+<text text-anchor="start" x="204.5" y="-178.5" font-family="DejaVu Sans" font-size="10.00">differentiate(q, dq, ddq, jerk)</text>
+<polygon fill="none" stroke="black" points="198,-169.5 198,-255.5 351,-255.5 351,-169.5 198,-169.5"/>
+</g>
+<!-- differential&#45;&gt;ik -->
+<g id="chapter-class_diagrams--figure-kinematics-edge1" class="edge">
+<title>differential&#45;&gt;ik</title>
+<path fill="none" stroke="#475569" d="M351.12,-190.65C367.24,-185.99 383.93,-181.17 398.98,-176.82"/>
+<polygon fill="none" stroke="#475569" points="399.98,-180.17 408.62,-174.03 398.04,-173.45 399.98,-180.17"/>
+</g>
+<!-- serial -->
+<g id="chapter-class_diagrams--figure-kinematics-node4" class="node">
+<title>serial</title>
+<polygon fill="#dbeafe" stroke="transparent" points="1,-354.5 1,-375.5 139,-375.5 139,-354.5 1,-354.5"/>
+<text text-anchor="start" x="6" y="-363.5" font-family="DejaVu Sans" font-weight="bold" font-size="10.00">SerialChainKinematics</text>
+<text text-anchor="start" x="6" y="-341.5" font-family="DejaVu Sans" font-size="10.00">ik_detailed(target, seed)</text>
+<text text-anchor="start" x="6" y="-320.5" font-family="DejaVu Sans" font-size="10.00">joint_names()</text>
+<text text-anchor="start" x="6" y="-299.5" font-family="DejaVu Sans" font-size="10.00">base_pose()</text>
+<text text-anchor="start" x="6" y="-278.5" font-family="DejaVu Sans" font-size="10.00">tool_offset()</text>
+<polygon fill="none" stroke="black" points="0,-270 0,-377 140,-377 140,-270 0,-270"/>
+</g>
+<!-- serial&#45;&gt;differential -->
+<g id="chapter-class_diagrams--figure-kinematics-edge2" class="edge">
+<title>serial&#45;&gt;differential</title>
+<path fill="none" stroke="#475569" d="M140.12,-285.61C155.78,-277.03 172.59,-267.81 188.81,-258.92"/>
+<polygon fill="none" stroke="#475569" points="190.67,-261.9 197.75,-254.02 187.3,-255.76 190.67,-261.9"/>
+</g>
+<!-- gantry -->
+<g id="chapter-class_diagrams--figure-kinematics-node5" class="node">
+<title>gantry</title>
+<polygon fill="#dbeafe" stroke="transparent" points="223.5,-121.5 223.5,-142.5 326.5,-142.5 326.5,-121.5 223.5,-121.5"/>
+<text text-anchor="start" x="228.5" y="-130.5" font-family="DejaVu Sans" font-weight="bold" font-size="10.00">CartesianGantry</text>
+<text text-anchor="start" x="228.5" y="-108.5" font-family="DejaVu Sans" font-size="10.00">fk(q)</text>
+<text text-anchor="start" x="228.5" y="-87.5" font-family="DejaVu Sans" font-size="10.00">ik(target, seed)</text>
+<polygon fill="none" stroke="black" points="222,-79 222,-144 327,-144 327,-79 222,-79"/>
+</g>
+<!-- gantry&#45;&gt;ik -->
+<g id="chapter-class_diagrams--figure-kinematics-edge5" class="edge">
+<title>gantry&#45;&gt;ik</title>
+<path fill="none" stroke="#475569" d="M327.03,-126.1C349.63,-132.5 376.14,-140.01 398.92,-146.46"/>
+<polygon fill="none" stroke="#475569" points="398.18,-149.89 408.76,-149.25 400.09,-143.16 398.18,-149.89"/>
+</g>
+<!-- scara -->
+<g id="chapter-class_diagrams--figure-kinematics-node6" class="node">
+<title>scara</title>
+<polygon fill="#dbeafe" stroke="transparent" points="18,-222.5 18,-243.5 123,-243.5 123,-222.5 18,-222.5"/>
+<text text-anchor="start" x="23" y="-231.5" font-family="DejaVu Sans" font-weight="bold" font-size="10.00">ScaraKinematics</text>
+<text text-anchor="start" x="23" y="-209.5" font-family="DejaVu Sans" font-size="10.00">fk(q)</text>
+<text text-anchor="start" x="23" y="-188.5" font-family="DejaVu Sans" font-size="10.00">ik(target, seed)</text>
+<polygon fill="none" stroke="black" points="16.5,-180 16.5,-245 123.5,-245 123.5,-180 16.5,-180"/>
+</g>
+<!-- scara&#45;&gt;differential -->
+<g id="chapter-class_diagrams--figure-kinematics-edge3" class="edge">
+<title>scara&#45;&gt;differential</title>
+<path fill="none" stroke="#475569" d="M123.68,-212.5C143.2,-212.5 165.88,-212.5 187.6,-212.5"/>
+<polygon fill="none" stroke="#475569" points="187.83,-216 197.83,-212.5 187.83,-209 187.83,-216"/>
+</g>
+<!-- delta -->
+<g id="chapter-class_diagrams--figure-kinematics-node7" class="node">
+<title>delta</title>
+<polygon fill="#dbeafe" stroke="transparent" points="19,-132.5 19,-153.5 122,-153.5 122,-132.5 19,-132.5"/>
+<text text-anchor="start" x="24" y="-141.5" font-family="DejaVu Sans" font-weight="bold" font-size="10.00">DeltaKinematics</text>
+<text text-anchor="start" x="24" y="-119.5" font-family="DejaVu Sans" font-size="10.00">fk(q)</text>
+<text text-anchor="start" x="24" y="-98.5" font-family="DejaVu Sans" font-size="10.00">ik(target, seed)</text>
+<polygon fill="none" stroke="black" points="17.5,-90 17.5,-155 122.5,-155 122.5,-90 17.5,-90"/>
+</g>
+<!-- delta&#45;&gt;differential -->
+<g id="chapter-class_diagrams--figure-kinematics-edge4" class="edge">
+<title>delta&#45;&gt;differential</title>
+<path fill="none" stroke="#475569" d="M122.62,-145.44C142.71,-154.37 166.25,-164.83 188.69,-174.81"/>
+<polygon fill="none" stroke="#475569" points="187.33,-178.03 197.89,-178.89 190.17,-171.63 187.33,-178.03"/>
+</g>
+</g>
+</svg>
+<figcaption>Kinematik</figcaption></figure>
+
+<p><code>CartesianGantry</code> implementiert das Basisinterface; serielle, SCARA- und Delta-
+Kinematik implementieren zusätzlich das differentielle Interface. Der lokale
+serielle IK-Solver garantiert keine globale Verzweigungssuche.
+<a href="architecture/diagrams/kinematics.dot">DOT-Quelle</a>.</p>
+<h2 id="chapter-class_diagrams--2-geometrie-abbildung-und-zeitplanung">2. Geometrie, Abbildung und Zeitplanung</h2>
+<figure><svg width="798pt" height="532pt"
+ viewBox="0.00 0.00 798.00 531.50" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="chapter-class_diagrams--figure-planning-graph0" class="graph" transform="scale(1 1) rotate(0) translate(18 513.5)">
+<title>uml</title>
+<polygon fill="white" stroke="transparent" points="-18,18 -18,-513.5 780,-513.5 780,18 -18,18"/>
+<!-- fixed -->
+<g id="chapter-class_diagrams--figure-planning-node1" class="node">
+<title>fixed</title>
+<polygon fill="#dbeafe" stroke="transparent" points="627,-414.5 627,-435.5 761,-435.5 761,-414.5 627,-414.5"/>
+<text text-anchor="start" x="632" y="-423.5" font-family="DejaVu Sans" font-weight="bold" font-size="10.00">IFixedOrientationPath</text>
+<text text-anchor="start" x="632" y="-401.5" font-family="DejaVu Sans" font-size="10.00">evaluate(s)</text>
+<text text-anchor="start" x="632" y="-380.5" font-family="DejaVu Sans" font-size="10.00">bounds()</text>
+<polygon fill="none" stroke="black" points="626,-372 626,-437 762,-437 762,-372 626,-372"/>
+</g>
+<!-- line -->
+<g id="chapter-class_diagrams--figure-planning-node2" class="node">
+<title>line</title>
+<polygon fill="#dbeafe" stroke="transparent" points="309,-473.5 309,-494.5 422,-494.5 422,-473.5 309,-473.5"/>
+<text text-anchor="start" x="314" y="-482.5" font-family="DejaVu Sans" font-weight="bold" font-size="10.00">CartesianLinePath</text>
+<text text-anchor="start" x="314" y="-460.5" font-family="DejaVu Sans" font-size="10.00">evaluate(s)</text>
+<polygon fill="none" stroke="black" points="307.5,-451.5 307.5,-495.5 422.5,-495.5 422.5,-451.5 307.5,-451.5"/>
+</g>
+<!-- line&#45;&gt;fixed -->
+<g id="chapter-class_diagrams--figure-planning-edge1" class="edge">
+<title>line&#45;&gt;fixed</title>
+<path fill="none" stroke="#475569" d="M422.59,-461.56C475.98,-450.29 556.47,-433.31 615.75,-420.8"/>
+<polygon fill="none" stroke="#475569" points="616.76,-424.17 625.82,-418.68 615.31,-417.32 616.76,-424.17"/>
+</g>
+<!-- arc -->
+<g id="chapter-class_diagrams--figure-planning-node3" class="node">
+<title>arc</title>
+<polygon fill="#dbeafe" stroke="transparent" points="311,-404.5 311,-425.5 419,-425.5 419,-404.5 311,-404.5"/>
+<text text-anchor="start" x="316" y="-413.5" font-family="DejaVu Sans" font-weight="bold" font-size="10.00">CartesianArcPath</text>
+<text text-anchor="start" x="316" y="-391.5" font-family="DejaVu Sans" font-size="10.00">evaluate(s)</text>
+<polygon fill="none" stroke="black" points="310,-382.5 310,-426.5 420,-426.5 420,-382.5 310,-382.5"/>
+</g>
+<!-- arc&#45;&gt;fixed -->
+<g id="chapter-class_diagrams--figure-planning-edge2" class="edge">
+<title>arc&#45;&gt;fixed</title>
+<path fill="none" stroke="#475569" d="M420.36,-404.5C473.67,-404.5 555.46,-404.5 615.56,-404.5"/>
+<polygon fill="none" stroke="#475569" points="615.76,-408 625.76,-404.5 615.76,-401 615.76,-408"/>
+</g>
+<!-- pose -->
+<g id="chapter-class_diagrams--figure-planning-node4" class="node">
+<title>pose</title>
+<polygon fill="#dbeafe" stroke="transparent" points="661,-276.5 661,-297.5 727,-297.5 727,-276.5 661,-276.5"/>
+<text text-anchor="start" x="666" y="-285.5" font-family="DejaVu Sans" font-weight="bold" font-size="10.00">IPosePath</text>
+<text text-anchor="start" x="666" y="-263.5" font-family="DejaVu Sans" font-size="10.00">evaluate(s)</text>
+<text text-anchor="start" x="666" y="-242.5" font-family="DejaVu Sans" font-size="10.00">bounds()</text>
+<polygon fill="none" stroke="black" points="660,-234 660,-299 728,-299 728,-234 660,-234"/>
+</g>
+<!-- sweep -->
+<g id="chapter-class_diagrams--figure-planning-node5" class="node">
+<title>sweep</title>
+<polygon fill="#dbeafe" stroke="transparent" points="315,-335.5 315,-356.5 415,-356.5 415,-335.5 315,-335.5"/>
+<text text-anchor="start" x="320" y="-344.5" font-family="DejaVu Sans" font-weight="bold" font-size="10.00">PoseSweepPath</text>
+<text text-anchor="start" x="320" y="-322.5" font-family="DejaVu Sans" font-size="10.00">evaluate(s)</text>
+<polygon fill="none" stroke="black" points="314,-313.5 314,-357.5 416,-357.5 416,-313.5 314,-313.5"/>
+</g>
+<!-- sweep&#45;&gt;fixed -->
+<g id="chapter-class_diagrams--figure-planning-edge5" class="edge">
+<title>sweep&#45;&gt;fixed</title>
+<path fill="none" stroke="#475569" d="M428.01,-348.59C484.56,-360.52 567.91,-378.1 625.97,-390.36"/>
+<polygon fill="#475569" stroke="#475569" points="427.76,-348.53 421.07,-351.21 416.02,-346.05 422.72,-343.38 427.76,-348.53"/>
+<text text-anchor="middle" x="533.5" y="-386.3" font-family="DejaVu Sans" font-size="9.00">shared_ptr&lt;const&gt;</text>
+</g>
+<!-- sweep&#45;&gt;pose -->
+<g id="chapter-class_diagrams--figure-planning-edge3" class="edge">
+<title>sweep&#45;&gt;pose</title>
+<path fill="none" stroke="#475569" d="M416.02,-324.95C479.95,-311.46 589.56,-288.33 649.94,-275.59"/>
+<polygon fill="none" stroke="#475569" points="650.85,-278.97 659.91,-273.48 649.4,-272.12 650.85,-278.97"/>
+</g>
+<!-- blend -->
+<g id="chapter-class_diagrams--figure-planning-node6" class="node">
+<title>blend</title>
+<polygon fill="#dbeafe" stroke="transparent" points="311,-266.5 311,-287.5 420,-287.5 420,-266.5 311,-266.5"/>
+<text text-anchor="start" x="316" y="-275.5" font-family="DejaVu Sans" font-weight="bold" font-size="10.00">BlendedPosePath</text>
+<text text-anchor="start" x="316" y="-253.5" font-family="DejaVu Sans" font-size="10.00">evaluate(s)</text>
+<polygon fill="none" stroke="black" points="309.5,-244.5 309.5,-288.5 420.5,-288.5 420.5,-244.5 309.5,-244.5"/>
+</g>
+<!-- blend&#45;&gt;pose -->
+<g id="chapter-class_diagrams--figure-planning-edge4" class="edge">
+<title>blend&#45;&gt;pose</title>
+<path fill="none" stroke="#475569" d="M420.73,-266.5C485.05,-266.5 590.47,-266.5 649.49,-266.5"/>
+<polygon fill="none" stroke="#475569" points="649.6,-270 659.6,-266.5 649.6,-263 649.6,-270"/>
+</g>
+<!-- bounded -->
+<g id="chapter-class_diagrams--figure-planning-node7" class="node">
+<title>bounded</title>
+<polygon fill="#dbeafe" stroke="transparent" points="637,-132.5 637,-153.5 751,-153.5 751,-132.5 637,-132.5"/>
+<text text-anchor="start" x="642" y="-141.5" font-family="DejaVu Sans" font-weight="bold" font-size="10.00">IBoundedJointPath</text>
+<text text-anchor="start" x="642" y="-119.5" font-family="DejaVu Sans" font-size="10.00">evaluate(s)</text>
+<text text-anchor="start" x="642" y="-98.5" font-family="DejaVu Sans" font-size="10.00">bounds()</text>
+<polygon fill="none" stroke="black" points="636,-90 636,-155 752,-155 752,-90 636,-90"/>
+</g>
+<!-- spline -->
+<g id="chapter-class_diagrams--figure-planning-node8" class="node">
+<title>spline</title>
+<polygon fill="#dbeafe" stroke="transparent" points="290,-196.5 290,-217.5 440,-217.5 440,-196.5 290,-196.5"/>
+<text text-anchor="start" x="307.5" y="-205.5" font-family="DejaVu Sans" font-weight="bold" font-size="10.00">CartesianSplinePath</text>
+<text text-anchor="start" x="295" y="-183.5" font-family="DejaVu Sans" font-size="10.00">evaluate(s)</text>
+<text text-anchor="start" x="295" y="-162.5" font-family="DejaVu Sans" font-size="10.00">admitted_position_error_m()</text>
+<polygon fill="none" stroke="black" points="289,-154 289,-219 441,-219 441,-154 289,-154"/>
+</g>
+<!-- spline&#45;&gt;pose -->
+<g id="chapter-class_diagrams--figure-planning-edge7" class="edge">
+<title>spline&#45;&gt;pose</title>
+<path fill="none" stroke="#475569" stroke-dasharray="5,2" d="M441.02,-204.85C505.68,-220.67 596.75,-242.95 649.86,-255.94"/>
+<polygon fill="#475569" stroke="#475569" points="659.63,-258.34 648.85,-260.33 654.78,-257.15 649.92,-255.96 649.92,-255.96 649.92,-255.96 654.78,-257.15 650.99,-251.59 659.63,-258.34 659.63,-258.34"/>
+<text text-anchor="middle" x="533.5" y="-245.3" font-family="DejaVu Sans" font-size="9.00">zugelassener Pose&#45;Schlauch</text>
+</g>
+<!-- spline&#45;&gt;bounded -->
+<g id="chapter-class_diagrams--figure-planning-edge6" class="edge">
+<title>spline&#45;&gt;bounded</title>
+<path fill="none" stroke="#475569" d="M441.02,-171.82C496.73,-160.91 572.06,-146.17 625.8,-135.65"/>
+<polygon fill="none" stroke="#475569" points="626.77,-139.03 635.92,-133.67 625.43,-132.16 626.77,-139.03"/>
+</g>
+<!-- timing -->
+<g id="chapter-class_diagrams--figure-planning-node9" class="node">
+<title>timing</title>
+<polygon fill="#dbeafe" stroke="transparent" points="1,-77.5 1,-98.5 145,-98.5 145,-77.5 1,-77.5"/>
+<text text-anchor="start" x="6" y="-86.5" font-family="DejaVu Sans" font-weight="bold" font-size="10.00">PathTimeParameterizer</text>
+<text text-anchor="start" x="6" y="-64.5" font-family="DejaVu Sans" font-size="10.00">plan(path, initial, limits)</text>
+<polygon fill="none" stroke="black" points="0,-55.5 0,-99.5 146,-99.5 146,-55.5 0,-55.5"/>
+</g>
+<!-- timing&#45;&gt;bounded -->
+<g id="chapter-class_diagrams--figure-planning-edge8" class="edge">
+<title>timing&#45;&gt;bounded</title>
+<path fill="none" stroke="#475569" stroke-dasharray="5,2" d="M146.22,-82.75C266.95,-91.53 508.08,-109.06 625.55,-117.6"/>
+<polygon fill="#475569" stroke="#475569" points="635.85,-118.34 625.55,-122.11 630.86,-117.98 625.87,-117.62 625.87,-117.62 625.87,-117.62 630.86,-117.98 626.2,-113.13 635.85,-118.34 635.85,-118.34"/>
+<text text-anchor="middle" x="365" y="-106.3" font-family="DejaVu Sans" font-size="9.00">kontinuierliche Hüllen</text>
+</g>
+<!-- timed -->
+<g id="chapter-class_diagrams--figure-planning-node10" class="node">
+<title>timed</title>
+<polygon fill="#dbeafe" stroke="transparent" points="301,-45.5 301,-66.5 429,-66.5 429,-45.5 301,-45.5"/>
+<text text-anchor="start" x="306" y="-54.5" font-family="DejaVu Sans" font-weight="bold" font-size="10.00">TimedPathTrajectory</text>
+<text text-anchor="start" x="306" y="-32.5" font-family="DejaVu Sans" font-size="10.00">sample(time_s)</text>
+<text text-anchor="start" x="306" y="-11.5" font-family="DejaVu Sans" font-size="10.00">sample_motion(time_s)</text>
+<polygon fill="none" stroke="black" points="300,-3 300,-68 430,-68 430,-3 300,-3"/>
+</g>
+<!-- timing&#45;&gt;timed -->
+<g id="chapter-class_diagrams--figure-planning-edge9" class="edge">
+<title>timing&#45;&gt;timed</title>
+<path fill="none" stroke="#475569" stroke-dasharray="5,2" d="M146.06,-67.06C189.79,-60.73 245.49,-52.66 289.63,-46.27"/>
+<polygon fill="#475569" stroke="#475569" points="299.73,-44.81 290.47,-50.7 294.78,-45.53 289.83,-46.24 289.83,-46.24 289.83,-46.24 294.78,-45.53 289.18,-41.79 299.73,-44.81 299.73,-44.81"/>
+<text text-anchor="middle" x="217.5" y="-66.3" font-family="DejaVu Sans" font-size="9.00">erzeugt PlanResult</text>
+</g>
+<!-- timed&#45;&gt;bounded -->
+<g id="chapter-class_diagrams--figure-planning-edge11" class="edge">
+<title>timed&#45;&gt;bounded</title>
+<path fill="none" stroke="#475569" d="M442,-51.23C487.3,-61.11 545.77,-74.75 597,-89.5 609.7,-93.16 623.2,-97.5 635.94,-101.82"/>
+<polygon fill="#475569" stroke="#475569" points="441.91,-51.21 435.2,-53.85 430.18,-48.67 436.89,-46.03 441.91,-51.21"/>
+<text text-anchor="middle" x="533.5" y="-92.3" font-family="DejaVu Sans" font-size="9.00">shared_ptr&lt;const&gt;</text>
+</g>
+<!-- trajectory -->
+<g id="chapter-class_diagrams--figure-planning-node11" class="node">
+<title>trajectory</title>
+<polygon fill="#dbeafe" stroke="transparent" points="651,-42.5 651,-63.5 738,-63.5 738,-42.5 651,-42.5"/>
+<text text-anchor="start" x="663.5" y="-51.5" font-family="DejaVu Sans" font-weight="bold" font-size="10.00">ITrajectory</text>
+<text text-anchor="start" x="656" y="-29.5" font-family="DejaVu Sans" font-size="10.00">duration()</text>
+<text text-anchor="start" x="656" y="-8.5" font-family="DejaVu Sans" font-size="10.00">sample(time_s)</text>
+<polygon fill="none" stroke="black" points="649.5,0 649.5,-65 738.5,-65 738.5,0 649.5,0"/>
+</g>
+<!-- timed&#45;&gt;trajectory -->
+<g id="chapter-class_diagrams--figure-planning-edge10" class="edge">
+<title>timed&#45;&gt;trajectory</title>
+<path fill="none" stroke="#475569" d="M430.21,-34.91C491.15,-34.35 581.69,-33.52 639.01,-33"/>
+<polygon fill="none" stroke="#475569" points="639.34,-36.49 649.31,-32.9 639.28,-29.49 639.34,-36.49"/>
+</g>
+</g>
+</svg>
+<figcaption>Planung</figcaption></figure>
+
+<p>Geometrieparameter s ist keine Zeit. Die Spline-Abbildung verbindet Posepfad und
+Kinematik; erst danach bestimmt die Zeitplanung einen zulässigen Verlauf.
+Die Pfeile zur Referenzgeometrie beschreiben die Zulassung, nicht zwingend eine
+zusätzliche gespeicherte Laufzeitreferenz. <a href="architecture/diagrams/planning.dot">DOT-Quelle</a>.</p>
+<h2 id="chapter-class_diagrams--3-anwenderprogramm-und-schedule">3. Anwenderprogramm und Schedule</h2>
+<figure><svg width="1253pt" height="354pt"
+ viewBox="0.00 0.00 1253.00 353.50" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="chapter-class_diagrams--figure-program-graph0" class="graph" transform="scale(1 1) rotate(0) translate(18 335.5)">
+<title>uml</title>
+<polygon fill="white" stroke="transparent" points="-18,18 -18,-335.5 1235,-335.5 1235,18 -18,18"/>
+<!-- source -->
+<g id="chapter-class_diagrams--figure-program-node1" class="node">
+<title>source</title>
+<polygon fill="#dbeafe" stroke="transparent" points="1,-255.5 1,-276.5 133,-276.5 133,-255.5 1,-255.5"/>
+<text text-anchor="start" x="6" y="-264.5" font-family="DejaVu Sans" font-weight="bold" font-size="10.00">RobotProgramSource</text>
+<text text-anchor="start" x="6" y="-242.5" font-family="DejaVu Sans" font-size="10.00">start()</text>
+<text text-anchor="start" x="6" y="-221.5" font-family="DejaVu Sans" font-size="10.00">instructions()</text>
+<text text-anchor="start" x="6" y="-200.5" font-family="DejaVu Sans" font-size="10.00">cycle_s()</text>
+<text text-anchor="start" x="6" y="-179.5" font-family="DejaVu Sans" font-size="10.00">epoch_s()</text>
+<polygon fill="none" stroke="black" points="0,-171 0,-278 134,-278 134,-171 0,-171"/>
+</g>
+<!-- instruction -->
+<g id="chapter-class_diagrams--figure-program-node2" class="node">
+<title>instruction</title>
+<polygon fill="#dbeafe" stroke="transparent" points="372.5,-295.5 372.5,-316.5 512.5,-316.5 512.5,-295.5 372.5,-295.5"/>
+<text text-anchor="start" x="387" y="-304.5" font-family="DejaVu Sans" font-weight="bold" font-size="10.00">ProgramInstruction</text>
+<text text-anchor="start" x="377.5" y="-282.5" font-family="DejaVu Sans" font-size="10.00">operation, target, speed</text>
+<text text-anchor="start" x="377.5" y="-261.5" font-family="DejaVu Sans" font-size="10.00">center, normal, sweep_rad</text>
+<text text-anchor="start" x="377.5" y="-240.5" font-family="DejaVu Sans" font-size="10.00">seconds, location</text>
+<polygon fill="none" stroke="black" points="371.5,-231.5 371.5,-317.5 513.5,-317.5 513.5,-231.5 371.5,-231.5"/>
+</g>
+<!-- source&#45;&gt;instruction -->
+<g id="chapter-class_diagrams--figure-program-edge1" class="edge">
+<title>source&#45;&gt;instruction</title>
+<path fill="none" stroke="#475569" d="M146.42,-235C212.88,-243.9 307.33,-256.54 371.33,-265.11"/>
+<polygon fill="#475569" stroke="#475569" points="146.24,-234.97 139.76,-238.14 134.34,-233.38 140.82,-230.21 146.24,-234.97"/>
+<text text-anchor="middle" x="222" y="-254.3" font-family="DejaVu Sans" font-size="9.00">vollständig validierte Liste</text>
+</g>
+<!-- prepared -->
+<g id="chapter-class_diagrams--figure-program-node3" class="node">
+<title>prepared</title>
+<polygon fill="#dbeafe" stroke="transparent" points="311.5,-183.5 311.5,-204.5 574.5,-204.5 574.5,-183.5 311.5,-183.5"/>
+<text text-anchor="start" x="375" y="-192.5" font-family="DejaVu Sans" font-weight="bold" font-size="10.00">PreparedRobotProgram</text>
+<text text-anchor="start" x="316.5" y="-170.5" font-family="DejaVu Sans" font-size="10.00">reference: shared_ptr&lt;const RobotProgram&gt;</text>
+<text text-anchor="start" x="316.5" y="-149.5" font-family="DejaVu Sans" font-size="10.00">schedule: shared_ptr&lt;const CycleAlignedProgram&gt;</text>
+<polygon fill="none" stroke="black" points="310,-141 310,-206 575,-206 575,-141 310,-141"/>
+</g>
+<!-- source&#45;&gt;prepared -->
+<g id="chapter-class_diagrams--figure-program-edge2" class="edge">
+<title>source&#45;&gt;prepared</title>
+<path fill="none" stroke="#475569" stroke-dasharray="5,2" d="M134.34,-215.44C180.12,-209.19 242.73,-200.64 299.48,-192.89"/>
+<polygon fill="#475569" stroke="#475569" points="309.64,-191.51 300.34,-197.32 304.68,-192.18 299.73,-192.86 299.73,-192.86 299.73,-192.86 304.68,-192.18 299.12,-188.4 309.64,-191.51 309.64,-191.51"/>
+<text text-anchor="middle" x="222" y="-213.3" font-family="DejaVu Sans" font-size="9.00">compile_robot_program()</text>
+</g>
+<!-- program -->
+<g id="chapter-class_diagrams--figure-program-node4" class="node">
+<title>program</title>
+<polygon fill="#dbeafe" stroke="transparent" points="729,-250.5 729,-271.5 897,-271.5 897,-250.5 729,-250.5"/>
+<text text-anchor="start" x="771.5" y="-259.5" font-family="DejaVu Sans" font-weight="bold" font-size="10.00">RobotProgram</text>
+<text text-anchor="start" x="734" y="-237.5" font-family="DejaVu Sans" font-size="10.00">sample_segment(index, time_s)</text>
+<text text-anchor="start" x="734" y="-216.5" font-family="DejaVu Sans" font-size="10.00">sample_motion(index, time_s)</text>
+<text text-anchor="start" x="734" y="-195.5" font-family="DejaVu Sans" font-size="10.00">robot()</text>
+<polygon fill="none" stroke="black" points="728,-186.5 728,-272.5 898,-272.5 898,-186.5 728,-186.5"/>
+</g>
+<!-- prepared&#45;&gt;program -->
+<g id="chapter-class_diagrams--figure-program-edge3" class="edge">
+<title>prepared&#45;&gt;program</title>
+<path fill="none" stroke="#475569" d="M587.25,-195.34C634.84,-202.58 686.23,-210.39 727.84,-216.71"/>
+<polygon fill="#475569" stroke="#475569" points="587.1,-195.32 580.57,-198.38 575.24,-193.52 581.77,-190.47 587.1,-195.32"/>
+<text text-anchor="middle" x="651.5" y="-213.3" font-family="DejaVu Sans" font-size="9.00">immutable reference</text>
+</g>
+<!-- grid -->
+<g id="chapter-class_diagrams--figure-program-node6" class="node">
+<title>grid</title>
+<polygon fill="#dbeafe" stroke="transparent" points="746,-139.5 746,-160.5 880,-160.5 880,-139.5 746,-139.5"/>
+<text text-anchor="start" x="751" y="-148.5" font-family="DejaVu Sans" font-weight="bold" font-size="10.00">CycleAlignedProgram</text>
+<text text-anchor="start" x="751" y="-126.5" font-family="DejaVu Sans" font-size="10.00">sample_tick(tick)</text>
+<text text-anchor="start" x="751" y="-105.5" font-family="DejaVu Sans" font-size="10.00">cycle_s()</text>
+<text text-anchor="start" x="751" y="-84.5" font-family="DejaVu Sans" font-size="10.00">time_scale(index)</text>
+<polygon fill="none" stroke="black" points="745,-75.5 745,-161.5 881,-161.5 881,-75.5 745,-75.5"/>
+</g>
+<!-- prepared&#45;&gt;grid -->
+<g id="chapter-class_diagrams--figure-program-edge4" class="edge">
+<title>prepared&#45;&gt;grid</title>
+<path fill="none" stroke="#475569" d="M587.11,-152.07C641.46,-143.95 700.77,-135.1 744.83,-128.53"/>
+<polygon fill="#475569" stroke="#475569" points="587.1,-152.07 581.76,-156.91 575.24,-153.84 580.58,-149 587.1,-152.07"/>
+<text text-anchor="middle" x="651.5" y="-152.3" font-family="DejaVu Sans" font-size="9.00">immutable schedule</text>
+</g>
+<!-- joint -->
+<g id="chapter-class_diagrams--figure-program-node5" class="node">
+<title>joint</title>
+<polygon fill="#dbeafe" stroke="transparent" points="1082,-216.5 1082,-237.5 1216,-237.5 1216,-216.5 1082,-216.5"/>
+<text text-anchor="start" x="1109.5" y="-225.5" font-family="DejaVu Sans" font-weight="bold" font-size="10.00">IJointProgram</text>
+<text text-anchor="start" x="1087" y="-203.5" font-family="DejaVu Sans" font-size="10.00">segment_count()</text>
+<text text-anchor="start" x="1087" y="-182.5" font-family="DejaVu Sans" font-size="10.00">segment_duration(index)</text>
+<text text-anchor="start" x="1087" y="-161.5" font-family="DejaVu Sans" font-size="10.00">initial_state()</text>
+<text text-anchor="start" x="1087" y="-140.5" font-family="DejaVu Sans" font-size="10.00">joint_limits()</text>
+<polygon fill="none" stroke="black" points="1081,-132 1081,-239 1217,-239 1217,-132 1081,-132"/>
+</g>
+<!-- program&#45;&gt;joint -->
+<g id="chapter-class_diagrams--figure-program-edge5" class="edge">
+<title>program&#45;&gt;joint</title>
+<path fill="none" stroke="#475569" d="M898.28,-218.4C951.28,-211.42 1019.14,-202.48 1070.74,-195.68"/>
+<polygon fill="none" stroke="#475569" points="1071.37,-199.12 1080.83,-194.35 1070.46,-192.18 1071.37,-199.12"/>
+</g>
+<!-- grid&#45;&gt;joint -->
+<g id="chapter-class_diagrams--figure-program-edge6" class="edge">
+<title>grid&#45;&gt;joint</title>
+<path fill="none" stroke="#475569" d="M881.21,-132.23C896.28,-135.29 912.18,-138.52 927,-141.5 974.75,-151.11 1028.34,-161.78 1070.78,-170.21"/>
+<polygon fill="none" stroke="#475569" points="1070.28,-173.68 1080.77,-172.19 1071.64,-166.81 1070.28,-173.68"/>
+</g>
+<!-- grid&#45;&gt;joint -->
+<g id="chapter-class_diagrams--figure-program-edge8" class="edge">
+<title>grid&#45;&gt;joint</title>
+<path fill="none" stroke="#475569" d="M893.15,-110.59C940.27,-108.37 1000.68,-109.96 1052,-125.5 1061.78,-128.46 1071.55,-132.7 1080.91,-137.56"/>
+<polygon fill="#475569" stroke="#475569" points="893.14,-110.59 887.37,-114.91 881.16,-111.24 886.93,-106.92 893.14,-110.59"/>
+<text text-anchor="middle" x="989.5" y="-128.3" font-family="DejaVu Sans" font-size="9.00">source: shared_ptr&lt;const&gt;</text>
+</g>
+<!-- schedule -->
+<g id="chapter-class_diagrams--figure-program-node7" class="node">
+<title>schedule</title>
+<polygon fill="#dbeafe" stroke="transparent" points="1089,-84.5 1089,-105.5 1210,-105.5 1210,-84.5 1089,-84.5"/>
+<text text-anchor="start" x="1094" y="-93.5" font-family="DejaVu Sans" font-weight="bold" font-size="10.00">IExecutionSchedule</text>
+<text text-anchor="start" x="1094" y="-71.5" font-family="DejaVu Sans" font-size="10.00">total_ticks()</text>
+<text text-anchor="start" x="1094" y="-50.5" font-family="DejaVu Sans" font-size="10.00">tick_time(tick)</text>
+<text text-anchor="start" x="1094" y="-29.5" font-family="DejaVu Sans" font-size="10.00">boundary_ticks()</text>
+<text text-anchor="start" x="1094" y="-8.5" font-family="DejaVu Sans" font-size="10.00">sample_tick(tick)</text>
+<polygon fill="none" stroke="black" points="1087.5,0 1087.5,-107 1210.5,-107 1210.5,0 1087.5,0"/>
+</g>
+<!-- grid&#45;&gt;schedule -->
+<g id="chapter-class_diagrams--figure-program-edge7" class="edge">
+<title>grid&#45;&gt;schedule</title>
+<path fill="none" stroke="#475569" d="M881.16,-103.94C896.23,-100.75 912.15,-97.45 927,-94.5 977.24,-84.51 1034.07,-73.98 1077.52,-66.1"/>
+<polygon fill="none" stroke="#475569" points="1078.2,-69.53 1087.42,-64.3 1076.95,-62.64 1078.2,-69.53"/>
+</g>
+</g>
+</svg>
+<figcaption>Programm</figcaption></figure>
+
+<p>Ein vollständig zugelassenes <code>PreparedRobotProgram</code> enthält sowohl die fachliche
+Programmreferenz als auch das Zyklusraster. Der Schedule verlängert Segmente mit
+ruhenden Grenzen auf volle Ticks. <a href="architecture/diagrams/program.dot">DOT-Quelle</a>.</p>
+<h2 id="chapter-class_diagrams--4-gepufferte-ausführung">4. Gepufferte Ausführung</h2>
+<figure><svg width="894pt" height="429pt"
+ viewBox="0.00 0.00 894.00 428.50" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="chapter-class_diagrams--figure-buffered_execution-graph0" class="graph" transform="scale(1 1) rotate(0) translate(18 410.5)">
+<title>uml</title>
+<polygon fill="white" stroke="transparent" points="-18,18 -18,-410.5 876,-410.5 876,18 -18,18"/>
+<!-- producer -->
+<g id="chapter-class_diagrams--figure-buffered_execution-node1" class="node">
+<title>producer</title>
+<polygon fill="#dbeafe" stroke="transparent" points="1,-348 1,-369 175,-369 175,-348 1,-348"/>
+<text text-anchor="start" x="6" y="-357" font-family="DejaVu Sans" font-weight="bold" font-size="10.00">BufferedMotionProducer&lt;N&gt;</text>
+<text text-anchor="start" x="6" y="-335" font-family="DejaVu Sans" font-size="10.00">fill(ring, budget)</text>
+<text text-anchor="start" x="6" y="-314" font-family="DejaVu Sans" font-size="10.00">initial_command()</text>
+<polygon fill="none" stroke="black" points="0,-305.5 0,-370.5 176,-370.5 176,-305.5 0,-305.5"/>
+</g>
+<!-- ring -->
+<g id="chapter-class_diagrams--figure-buffered_execution-node2" class="node">
+<title>ring</title>
+<polygon fill="#dbeafe" stroke="transparent" points="368,-370 368,-391 570,-391 570,-370 368,-370"/>
+<text text-anchor="start" x="373" y="-379" font-family="DejaVu Sans" font-weight="bold" font-size="10.00">SpscSetpointBuffer&lt;N, Capacity&gt;</text>
+<text text-anchor="start" x="373" y="-357" font-family="DejaVu Sans" font-size="10.00">try_push(command)</text>
+<text text-anchor="start" x="373" y="-336" font-family="DejaVu Sans" font-size="10.00">try_pop(command)</text>
+<polygon fill="none" stroke="black" points="367,-327.5 367,-392.5 571,-392.5 571,-327.5 367,-327.5"/>
+</g>
+<!-- producer&#45;&gt;ring -->
+<g id="chapter-class_diagrams--figure-buffered_execution-edge2" class="edge">
+<title>producer&#45;&gt;ring</title>
+<path fill="none" stroke="#475569" stroke-dasharray="5,2" d="M176.43,-343.07C230.05,-346.19 299.2,-350.2 356.71,-353.54"/>
+<polygon fill="#475569" stroke="#475569" points="366.94,-354.13 356.69,-358.05 361.95,-353.84 356.95,-353.55 356.95,-353.55 356.95,-353.55 361.95,-353.84 357.21,-349.06 366.94,-354.13 366.94,-354.13"/>
+<text text-anchor="middle" x="271.5" y="-354.8" font-family="DejaVu Sans" font-size="9.00">ein Producer</text>
+</g>
+<!-- schedule -->
+<g id="chapter-class_diagrams--figure-buffered_execution-node5" class="node">
+<title>schedule</title>
+<polygon fill="#dbeafe" stroke="transparent" points="409,-280 409,-301 530,-301 530,-280 409,-280"/>
+<text text-anchor="start" x="414" y="-289" font-family="DejaVu Sans" font-weight="bold" font-size="10.00">IExecutionSchedule</text>
+<text text-anchor="start" x="414" y="-267" font-family="DejaVu Sans" font-size="10.00">sample_tick(tick)</text>
+<text text-anchor="start" x="414" y="-246" font-family="DejaVu Sans" font-size="10.00">joint_limits()</text>
+<polygon fill="none" stroke="black" points="407.5,-237.5 407.5,-302.5 530.5,-302.5 530.5,-237.5 407.5,-237.5"/>
+</g>
+<!-- producer&#45;&gt;schedule -->
+<g id="chapter-class_diagrams--figure-buffered_execution-edge1" class="edge">
+<title>producer&#45;&gt;schedule</title>
+<path fill="none" stroke="#475569" d="M188.26,-320.19C257.73,-307.73 348.31,-291.47 407.29,-280.89"/>
+<polygon fill="#475569" stroke="#475569" points="188.24,-320.19 183.04,-325.19 176.43,-322.31 181.63,-317.32 188.24,-320.19"/>
+<text text-anchor="middle" x="271.5" y="-318.8" font-family="DejaVu Sans" font-size="9.00">shared_ptr&lt;const&gt;; Nicht&#45;RT</text>
+</g>
+<!-- command -->
+<g id="chapter-class_diagrams--figure-buffered_execution-node3" class="node">
+<title>command</title>
+<polygon fill="#dbeafe" stroke="transparent" points="697,-64 697,-85 857,-85 857,-64 697,-64"/>
+<text text-anchor="start" x="707.5" y="-73" font-family="DejaVu Sans" font-weight="bold" font-size="10.00">FixedJointCommand&lt;N&gt;</text>
+<text text-anchor="start" x="702" y="-51" font-family="DejaVu Sans" font-size="10.00">q, dq, ddq: array&lt;double, N&gt;</text>
+<text text-anchor="start" x="702" y="-30" font-family="DejaVu Sans" font-size="10.00">timestamp_s, program_time_s</text>
+<text text-anchor="start" x="702" y="-9" font-family="DejaVu Sans" font-size="10.00">tick, terminal</text>
+<polygon fill="none" stroke="black" points="696,0 696,-86 858,-86 858,0 696,0"/>
+</g>
+<!-- ring&#45;&gt;command -->
+<g id="chapter-class_diagrams--figure-buffered_execution-edge3" class="edge">
+<title>ring&#45;&gt;command</title>
+<path fill="none" stroke="#475569" d="M563.05,-320.88C565.79,-318.99 568.45,-317.03 571,-315 652.9,-249.84 719.55,-144.76 752.88,-86.1"/>
+<polygon fill="#475569" stroke="#475569" points="562.94,-320.95 560.03,-327.55 552.82,-327.41 555.73,-320.81 562.94,-320.95"/>
+<text text-anchor="middle" x="633.5" y="-286.8" font-family="DejaVu Sans" font-size="9.00">feste Kapazität</text>
+</g>
+<!-- executor -->
+<g id="chapter-class_diagrams--figure-buffered_execution-node4" class="node">
+<title>executor</title>
+<polygon fill="#dbeafe" stroke="transparent" points="2,-211 2,-232 175,-232 175,-211 2,-211"/>
+<text text-anchor="start" x="7" y="-220" font-family="DejaVu Sans" font-weight="bold" font-size="10.00">DeadlineMotionExecutor&lt;N&gt;</text>
+<text text-anchor="start" x="7" y="-198" font-family="DejaVu Sans" font-size="10.00">poll(ring, now, output)</text>
+<text text-anchor="start" x="7" y="-177" font-family="DejaVu Sans" font-size="10.00">poll_clock(ring, clock, output)</text>
+<text text-anchor="start" x="7" y="-156" font-family="DejaVu Sans" font-size="10.00">fault()</text>
+<polygon fill="none" stroke="black" points="0.5,-147 0.5,-233 175.5,-233 175.5,-147 0.5,-147"/>
+</g>
+<!-- executor&#45;&gt;ring -->
+<g id="chapter-class_diagrams--figure-buffered_execution-edge4" class="edge">
+<title>executor&#45;&gt;ring</title>
+<path fill="none" stroke="#475569" stroke-dasharray="5,2" d="M168.69,-233.06C180.65,-238.58 193,-243.77 205,-248 262.05,-268.13 286.96,-244.52 338,-277 355.92,-288.41 350.33,-301.82 367,-315 370.09,-317.44 373.33,-319.78 376.68,-322.02"/>
+<polygon fill="#475569" stroke="#475569" points="385.21,-327.37 374.35,-325.87 380.97,-324.71 376.74,-322.05 376.74,-322.05 376.74,-322.05 380.97,-324.71 379.13,-318.24 385.21,-327.37 385.21,-327.37"/>
+<text text-anchor="middle" x="271.5" y="-279.8" font-family="DejaVu Sans" font-size="9.00">ein Consumer</text>
+</g>
+<!-- executor&#45;&gt;command -->
+<g id="chapter-class_diagrams--figure-buffered_execution-edge8" class="edge">
+<title>executor&#45;&gt;command</title>
+<path fill="none" stroke="#475569" stroke-dasharray="5,2" d="M145.14,-147C198.78,-108.82 283.6,-55.8 367,-34 473.81,-6.08 601.69,-15.38 685.68,-27"/>
+<polygon fill="#475569" stroke="#475569" points="695.7,-28.42 685.17,-31.47 690.75,-27.72 685.8,-27.02 685.8,-27.02 685.8,-27.02 690.75,-27.72 686.44,-22.56 695.7,-28.42 695.7,-28.42"/>
+<text text-anchor="middle" x="469" y="-36.8" font-family="DejaVu Sans" font-size="9.00">Running / Finished: neuer Befehl</text>
+</g>
+<!-- executor&#45;&gt;schedule -->
+<g id="chapter-class_diagrams--figure-buffered_execution-edge5" class="edge">
+<title>executor&#45;&gt;schedule</title>
+<path fill="none" stroke="#475569" d="M187.8,-206.54C233.64,-214.65 288.76,-225.03 338,-236 360.77,-241.07 385.59,-247.37 407.38,-253.16"/>
+<polygon fill="#475569" stroke="#475569" points="187.56,-206.5 180.96,-209.4 175.74,-204.42 182.34,-201.52 187.56,-206.5"/>
+<text text-anchor="middle" x="271.5" y="-238.8" font-family="DejaVu Sans" font-size="9.00">shared_ptr&lt;const&gt;</text>
+</g>
+<!-- policy -->
+<g id="chapter-class_diagrams--figure-buffered_execution-node6" class="node">
+<title>policy</title>
+<polygon fill="#dbeafe" stroke="transparent" points="400,-121 400,-142 539,-142 539,-121 400,-121"/>
+<text text-anchor="start" x="405" y="-130" font-family="DejaVu Sans" font-weight="bold" font-size="10.00">ExecutionTimingPolicy</text>
+<text text-anchor="start" x="405" y="-108" font-family="DejaVu Sans" font-size="10.00">max_early_s, max_late_s</text>
+<text text-anchor="start" x="405" y="-87" font-family="DejaVu Sans" font-size="10.00">max_clock_uncertainty_s</text>
+<text text-anchor="start" x="405" y="-66" font-family="DejaVu Sans" font-size="10.00">dispatch_latency_bound_s</text>
+<polygon fill="none" stroke="black" points="398.5,-57 398.5,-143 539.5,-143 539.5,-57 398.5,-57"/>
+</g>
+<!-- executor&#45;&gt;policy -->
+<g id="chapter-class_diagrams--figure-buffered_execution-edge6" class="edge">
+<title>executor&#45;&gt;policy</title>
+<path fill="none" stroke="#475569" d="M187.64,-166.58C253.72,-150.88 339.12,-130.6 398.22,-116.57"/>
+<polygon fill="#475569" stroke="#475569" points="187.63,-166.58 182.71,-171.86 175.95,-169.35 180.86,-164.07 187.63,-166.58"/>
+<text text-anchor="middle" x="271.5" y="-162.8" font-family="DejaVu Sans" font-size="9.00">Timing&#45;Vertrag</text>
+</g>
+<!-- time -->
+<g id="chapter-class_diagrams--figure-buffered_execution-node7" class="node">
+<title>time</title>
+<polygon fill="#dbeafe" stroke="transparent" points="392,-190 392,-211 546,-211 546,-190 392,-190"/>
+<text text-anchor="start" x="439.5" y="-199" font-family="DejaVu Sans" font-weight="bold" font-size="10.00">ClockTime</text>
+<text text-anchor="start" x="397" y="-177" font-family="DejaVu Sans" font-size="10.00">seconds, clock, uncertainty_s</text>
+<polygon fill="none" stroke="black" points="391,-168 391,-212 547,-212 547,-168 391,-168"/>
+</g>
+<!-- executor&#45;&gt;time -->
+<g id="chapter-class_diagrams--figure-buffered_execution-edge7" class="edge">
+<title>executor&#45;&gt;time</title>
+<path fill="none" stroke="#475569" stroke-dasharray="5,2" d="M175.95,-190C237.33,-190 319.25,-190 380.71,-190"/>
+<polygon fill="#475569" stroke="#475569" points="390.78,-190 380.78,-194.5 385.78,-190 380.78,-190 380.78,-190 380.78,-190 385.78,-190 380.78,-185.5 390.78,-190 390.78,-190"/>
+<text text-anchor="middle" x="271.5" y="-192.8" font-family="DejaVu Sans" font-size="9.00">explizite Uhrdomäne</text>
+</g>
+</g>
+</svg>
+<figcaption>Pufferausführung</figcaption></figure>
+
+<p>Nur ein Producer und ein Consumer dürfen denselben SPSC-Puffer bedienen.
+<code>fill()</code> sampelt außerhalb RT; <code>poll_clock()</code> liest feste Befehle und prüft die
+Zeit vor der Veröffentlichung. <a href="architecture/diagrams/buffered_execution.dot">DOT-Quelle</a>.</p>
+<h2 id="chapter-class_diagrams--5-cache-und-live-planwechsel">5. Cache und Live-Planwechsel</h2>
+<figure><svg width="1457pt" height="385pt"
+ viewBox="0.00 0.00 1457.00 385.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="chapter-class_diagrams--figure-live_execution-graph0" class="graph" transform="scale(1 1) rotate(0) translate(18 367)">
+<title>uml</title>
+<polygon fill="white" stroke="transparent" points="-18,18 -18,-367 1439,-367 1439,18 -18,18"/>
+<!-- plan -->
+<g id="chapter-class_diagrams--figure-live_execution-node1" class="node">
+<title>plan</title>
+<polygon fill="#dbeafe" stroke="transparent" points="802,-326.5 802,-347.5 1086,-347.5 1086,-326.5 802,-326.5"/>
+<text text-anchor="start" x="880.5" y="-335.5" font-family="DejaVu Sans" font-weight="bold" font-size="10.00">PreparedLivePlan&lt;N&gt;</text>
+<text text-anchor="start" x="807" y="-313.5" font-family="DejaVu Sans" font-size="10.00">cached_commands_: vector&lt;FixedJointCommand&lt;N&gt;&gt;</text>
+<text text-anchor="start" x="807" y="-292.5" font-family="DejaVu Sans" font-size="10.00">command(global_tick)</text>
+<text text-anchor="start" x="807" y="-271.5" font-family="DejaVu Sans" font-size="10.00">end_tick()</text>
+<text text-anchor="start" x="807" y="-250.5" font-family="DejaVu Sans" font-size="10.00">stamp()</text>
+<polygon fill="none" stroke="black" points="801,-242 801,-349 1087,-349 1087,-242 801,-242"/>
+</g>
+<!-- stamp -->
+<g id="chapter-class_diagrams--figure-live_execution-node2" class="node">
+<title>stamp</title>
+<polygon fill="#dbeafe" stroke="transparent" points="1262,-305.5 1262,-326.5 1420,-326.5 1420,-305.5 1262,-305.5"/>
+<text text-anchor="start" x="1298.5" y="-314.5" font-family="DejaVu Sans" font-weight="bold" font-size="10.00">LivePlanStamp</text>
+<text text-anchor="start" x="1267" y="-292.5" font-family="DejaVu Sans" font-size="10.00">generation, parent_generation</text>
+<text text-anchor="start" x="1267" y="-271.5" font-family="DejaVu Sans" font-size="10.00">start_tick, clock</text>
+<polygon fill="none" stroke="black" points="1261,-263 1261,-328 1421,-328 1421,-263 1261,-263"/>
+</g>
+<!-- plan&#45;&gt;stamp -->
+<g id="chapter-class_diagrams--figure-live_execution-edge1" class="edge">
+<title>plan&#45;&gt;stamp</title>
+<path fill="none" stroke="#475569" d="M1099.14,-295.5C1154.44,-295.5 1214.51,-295.5 1260.83,-295.5"/>
+<polygon fill="#475569" stroke="#475569" points="1099.05,-295.5 1093.05,-299.5 1087.05,-295.5 1093.05,-291.5 1099.05,-295.5"/>
+<text text-anchor="middle" x="1174" y="-298.3" font-family="DejaVu Sans" font-size="9.00">unveränderliche Identität</text>
+</g>
+<!-- mailbox -->
+<g id="chapter-class_diagrams--figure-live_execution-node3" class="node">
+<title>mailbox</title>
+<polygon fill="#dbeafe" stroke="transparent" points="437.5,-222.5 437.5,-243.5 565.5,-243.5 565.5,-222.5 437.5,-222.5"/>
+<text text-anchor="start" x="442.5" y="-231.5" font-family="DejaVu Sans" font-weight="bold" font-size="10.00">LivePlanMailbox&lt;N&gt;</text>
+<text text-anchor="start" x="442.5" y="-209.5" font-family="DejaVu Sans" font-size="10.00">try_offer(plan)</text>
+<text text-anchor="start" x="442.5" y="-188.5" font-family="DejaVu Sans" font-size="10.00">try_response(response)</text>
+<polygon fill="none" stroke="black" points="436.5,-180 436.5,-245 566.5,-245 566.5,-180 436.5,-180"/>
+</g>
+<!-- mailbox&#45;&gt;plan -->
+<g id="chapter-class_diagrams--figure-live_execution-edge2" class="edge">
+<title>mailbox&#45;&gt;plan</title>
+<path fill="none" stroke="#475569" stroke-dasharray="5,2" d="M566.55,-224.57C625.01,-235.58 713.72,-252.3 790.35,-266.74"/>
+<polygon fill="#475569" stroke="#475569" points="800.59,-268.67 789.93,-271.24 795.68,-267.74 790.76,-266.82 790.76,-266.82 790.76,-266.82 795.68,-267.74 791.6,-262.39 800.59,-268.67 800.59,-268.67"/>
+<text text-anchor="middle" x="696.5" y="-263.3" font-family="DejaVu Sans" font-size="9.00">eine offene Anfrage; kein Besitzer</text>
+</g>
+<!-- response -->
+<g id="chapter-class_diagrams--figure-live_execution-node4" class="node">
+<title>response</title>
+<polygon fill="#dbeafe" stroke="transparent" points="855,-194.5 855,-215.5 1034,-215.5 1034,-194.5 855,-194.5"/>
+<text text-anchor="start" x="893" y="-203.5" font-family="DejaVu Sans" font-weight="bold" font-size="10.00">LivePlanResponse</text>
+<text text-anchor="start" x="860" y="-181.5" font-family="DejaVu Sans" font-size="10.00">status, generation</text>
+<text text-anchor="start" x="860" y="-160.5" font-family="DejaVu Sans" font-size="10.00">retired_generation, activation_tick</text>
+<polygon fill="none" stroke="black" points="853.5,-152 853.5,-217 1034.5,-217 1034.5,-152 853.5,-152"/>
+</g>
+<!-- mailbox&#45;&gt;response -->
+<g id="chapter-class_diagrams--figure-live_execution-edge3" class="edge">
+<title>mailbox&#45;&gt;response</title>
+<path fill="none" stroke="#475569" d="M578.91,-207.28C592.91,-206.34 607.39,-205.38 621,-204.5 699.53,-199.41 788.85,-193.88 853.46,-189.93"/>
+<polygon fill="#475569" stroke="#475569" points="578.74,-207.29 573.02,-211.69 566.76,-208.1 572.48,-203.7 578.74,-207.29"/>
+<text text-anchor="middle" x="696.5" y="-207.3" font-family="DejaVu Sans" font-size="9.00">eine Antwort</text>
+</g>
+<!-- executor -->
+<g id="chapter-class_diagrams--figure-live_execution-node5" class="node">
+<title>executor</title>
+<polygon fill="#dbeafe" stroke="transparent" points="1.5,-198.5 1.5,-219.5 198.5,-219.5 198.5,-198.5 1.5,-198.5"/>
+<text text-anchor="start" x="32" y="-207.5" font-family="DejaVu Sans" font-weight="bold" font-size="10.00">LiveMotionExecutor&lt;N&gt;</text>
+<text text-anchor="start" x="6.5" y="-185.5" font-family="DejaVu Sans" font-size="10.00">poll_clock(clock, output)</text>
+<text text-anchor="start" x="6.5" y="-164.5" font-family="DejaVu Sans" font-size="10.00">service_requests()</text>
+<text text-anchor="start" x="6.5" y="-143.5" font-family="DejaVu Sans" font-size="10.00">commit_delivery(generation, through)</text>
+<text text-anchor="start" x="6.5" y="-122.5" font-family="DejaVu Sans" font-size="10.00">snapshot()</text>
+<polygon fill="none" stroke="black" points="0,-114 0,-221 199,-221 199,-114 0,-114"/>
+</g>
+<!-- executor&#45;&gt;plan -->
+<g id="chapter-class_diagrams--figure-live_execution-edge4" class="edge">
+<title>executor&#45;&gt;plan</title>
+<path fill="none" stroke="#475569" stroke-dasharray="5,2" d="M199.33,-204.36C208.97,-207.59 218.65,-210.7 228,-213.5 397.45,-264.27 444.6,-263.32 621,-276.5 676.22,-280.63 736.82,-284.4 790.4,-287.48"/>
+<polygon fill="#475569" stroke="#475569" points="800.67,-288.06 790.43,-291.99 795.68,-287.78 790.69,-287.49 790.69,-287.49 790.69,-287.49 795.68,-287.78 790.95,-283 800.67,-288.06 800.67,-288.06"/>
+<text text-anchor="middle" x="501.5" y="-276.3" font-family="DejaVu Sans" font-size="9.00">active / pending; Planer hält Speicher</text>
+</g>
+<!-- executor&#45;&gt;mailbox -->
+<g id="chapter-class_diagrams--figure-live_execution-edge5" class="edge">
+<title>executor&#45;&gt;mailbox</title>
+<path fill="none" stroke="#475569" stroke-dasharray="5,2" d="M199.12,-178.59C269.39,-186.5 362.36,-196.96 426.36,-204.16"/>
+<polygon fill="#475569" stroke="#475569" points="436.37,-205.29 425.93,-208.64 431.4,-204.73 426.43,-204.17 426.43,-204.17 426.43,-204.17 431.4,-204.73 426.94,-199.7 436.37,-205.29 436.37,-205.29"/>
+<text text-anchor="middle" x="305" y="-200.3" font-family="DejaVu Sans" font-size="9.00">SPSC&#45;Handshake</text>
+</g>
+<!-- snapshot -->
+<g id="chapter-class_diagrams--figure-live_execution-node6" class="node">
+<title>snapshot</title>
+<polygon fill="#dbeafe" stroke="transparent" points="412.5,-132.5 412.5,-153.5 591.5,-153.5 591.5,-132.5 412.5,-132.5"/>
+<text text-anchor="start" x="436.5" y="-141.5" font-family="DejaVu Sans" font-weight="bold" font-size="10.00">LiveExecutionSnapshot</text>
+<text text-anchor="start" x="417.5" y="-119.5" font-family="DejaVu Sans" font-size="10.00">generation, next_tick</text>
+<text text-anchor="start" x="417.5" y="-98.5" font-family="DejaVu Sans" font-size="10.00">committed_through, fault, finished</text>
+<polygon fill="none" stroke="black" points="411,-90 411,-155 592,-155 592,-90 411,-90"/>
+</g>
+<!-- executor&#45;&gt;snapshot -->
+<g id="chapter-class_diagrams--figure-live_execution-edge6" class="edge">
+<title>executor&#45;&gt;snapshot</title>
+<path fill="none" stroke="#475569" stroke-dasharray="5,2" d="M199.12,-156.41C260.48,-149.5 339.14,-140.65 400.72,-133.73"/>
+<polygon fill="#475569" stroke="#475569" points="410.84,-132.59 401.4,-138.18 405.87,-133.15 400.9,-133.71 400.9,-133.71 400.9,-133.71 405.87,-133.15 400.4,-129.23 410.84,-132.59 410.84,-132.59"/>
+<text text-anchor="middle" x="305" y="-155.3" font-family="DejaVu Sans" font-size="9.00">atomare Veröffentlichung</text>
+</g>
+<!-- command -->
+<g id="chapter-class_diagrams--figure-live_execution-node7" class="node">
+<title>command</title>
+<polygon fill="#dbeafe" stroke="transparent" points="419.5,-42.5 419.5,-63.5 584.5,-63.5 584.5,-42.5 419.5,-42.5"/>
+<text text-anchor="start" x="437" y="-51.5" font-family="DejaVu Sans" font-weight="bold" font-size="10.00">LiveJointCommand&lt;N&gt;</text>
+<text text-anchor="start" x="424.5" y="-29.5" font-family="DejaVu Sans" font-size="10.00">joints: FixedJointCommand&lt;N&gt;</text>
+<text text-anchor="start" x="424.5" y="-8.5" font-family="DejaVu Sans" font-size="10.00">generation</text>
+<polygon fill="none" stroke="black" points="418,0 418,-65 585,-65 585,0 418,0"/>
+</g>
+<!-- executor&#45;&gt;command -->
+<g id="chapter-class_diagrams--figure-live_execution-edge7" class="edge">
+<title>executor&#45;&gt;command</title>
+<path fill="none" stroke="#475569" stroke-dasharray="5,2" d="M199.2,-130.67C208.91,-127.18 218.64,-123.74 228,-120.5 287.72,-99.86 355.3,-78.03 408.22,-61.27"/>
+<polygon fill="#475569" stroke="#475569" points="417.93,-58.2 409.75,-65.51 413.16,-59.71 408.39,-61.21 408.39,-61.21 408.39,-61.21 413.16,-59.71 407.04,-56.92 417.93,-58.2 417.93,-58.2"/>
+<text text-anchor="middle" x="305" y="-123.3" font-family="DejaVu Sans" font-size="9.00">maximal ein neuer Befehl pro Tick</text>
+</g>
+</g>
+</svg>
+<figcaption>Live-Ausführung</figcaption></figure>
+
+<p>Der Planer bzw. die Host-Anwendung besitzt die Caches. Postfach und Executor
+leihen deren Adressen. Die Rückmeldung identifiziert abgelehnte bzw. nicht mehr
+benutzte Generationen; die Freigabe erfolgt außerhalb des zyklischen Threads.
+<a href="architecture/diagrams/live_execution.dot">DOT-Quelle</a>.</p>
+<h2 id="chapter-class_diagrams--6-optionales-following-und-vorbereiteter-halt">6. Optionales Following und vorbereiteter Halt</h2>
+<figure><svg width="1465pt" height="351pt"
+ viewBox="0.00 0.00 1465.00 351.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="chapter-class_diagrams--figure-tracking_stops-graph0" class="graph" transform="scale(1 1) rotate(0) translate(18 333)">
+<title>uml</title>
+<polygon fill="white" stroke="transparent" points="-18,18 -18,-333 1447,-333 1447,18 -18,18"/>
+<!-- frames -->
+<g id="chapter-class_diagrams--figure-tracking_stops-node1" class="node">
+<title>frames</title>
+<polygon fill="#dbeafe" stroke="transparent" points="1281.5,-293 1281.5,-314 1428.5,-314 1428.5,-293 1281.5,-293"/>
+<text text-anchor="start" x="1286.5" y="-302" font-family="DejaVu Sans" font-weight="bold" font-size="10.00">TrackingFrameSnapshot</text>
+<text text-anchor="start" x="1286.5" y="-280" font-family="DejaVu Sans" font-size="10.00">revision()</text>
+<text text-anchor="start" x="1286.5" y="-259" font-family="DejaVu Sans" font-size="10.00">resolve(frame)</text>
+<text text-anchor="start" x="1286.5" y="-238" font-family="DejaVu Sans" font-size="10.00">valid(time)</text>
+<polygon fill="none" stroke="black" points="1280,-229 1280,-315 1429,-315 1429,-229 1280,-229"/>
+</g>
+<!-- predictor -->
+<g id="chapter-class_diagrams--figure-tracking_stops-node2" class="node">
+<title>predictor</title>
+<polygon fill="#dbeafe" stroke="transparent" points="879.5,-272 879.5,-293 1088.5,-293 1088.5,-272 879.5,-272"/>
+<text text-anchor="start" x="912.5" y="-281" font-family="DejaVu Sans" font-weight="bold" font-size="10.00">ConveyorTargetPredictor</text>
+<text text-anchor="start" x="884.5" y="-259" font-family="DejaVu Sans" font-size="10.00">predict(object, encoder, frames, now, at)</text>
+<polygon fill="none" stroke="black" points="878,-250 878,-294 1089,-294 1089,-250 878,-250"/>
+</g>
+<!-- predictor&#45;&gt;frames -->
+<g id="chapter-class_diagrams--figure-tracking_stops-edge1" class="edge">
+<title>predictor&#45;&gt;frames</title>
+<path fill="none" stroke="#475569" stroke-dasharray="5,2" d="M1089.25,-272C1146.4,-272 1216.19,-272 1269.69,-272"/>
+<polygon fill="#475569" stroke="#475569" points="1279.83,-272 1269.83,-276.5 1274.83,-272 1269.83,-272 1269.83,-272 1269.83,-272 1274.83,-272 1269.83,-267.5 1279.83,-272 1279.83,-272"/>
+<text text-anchor="middle" x="1184.5" y="-274.8" font-family="DejaVu Sans" font-size="9.00">statische Revision / Gültigkeit</text>
+</g>
+<!-- history -->
+<g id="chapter-class_diagrams--figure-tracking_stops-node3" class="node">
+<title>history</title>
+<polygon fill="#dbeafe" stroke="transparent" points="509,-293 509,-314 699,-314 699,-293 509,-293"/>
+<text text-anchor="start" x="522" y="-302" font-family="DejaVu Sans" font-weight="bold" font-size="10.00">ConveyorObservationHistory</text>
+<text text-anchor="start" x="514" y="-280" font-family="DejaVu Sans" font-size="10.00">ingest(object, encoder, frames, now)</text>
+<text text-anchor="start" x="514" y="-259" font-family="DejaVu Sans" font-size="10.00">predict(frames, now, at)</text>
+<text text-anchor="start" x="514" y="-238" font-family="DejaVu Sans" font-size="10.00">reset(object, revision)</text>
+<polygon fill="none" stroke="black" points="508,-229 508,-315 700,-315 700,-229 508,-229"/>
+</g>
+<!-- history&#45;&gt;predictor -->
+<g id="chapter-class_diagrams--figure-tracking_stops-edge2" class="edge">
+<title>history&#45;&gt;predictor</title>
+<path fill="none" stroke="#475569" d="M712.54,-272C764.44,-272 826.47,-272 877.97,-272"/>
+<polygon fill="#475569" stroke="#475569" points="712.26,-272 706.26,-276 700.26,-272 706.26,-268 712.26,-272"/>
+<text text-anchor="middle" x="789" y="-274.8" font-family="DejaVu Sans" font-size="9.00">Prognose mit Gates</text>
+</g>
+<!-- following -->
+<g id="chapter-class_diagrams--figure-tracking_stops-node4" class="node">
+<title>following</title>
+<polygon fill="#dbeafe" stroke="transparent" points="1.5,-132 1.5,-153 320.5,-153 320.5,-132 1.5,-132"/>
+<text text-anchor="start" x="69" y="-141" font-family="DejaVu Sans" font-weight="bold" font-size="10.00">KinematicConveyorFollower&lt;N&gt;</text>
+<text text-anchor="start" x="6.5" y="-119" font-family="DejaVu Sans" font-size="10.00">plan(initial, epoch, cycle, stamp, horizon, history, frames, now)</text>
+<polygon fill="none" stroke="black" points="0,-110 0,-154 321,-154 321,-110 0,-110"/>
+</g>
+<!-- following&#45;&gt;history -->
+<g id="chapter-class_diagrams--figure-tracking_stops-edge3" class="edge">
+<title>following&#45;&gt;history</title>
+<path fill="none" stroke="#475569" stroke-dasharray="5,2" d="M230.97,-154.03C302.68,-176.77 415.43,-212.52 498.03,-238.71"/>
+<polygon fill="#475569" stroke="#475569" points="507.69,-241.78 496.8,-243.04 502.92,-240.27 498.16,-238.75 498.16,-238.75 498.16,-238.75 502.92,-240.27 499.52,-234.47 507.69,-241.78 507.69,-241.78"/>
+<text text-anchor="middle" x="414.5" y="-232.8" font-family="DejaVu Sans" font-size="9.00">frisch / kausal / zugeordnet</text>
+</g>
+<!-- stopplanner -->
+<g id="chapter-class_diagrams--figure-tracking_stops-node5" class="node">
+<title>stopplanner</title>
+<polygon fill="#dbeafe" stroke="transparent" points="551,-182 551,-203 657,-203 657,-182 551,-182"/>
+<text text-anchor="start" x="556" y="-191" font-family="DejaVu Sans" font-weight="bold" font-size="10.00">JointStopPlanner</text>
+<text text-anchor="start" x="556" y="-169" font-family="DejaVu Sans" font-size="10.00">plan(initial)</text>
+<polygon fill="none" stroke="black" points="550,-160 550,-204 658,-204 658,-160 550,-160"/>
+</g>
+<!-- following&#45;&gt;stopplanner -->
+<g id="chapter-class_diagrams--figure-tracking_stops-edge4" class="edge">
+<title>following&#45;&gt;stopplanner</title>
+<path fill="none" stroke="#475569" stroke-dasharray="5,2" d="M321.2,-150.09C396.74,-158.64 482.63,-168.37 539.52,-174.81"/>
+<polygon fill="#475569" stroke="#475569" points="549.8,-175.97 539.35,-179.32 544.83,-175.41 539.86,-174.85 539.86,-174.85 539.86,-174.85 544.83,-175.41 540.37,-170.38 549.8,-175.97 549.8,-175.97"/>
+<text text-anchor="middle" x="414.5" y="-169.8" font-family="DejaVu Sans" font-size="9.00">Fallback außerhalb RT</text>
+</g>
+<!-- polynomial -->
+<g id="chapter-class_diagrams--figure-tracking_stops-node7" class="node">
+<title>polynomial</title>
+<polygon fill="#dbeafe" stroke="transparent" points="528,-112 528,-133 680,-133 680,-112 528,-112"/>
+<text text-anchor="start" x="533" y="-121" font-family="DejaVu Sans" font-weight="bold" font-size="10.00">PolynomialStopSchedule</text>
+<text text-anchor="start" x="533" y="-99" font-family="DejaVu Sans" font-size="10.00">sample_tick(tick)</text>
+<text text-anchor="start" x="533" y="-78" font-family="DejaVu Sans" font-size="10.00">fallback()</text>
+<polygon fill="none" stroke="black" points="527,-69.5 527,-134.5 681,-134.5 681,-69.5 527,-69.5"/>
+</g>
+<!-- following&#45;&gt;polynomial -->
+<g id="chapter-class_diagrams--figure-tracking_stops-edge7" class="edge">
+<title>following&#45;&gt;polynomial</title>
+<path fill="none" stroke="#475569" stroke-dasharray="5,2" d="M321.2,-121.15C387.21,-116.66 461.12,-111.64 516.68,-107.87"/>
+<polygon fill="#475569" stroke="#475569" points="526.84,-107.18 517.17,-112.34 521.85,-107.51 516.86,-107.85 516.86,-107.85 516.86,-107.85 521.85,-107.51 516.56,-103.36 526.84,-107.18 526.84,-107.18"/>
+<text text-anchor="middle" x="414.5" y="-120.8" font-family="DejaVu Sans" font-size="9.00">bewegter Horizont + Halt</text>
+</g>
+<!-- cache -->
+<g id="chapter-class_diagrams--figure-tracking_stops-node8" class="node">
+<title>cache</title>
+<polygon fill="#dbeafe" stroke="transparent" points="536,-22 536,-43 673,-43 673,-22 536,-22"/>
+<text text-anchor="start" x="541" y="-31" font-family="DejaVu Sans" font-weight="bold" font-size="10.00">PreparedLivePlan&lt;N&gt;</text>
+<text text-anchor="start" x="541" y="-9" font-family="DejaVu Sans" font-size="10.00">command(tick)</text>
+<polygon fill="none" stroke="black" points="534.5,0 534.5,-44 673.5,-44 673.5,0 534.5,0"/>
+</g>
+<!-- following&#45;&gt;cache -->
+<g id="chapter-class_diagrams--figure-tracking_stops-edge8" class="edge">
+<title>following&#45;&gt;cache</title>
+<path fill="none" stroke="#475569" stroke-dasharray="5,2" d="M250.05,-109.94C330.27,-89.95 447.37,-60.77 524.36,-41.59"/>
+<polygon fill="#475569" stroke="#475569" points="534.48,-39.07 525.87,-45.86 529.63,-40.28 524.78,-41.49 524.78,-41.49 524.78,-41.49 529.63,-40.28 523.69,-37.12 534.48,-39.07 534.48,-39.07"/>
+<text text-anchor="middle" x="414.5" y="-85.8" font-family="DejaVu Sans" font-size="9.00">erzeugt vollständigen Cache</text>
+</g>
+<!-- stop -->
+<g id="chapter-class_diagrams--figure-tracking_stops-node6" class="node">
+<title>stop</title>
+<polygon fill="#dbeafe" stroke="transparent" points="923.5,-183 923.5,-204 1043.5,-204 1043.5,-183 923.5,-183"/>
+<text text-anchor="start" x="928.5" y="-192" font-family="DejaVu Sans" font-weight="bold" font-size="10.00">JointStopTrajectory</text>
+<text text-anchor="start" x="928.5" y="-170" font-family="DejaVu Sans" font-size="10.00">sample(time_s)</text>
+<text text-anchor="start" x="928.5" y="-149" font-family="DejaVu Sans" font-size="10.00">bounds()</text>
+<text text-anchor="start" x="928.5" y="-128" font-family="DejaVu Sans" font-size="10.00">enclose_state(lo, hi)</text>
+<polygon fill="none" stroke="black" points="922.5,-119 922.5,-205 1044.5,-205 1044.5,-119 922.5,-119"/>
+</g>
+<!-- stopplanner&#45;&gt;stop -->
+<g id="chapter-class_diagrams--figure-tracking_stops-edge5" class="edge">
+<title>stopplanner&#45;&gt;stop</title>
+<path fill="none" stroke="#475569" stroke-dasharray="5,2" d="M658.29,-179.18C724.77,-175.65 838.64,-169.62 912.21,-165.72"/>
+<polygon fill="#475569" stroke="#475569" points="922.31,-165.19 912.57,-170.21 917.32,-165.45 912.33,-165.72 912.33,-165.72 912.33,-165.72 917.32,-165.45 912.09,-161.22 922.31,-165.19 922.31,-165.19"/>
+<text text-anchor="middle" x="789" y="-176.8" font-family="DejaVu Sans" font-size="9.00">erzeugt zugelassenen Halt</text>
+</g>
+<!-- polynomial&#45;&gt;stop -->
+<g id="chapter-class_diagrams--figure-tracking_stops-edge6" class="edge">
+<title>polynomial&#45;&gt;stop</title>
+<path fill="none" stroke="#475569" d="M693.35,-116.04C763.81,-127.24 860.6,-142.62 922.36,-152.44"/>
+<polygon fill="#475569" stroke="#475569" points="693.24,-116.03 686.69,-119.03 681.39,-114.14 687.95,-111.13 693.24,-116.03"/>
+<text text-anchor="middle" x="789" y="-141.8" font-family="DejaVu Sans" font-size="9.00">shared_ptr&lt;const&gt;</text>
+</g>
+</g>
+</svg>
+<figcaption>Tracking und Halt</figcaption></figure>
+
+<p>Neue Horizonte und ihr Stillstands-Fallback werden vollständig außerhalb des
+zyklischen Threads erzeugt. Fallen Beobachtungen aus, bleibt der bereits
+zugelassene Halt verfügbar. Für diese Sicht ist <code>MOTION_WITH_RUCKIG=ON</code> nötig.
+<a href="architecture/diagrams/tracking_stops.dot">DOT-Quelle</a>.</p>
+<h2 id="chapter-class_diagrams--7-linux-zeitplattform-und-kalibrierung">7. Linux-Zeitplattform und Kalibrierung</h2>
+<figure><svg width="553pt" height="309pt"
+ viewBox="0.00 0.00 553.00 309.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="chapter-class_diagrams--figure-platform_calibration-graph0" class="graph" transform="scale(1 1) rotate(0) translate(18 291)">
+<title>uml</title>
+<polygon fill="white" stroke="transparent" points="-18,18 -18,-291 535,-291 535,18 -18,18"/>
+<!-- clock -->
+<g id="chapter-class_diagrams--figure-platform_calibration-node1" class="node">
+<title>clock</title>
+<polygon fill="#dbeafe" stroke="transparent" points="18.5,-42.5 18.5,-63.5 147.5,-63.5 147.5,-42.5 18.5,-42.5"/>
+<text text-anchor="start" x="23.5" y="-51.5" font-family="DejaVu Sans" font-weight="bold" font-size="10.00">LinuxMonotonicClock</text>
+<text text-anchor="start" x="23.5" y="-29.5" font-family="DejaVu Sans" font-size="10.00">now()</text>
+<text text-anchor="start" x="23.5" y="-8.5" font-family="DejaVu Sans" font-size="10.00">wait_until(deadline)</text>
+<polygon fill="none" stroke="black" points="17,0 17,-65 148,-65 148,0 17,0"/>
+</g>
+<!-- time -->
+<g id="chapter-class_diagrams--figure-platform_calibration-node2" class="node">
+<title>time</title>
+<polygon fill="#dbeafe" stroke="transparent" points="362,-32.5 362,-53.5 516,-53.5 516,-32.5 362,-32.5"/>
+<text text-anchor="start" x="409.5" y="-41.5" font-family="DejaVu Sans" font-weight="bold" font-size="10.00">ClockTime</text>
+<text text-anchor="start" x="367" y="-19.5" font-family="DejaVu Sans" font-size="10.00">seconds, clock, uncertainty_s</text>
+<polygon fill="none" stroke="black" points="361,-10.5 361,-54.5 517,-54.5 517,-10.5 361,-10.5"/>
+</g>
+<!-- clock&#45;&gt;time -->
+<g id="chapter-class_diagrams--figure-platform_calibration-edge1" class="edge">
+<title>clock&#45;&gt;time</title>
+<path fill="none" stroke="#475569" stroke-dasharray="5,2" d="M148.11,-32.5C204.86,-32.5 287.92,-32.5 350.6,-32.5"/>
+<polygon fill="#475569" stroke="#475569" points="360.87,-32.5 350.87,-37 355.87,-32.5 350.87,-32.5 350.87,-32.5 350.87,-32.5 355.87,-32.5 350.87,-28 360.87,-32.5 360.87,-32.5"/>
+<text text-anchor="middle" x="263" y="-35.3" font-family="DejaVu Sans" font-size="9.00">CLOCK_MONOTONIC</text>
+</g>
+<!-- options -->
+<g id="chapter-class_diagrams--figure-platform_calibration-node3" class="node">
+<title>options</title>
+<polygon fill="#dbeafe" stroke="transparent" points="1.5,-112.5 1.5,-133.5 164.5,-133.5 164.5,-112.5 1.5,-112.5"/>
+<text text-anchor="start" x="16" y="-121.5" font-family="DejaVu Sans" font-weight="bold" font-size="10.00">RealtimeThreadOptions</text>
+<text text-anchor="start" x="6.5" y="-99.5" font-family="DejaVu Sans" font-size="10.00">fifo_priority, cpu, lock_memory</text>
+<polygon fill="none" stroke="black" points="0,-90.5 0,-134.5 165,-134.5 165,-90.5 0,-90.5"/>
+</g>
+<!-- result -->
+<g id="chapter-class_diagrams--figure-platform_calibration-node4" class="node">
+<title>result</title>
+<polygon fill="#dbeafe" stroke="transparent" points="375,-112.5 375,-133.5 504,-133.5 504,-112.5 375,-112.5"/>
+<text text-anchor="start" x="380" y="-121.5" font-family="DejaVu Sans" font-weight="bold" font-size="10.00">RealtimeSetupResult</text>
+<text text-anchor="start" x="380" y="-99.5" font-family="DejaVu Sans" font-size="10.00">errors: vector&lt;string&gt;</text>
+<polygon fill="none" stroke="black" points="373.5,-90.5 373.5,-134.5 504.5,-134.5 504.5,-90.5 373.5,-90.5"/>
+</g>
+<!-- options&#45;&gt;result -->
+<g id="chapter-class_diagrams--figure-platform_calibration-edge2" class="edge">
+<title>options&#45;&gt;result</title>
+<path fill="none" stroke="#475569" stroke-dasharray="5,2" d="M165.27,-112.5C224.98,-112.5 305.27,-112.5 363.27,-112.5"/>
+<polygon fill="#475569" stroke="#475569" points="373.46,-112.5 363.46,-117 368.46,-112.5 363.46,-112.5 363.46,-112.5 363.46,-112.5 368.46,-112.5 363.46,-108 373.46,-112.5 373.46,-112.5"/>
+<text text-anchor="middle" x="263" y="-115.3" font-family="DejaVu Sans" font-size="9.00">configure_realtime_thread()</text>
+</g>
+<!-- stats -->
+<g id="chapter-class_diagrams--figure-platform_calibration-node5" class="node">
+<title>stats</title>
+<polygon fill="#dbeafe" stroke="transparent" points="11.5,-202.5 11.5,-223.5 154.5,-223.5 154.5,-202.5 11.5,-202.5"/>
+<text text-anchor="start" x="21" y="-211.5" font-family="DejaVu Sans" font-weight="bold" font-size="10.00">CycleTimingStatistics</text>
+<text text-anchor="start" x="16.5" y="-189.5" font-family="DejaVu Sans" font-size="10.00">observe(due, actual, cycle)</text>
+<text text-anchor="start" x="16.5" y="-168.5" font-family="DejaVu Sans" font-size="10.00">average_lateness_s()</text>
+<polygon fill="none" stroke="black" points="10,-160 10,-225 155,-225 155,-160 10,-160"/>
+</g>
+<!-- correspondence -->
+<g id="chapter-class_diagrams--figure-platform_calibration-node6" class="node">
+<title>correspondence</title>
+<polygon fill="#dbeafe" stroke="transparent" points="16.5,-250.5 16.5,-271.5 148.5,-271.5 148.5,-250.5 16.5,-250.5"/>
+<text text-anchor="start" x="21.5" y="-259.5" font-family="DejaVu Sans" font-weight="bold" font-size="10.00">PointCorrespondence</text>
+<polygon fill="none" stroke="black" points="15.5,-250 15.5,-273 149.5,-273 149.5,-250 15.5,-250"/>
+</g>
+<!-- fit -->
+<g id="chapter-class_diagrams--figure-platform_calibration-node7" class="node">
+<title>fit</title>
+<polygon fill="#dbeafe" stroke="transparent" points="370,-250.5 370,-271.5 509,-271.5 509,-250.5 370,-250.5"/>
+<text text-anchor="start" x="375" y="-259.5" font-family="DejaVu Sans" font-weight="bold" font-size="10.00">RigidCalibrationResult</text>
+<polygon fill="none" stroke="black" points="368.5,-250 368.5,-273 509.5,-273 509.5,-250 368.5,-250"/>
+</g>
+<!-- correspondence&#45;&gt;fit -->
+<g id="chapter-class_diagrams--figure-platform_calibration-edge3" class="edge">
+<title>correspondence&#45;&gt;fit</title>
+<path fill="none" stroke="#475569" stroke-dasharray="5,2" d="M149.76,-261.5C208.8,-261.5 295.33,-261.5 358.16,-261.5"/>
+<polygon fill="#475569" stroke="#475569" points="368.43,-261.5 358.43,-266 363.43,-261.5 358.43,-261.5 358.43,-261.5 358.43,-261.5 363.43,-261.5 358.43,-257 368.43,-261.5 368.43,-261.5"/>
+<text text-anchor="middle" x="263" y="-264.3" font-family="DejaVu Sans" font-size="9.00">fit_rigid_calibration(); Nicht&#45;RT</text>
+</g>
+</g>
+</svg>
+<figcaption>Plattform und Kalibrierung</figcaption></figure>
+
+<p>Thread-Setup und Kalibrierungs-Fit sind Vorbereitungsarbeiten. Die
+<code>LinuxMonotonicClock</code> ist optional; eure Steuerung kann stattdessen eine eigene
+Uhr mit <code>ClockTime now() noexcept</code> bereitstellen.
+<a href="architecture/diagrams/platform_calibration.dot">DOT-Quelle</a>.</p>
+<p>Weitere Abläufe: <a href="#chapter-runtime_flows">Sequenzen und Zustände</a>.
+Die Quellen können mit <a href="../tools/architecture/render_diagrams.py">render_diagrams.py</a>
+erneut als SVG oder PDF erzeugt werden. Alle SVGs sind ohne Renderer lesbar.</p></section><section id="chapter-runtime_flows"><h1 id="chapter-runtime_flows--laufzeitabläufe-und-zustände">Laufzeitabläufe und Zustände</h1>
+<p>Die Sequenzen zeigen Rollen der späteren Host-Anwendung und vorhandene
+Bibliotheksobjekte. Rollen wie „Achsschnittstelle“ oder „Freigabe“ sind noch
+keine implementierten Hardwareadapter. Die sieben strukturellen UML-Sichten
+stehen unter <a href="#chapter-class_diagrams">Klassendiagramme</a>.</p>
+<h2 id="chapter-runtime_flows--vorbereitung-und-zyklische-übergabe">Vorbereitung und zyklische Übergabe</h2>
+<pre><code class="language-mermaid">sequenceDiagram
+    participant App as Host-Vorbereitung
+    participant Plan as Programmimport/Planer
+    participant Cache as PreparedLivePlan
+    participant RT as Zyklischer Thread
+    participant Exec as LiveMotionExecutor
+    participant Axes as Host-Achsschnittstelle
+    App-&gt;&gt;Plan: Modell/Programm vollständig laden und zulassen
+    Plan--&gt;&gt;App: PreparedRobotProgram oder Fehler
+    App-&gt;&gt;App: Raster, Uhrbezug, Achsabbildung, Startvorbedingungen prüfen
+    App-&gt;&gt;Cache: prepare_live_plan(schedule, epoch, stamp)
+    Cache--&gt;&gt;App: unveränderlicher Cache oder Diagnose
+    App-&gt;&gt;RT: Cache/Eigentümer und Timingvertrag bereitstellen
+    loop pro Steuerungszyklus
+        RT-&gt;&gt;Exec: poll_clock(clock, next_command)
+        Exec--&gt;&gt;RT: Running/Finished/Inactive/Error
+        alt Running oder Finished
+            RT-&gt;&gt;Axes: genau einen neuen Befehl übergeben
+            Axes--&gt;&gt;RT: Annahme oder Übergabefehler
+        else Inactive
+            RT-&gt;&gt;RT: keine neue Übergabe
+        else Error
+            RT-&gt;&gt;RT: Anwendung verriegeln und Stop-/Fehlerreaktion anfordern
+        end
+    end
+    RT--&gt;&gt;App: Ende/Diagnose über eigene nichtblockierende Übergabe
+    App-&gt;&gt;App: Eigentum erst nach Ende außerhalb RT freigeben
+</code></pre>
+<p>Der Planer darf die Programmauswahl erst nach erfolgreichem Gesamtplan ersetzen.
+Das Diagramm trennt Vorbereitung und Zyklus; es legt keine konkrete Anzahl
+Prozesse/Threads eurer Eigenentwicklung fest. <code>poll_clock()</code> prüft Zeit vor der
+Ausgabe, nicht die zukünftige Laufzeit eines beliebigen Treibers.</p>
+<h2 id="chapter-runtime_flows--empfohlener-anwendungsautomat">Empfohlener Anwendungsautomat</h2>
+<p>Dies ist ein <strong>Host-Vertragsentwurf</strong>, kein zusätzlicher Bibliotheksautomat.</p>
+<pre><code class="language-mermaid">stateDiagram-v2
+    [*] --&gt; Unprepared
+    Unprepared --&gt; Prepared: Gesamtplan und Cache gültig
+    Prepared --&gt; Armed: Startzustand/Uhr/Achsen freigegeben
+    Armed --&gt; Running: erster Befehl angenommen
+    Running --&gt; Completed: Finished-Befehl angenommen
+    Armed --&gt; Faulted: Zeit-/Daten-/Übergabefehler
+    Running --&gt; Faulted: Zeit-/Daten-/Übergabefehler
+    Prepared --&gt; Unprepared: Konfiguration verworfen
+    Faulted --&gt; Unprepared: explizite Quittierung und neuer Start
+    Completed --&gt; Unprepared: Ende übernehmen / neu vorbereiten
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Hostzustand</th>
+<th>Wesentliche Zusage</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Unprepared</td>
+<td>Keine Bewegung aus einem unvollständigen Plan</td>
+</tr>
+<tr>
+<td>Prepared</td>
+<td>Vollständige Referenz und gültiger Cache, aber keine Hardwarefreigabe</td>
+</tr>
+<tr>
+<td>Armed</td>
+<td>Alle Host-Vorbedingungen erfüllt; erste Zeitfensterprüfung steht noch aus</td>
+</tr>
+<tr>
+<td>Running</td>
+<td>Jeder neue Befehl wird höchstens einmal übergeben</td>
+</tr>
+<tr>
+<td>Completed</td>
+<td>Terminaler Stillstandsbefehl wurde angenommen; tatsächliche Ist-Ruhe separat überwachen</td>
+</tr>
+<tr>
+<td>Faulted</td>
+<td>Keine weiteren normalen Befehle; eigener Stop-/Fehlerpfad und neue Freigabe erforderlich</td>
+</tr>
+</tbody>
+</table>
+<p>Eine Stopanforderung ist nicht gleichbedeutend mit einem bestätigten physischen
+Stillstand. <code>Finished</code> beschreibt das Ende der Sollreferenz, nicht automatisch
+alle Zustände eurer Maschine. Pausieren, Rückwärtsfahren und Wiederanlauf aus
+beliebigem Istzustand sind mit diesem Automaten nicht automatisch implementiert.</p>
+<h2 id="chapter-runtime_flows--live-aktivierung-und-retirement">Live-Aktivierung und Retirement</h2>
+<pre><code class="language-mermaid">sequenceDiagram
+    participant Planner as Planer/Eigentümer
+    participant Box as LivePlanMailbox
+    participant Exec as Zyklischer Executor
+    Planner-&gt;&gt;Planner: neuen Cache ab exaktem aktivem q/dq/ddq-Randzustand bauen
+    Planner-&gt;&gt;Box: try_offer(candidate)
+    Note over Planner,Box: Kandidat bleibt bis Antwort unverändert am Leben
+    Exec-&gt;&gt;Box: service_requests()
+    Box--&gt;&gt;Exec: höchstens eine offene Referenz
+    Exec-&gt;&gt;Exec: Identität, Takt, Uhr, Vorlauf, Zustand und Fence prüfen
+    alt Kandidat nicht zulässig
+        Exec-&gt;&gt;Box: Ablehnungsantwort
+        Planner-&gt;&gt;Box: try_response(response)
+        Planner-&gt;&gt;Planner: Kandidat außerhalb RT freigeben
+    else Kandidat zulässig
+        Exec-&gt;&gt;Exec: bis Wechsel-Tick alten Cache ausgeben
+        Exec-&gt;&gt;Exec: am Tick Kandidat aktivieren, Snapshot veröffentlichen
+        Exec-&gt;&gt;Box: Activated(new, retired_generation)
+        Planner-&gt;&gt;Box: try_response(response)
+        Planner-&gt;&gt;Planner: neuen Cache behalten, alten nach allen Lesern freigeben
+    end
+</code></pre>
+<p>Das Postfach hat eine offene Anfrage. <code>try_offer()</code> mit belegtem Postfach liefert
+false. Weder über denselben Speicher einen zweiten Kandidaten unterschieben noch
+im RT-Pfad auf eine Antwort warten. Kopierte Befehlswerte in einem Treiber
+verlängern keine Cache-Lebensdauer; geliehene Host-Referenzen dagegen schon.</p>
+<h2 id="chapter-runtime_flows--gepufferter-producerpfad">Gepufferter Producerpfad</h2>
+<pre><code class="language-mermaid">flowchart LR
+    Schedule[Unveränderlicher Schedule] --&gt; Producer[Producer außerhalb RT: fill]
+    Producer --&gt;|try_push / Backpressure| Ring[SPSC-Ring mit fester Kapazität]
+    Ring --&gt;|try_pop zur Fälligkeit| Dispatcher[DeadlineMotionExecutor]
+    Clock[Host-Uhr] --&gt; Dispatcher
+    Dispatcher --&gt;|Running oder Finished| Sink[Host-Achsschnittstelle]
+    Dispatcher --&gt;|Error| Fault[Anwendung verriegeln]
+</code></pre>
+<p>Eine volle Queue pausiert den Producer. Eine leere Queue zur Fälligkeit ist ein
+Fehler, kein Auftrag zum Warten, Extrapolieren oder Wiederholen des alten Werts.
+Ein paralleler Beobachter liest eigene Statusdaten bzw. im Cachepfad <code>snapshot()</code>.</p></section><section id="chapter-module_catalog"><h1 id="chapter-module_catalog--ordner-und-modulzuständigkeiten">Ordner und Modulzuständigkeiten</h1>
+<p>Das Verzeichnis <code>include/motion/</code> enthält die öffentliche C++-API. Die direkten
+Header darin sind ausschließlich Weiterleitungen für bestehenden Quellcode.
+Neue Anwendungen verwenden die aufgabenbezogenen Unterverzeichnisse.
+<code>src/</code> folgt derselben Aufgabenverteilung; generische Algorithmen bleiben
+teilweise headerbasiert. Es werden keine neuen C++-Namespaces erzwungen:
+die öffentliche API liegt weiterhin in <code>motion</code>.</p>
+<pre><code class="language-text">robot-motion-cpp/
+├── CMakeLists.txt                 Bibliotheksoptionen und Zusammenschaltung
+├── cmake/                        Abhängigkeiten und gemeinsame Targetregeln
+├── include/motion/
+│   ├── core/                     Zustände, Grenzen, Uhrdomänen
+│   ├── math/                     Ableitungs-Jets für Kinematik
+│   ├── kinematics/               FK, IK, Jacobian, Referenzmodelle und Hüllen
+│   ├── planning/                 Geometrie, Trajektorien, Zeitplanung und Halteplanung
+│   ├── io/                       Roboter-Modellimport
+│   ├── program/                  Anwenderprogramme und segmentierte Referenzen
+│   ├── execution/                Zyklusraster, Puffer, Dispatcher und Live-Wechsel
+│   ├── tracking/                 Frames, Beobachtungen, Prognose und Following
+│   ├── calibration/              Starrer Punktkalibrierungs-Fit
+│   └── platform/                 Optionale Linux-Uhr und Thread-Konfiguration
+├── src/{kinematics,io,program,calibration}/
+├── examples/
+│   ├── integration/              Vertragstest und separates CMake-Anwenderprojekt
+│   ├── programs/                 Programmimport, Simulation und CSV
+│   ├── planning/                 Optionales Online-PTP-Beispiel
+│   └── platform/                 Linux-Zeitdiagnose
+├── tests/                        Nach denselben Aufgaben gegliederte Tests
+│   ├── integration/              Alte/neue öffentliche Header
+│   ├── fuzz/corpus/              Parser-Fuzz-Harness und Startkorpus
+│   └── support/                  Gemeinsame Testmodelle
+├── test_support/kinematics/kdl/   Nur die unabhängige KDL-Testreferenz
+├── models/                       Profile, URDFs und belegte Upstream-Quellen
+├── programs/examples/            Mitgelieferte Anwenderprogramme
+├── tools/{architecture,models,visualization}/
+├── docs/{integration,architecture,formats,development,testing,planning,history}/
+├── third_party/                  Unveränderte Quellarchive und Lizenzen
+└── backups/                      Historische Rekonstruktionssicherung
+</code></pre>
+<h2 id="chapter-module_catalog--öffentliche-header">Öffentliche Header</h2>
+<p>Die Spalte „zyklisch“ bewertet nur die aufgeführten Tätigkeiten. Konstruktion,
+Destruktion und beliebige Benutzer-Callbacks gehören dadurch nicht automatisch
+in den zyklischen Thread.</p>
+<table>
+<thead>
+<tr>
+<th>Aufgabe / Header unter <code>include/motion/</code></th>
+<th>Wichtige Typen / Funktionen</th>
+<th>Zuständigkeit; zyklisch</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>core/motion_types.hpp</code></td>
+<td><code>JointState</code>, <code>JointLimits</code>, <code>Pose</code>, <code>Twist</code>, <code>IKinematics</code>, <code>CartesianGantry</code></td>
+<td>Grunddaten; Vektoren/Modellmethoden außerhalb RT</td>
+</tr>
+<tr>
+<td><code>core/clock_time.hpp</code></td>
+<td><code>ClockTime</code>, <code>ClockId</code>, Alias <code>TrackingTime</code></td>
+<td>Sekunden, Uhrdomäne und Unsicherheit; feste Werttypen</td>
+</tr>
+<tr>
+<td><code>math/derivative_jets.hpp</code></td>
+<td><code>differential_math</code></td>
+<td>Interne numerische Ableitungshilfen; kein Controller-Einstieg</td>
+</tr>
+<tr>
+<td><code>kinematics/differential_kinematics.hpp</code></td>
+<td><code>IDifferentialKinematics</code>, <code>KinematicDerivatives</code></td>
+<td>Ableitungen bis Ruck; Planung/Prüfung</td>
+</tr>
+<tr>
+<td><code>kinematics/serial_chain_kinematics.hpp</code></td>
+<td><code>SerialChainKinematics</code>, <code>SerialIKResult</code></td>
+<td>Serielle 1–12-Achs-Kette; Planung</td>
+</tr>
+<tr>
+<td><code>kinematics/reference_kinematics.hpp</code></td>
+<td><code>ScaraKinematics</code>, <code>DeltaKinematics</code></td>
+<td>Referenzkinematiken; Planung</td>
+</tr>
+<tr>
+<td><code>kinematics/inverse_differential.hpp</code></td>
+<td><code>inverse_differential()</code></td>
+<td>Räumliche Geschwindigkeit/Beschleunigung in dq/ddq; Planung</td>
+</tr>
+<tr>
+<td><code>kinematics/interval_kinematics.hpp</code></td>
+<td><code>enclosure</code></td>
+<td>Numerische Hüllen zur Zulassung; Planung</td>
+</tr>
+<tr>
+<td><code>planning/joint_trajectory.hpp</code></td>
+<td><code>ITrajectory</code>, <code>QuinticJointPlanner</code>, <code>QuinticRestTrajectory</code>, <code>GantryLinearPlanner</code></td>
+<td>Gelenk-/Gantry-Planung, Sampling außerhalb RT</td>
+</tr>
+<tr>
+<td><code>planning/boundary_quintic.hpp</code></td>
+<td><code>BoundaryQuinticTrajectory</code>, <code>plan_boundary_quintic()</code></td>
+<td>Quintik mit q/v/a-Randzuständen; Planung</td>
+</tr>
+<tr>
+<td><code>planning/cartesian_path.hpp</code></td>
+<td><code>CartesianLinePath</code>, <code>CartesianArcPath</code>, <code>IBoundedJointPath</code></td>
+<td>Normierte Weggeometrie s∈[0,1]; Planung</td>
+</tr>
+<tr>
+<td><code>planning/pose_path.hpp</code></td>
+<td><code>PoseSweepPath</code>, <code>BlendedPosePath</code></td>
+<td>Orientierungssweep und C2-Blends; Planung</td>
+</tr>
+<tr>
+<td><code>planning/cartesian_spline.hpp</code></td>
+<td><code>map_cartesian_spline()</code></td>
+<td>IK-Abbildung mit Pose-Schlauch; Planung</td>
+</tr>
+<tr>
+<td><code>planning/path_time_parameterization.hpp</code></td>
+<td><code>PathTimeParameterizer</code>, <code>TimedPathTrajectory</code></td>
+<td>Konservative Zeitplanung mit Gelenk-/TCP-Grenzen</td>
+</tr>
+<tr>
+<td><code>planning/envelope_constraints.hpp</code></td>
+<td><code>IEnvelopeConstraint</code>, <code>TcpObstacleConstraint</code></td>
+<td>Zusätzliche TCP-Hindernishüllen; Zulassung</td>
+</tr>
+<tr>
+<td><code>planning/constant_jerk_phase.hpp</code></td>
+<td><code>phase_detail</code></td>
+<td>Unabhängige Integration konstanter Ruckphasen; Planung</td>
+</tr>
+<tr>
+<td><code>planning/joint_stop.hpp</code></td>
+<td><code>JointStopPlanner</code>, <code>JointStopTrajectory</code></td>
+<td>Optionaler Ruckig-Haltekandidat plus unabhängige Prüfung</td>
+</tr>
+<tr>
+<td><code>planning/online_joint_generator.hpp</code></td>
+<td><code>IOnlineJointGenerator</code>, <code>RestOnlyOnlineGenerator</code></td>
+<td>Allgemeiner Generatorvertrag; <code>step()</code> ist kein Dispatcher</td>
+</tr>
+<tr>
+<td><code>planning/ruckig_joint_generator.hpp</code></td>
+<td><code>OnlineJointPlanner</code></td>
+<td>Optionaler geprüfter Ruckig-Generator; außerhalb RT</td>
+</tr>
+<tr>
+<td><code>io/robot_model_import.hpp</code></td>
+<td><code>ImportedSerialRobot</code>, <code>load_serial_robot_files()</code></td>
+<td>URDF/SI-YAML; Datei- und Parserarbeit außerhalb RT</td>
+</tr>
+<tr>
+<td><code>program/robot_program.hpp</code></td>
+<td><code>RobotProgramSource</code>, <code>RobotProgram</code>, <code>PreparedRobotProgram</code></td>
+<td>Strikter Programmimport, Gesamtplanung und Simulation</td>
+</tr>
+<tr>
+<td><code>program/joint_program.hpp</code></td>
+<td><code>IJointProgram</code></td>
+<td>Segmentierte unveränderliche Referenz; Sampling außerhalb RT</td>
+</tr>
+<tr>
+<td><code>execution/execution_types.hpp</code></td>
+<td><code>ExecutionStatus</code>, <code>ExecutionFault</code>, <code>ExecutionTimingPolicy</code></td>
+<td>Werttypen und Timingvertrag</td>
+</tr>
+<tr>
+<td><code>execution/execution_schedule.hpp</code></td>
+<td><code>IExecutionSchedule</code></td>
+<td>Zeit-/Tickvertrag; Sampling außerhalb RT</td>
+</tr>
+<tr>
+<td><code>execution/cycle_aligned_program.hpp</code></td>
+<td><code>CycleAlignedProgram</code>, <code>align_program_cycles()</code></td>
+<td>Stillstandsgrenzen auf ganzzahlige Ticks; Vorbereitung</td>
+</tr>
+<tr>
+<td><code>execution/boundary_polynomial_schedule.hpp</code></td>
+<td><code>BoundaryPolynomialSchedule</code></td>
+<td>Unveränderte Quintik plus Stillstandspadding</td>
+</tr>
+<tr>
+<td><code>execution/setpoint_buffer.hpp</code></td>
+<td><code>FixedJointCommand</code>, <code>SpscSetpointBuffer</code>, <code>BufferedMotionProducer</code></td>
+<td><code>fill()</code> außerhalb RT; feste Push/Pop-Übergaben zyklisch</td>
+</tr>
+<tr>
+<td><code>execution/deadline_motion_executor.hpp</code></td>
+<td><code>DeadlineMotionExecutor</code></td>
+<td>Gepufferte Ausgabe mit Daten-/Zeitprüfung; <code>poll[_clock]()</code> zyklisch</td>
+</tr>
+<tr>
+<td><code>execution/live_motion_executor.hpp</code></td>
+<td><code>PreparedLivePlan</code>, <code>LivePlanMailbox</code>, <code>LiveMotionExecutor</code></td>
+<td>Cachebau außerhalb RT; feste Befehlsausgabe, Wechsel und Snapshot zyklisch</td>
+</tr>
+<tr>
+<td><code>execution/stop_schedules.hpp</code></td>
+<td><code>JointStopSchedule</code>, <code>PolynomialStopSchedule</code>, <code>PreparedStopTransition</code></td>
+<td>Optional vorbereitete Halteverläufe; Sampling außerhalb RT</td>
+</tr>
+<tr>
+<td><code>tracking/constant_velocity_predictor.hpp</code></td>
+<td><code>ConveyorPredictor</code></td>
+<td>Einfacher ursprünglicher Prädiktor; kein Ausführungs-Dispatcher</td>
+</tr>
+<tr>
+<td><code>tracking/frame_snapshot.hpp</code></td>
+<td><code>TrackingFrameSnapshot</code></td>
+<td>Statische kalibrierte Framegraphen; außerhalb RT</td>
+</tr>
+<tr>
+<td><code>tracking/conveyor_target_predictor.hpp</code></td>
+<td><code>ConveyorTargetPredictor</code></td>
+<td>Kausale/freshness-/Unsicherheitsprüfung; außerhalb RT</td>
+</tr>
+<tr>
+<td><code>tracking/conveyor_following.hpp</code></td>
+<td><code>ConveyorObservationHistory</code>, <code>KinematicConveyorFollower</code></td>
+<td>Optionaler bewegter Horizont mit Halt; Planung außerhalb RT</td>
+</tr>
+<tr>
+<td><code>calibration/rigid_calibration.hpp</code></td>
+<td><code>PointCorrespondence</code>, <code>fit_rigid_calibration()</code></td>
+<td>Gewichteter starrer Fit; außerhalb RT</td>
+</tr>
+<tr>
+<td><code>platform/linux_realtime.hpp</code></td>
+<td><code>LinuxMonotonicClock</code>, <code>configure_realtime_thread()</code></td>
+<td>Uhr/absolutes Warten im Thread; FIFO/Affinität/mlock nur im Setup</td>
+</tr>
+</tbody>
+</table>
+<p><code>MOTION_WITH_SERIAL</code> aktiviert die kompilierten Modell-, Programm-, seriellen
+Differential- und Kalibrierfunktionen. <code>MOTION_WITH_RUCKIG</code> aktiviert die vier
+optionalen Header <code>joint_stop</code>, <code>ruckig_joint_generator</code>, <code>stop_schedules</code> und
+<code>conveyor_following</code>; sie verlangen ausdrücklich diese Build-Option. Die
+KDL-Bibliothek erscheint ausschließlich bei aktivierten Tests und KDL-Referenz.
+Details zur Quellkompatibilität: <a href="#chapter-naming_and_migration">Migration</a>.</p></section><section id="chapter-naming_and_migration"><h1 id="chapter-naming_and_migration--benennung-und-migration-ab-0123">Benennung und Migration ab 0.12.3</h1>
+<h2 id="chapter-naming_and_migration--verbindliche-regeln-für-gepflegten-code">Verbindliche Regeln für gepflegten Code</h2>
+<table>
+<thead>
+<tr>
+<th>Element</th>
+<th>Regel</th>
+<th>Beispiele</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Dateien / Ordner</td>
+<td>Englisch, <code>lower_snake_case</code>, nach Aufgabe</td>
+<td><code>execution/live_motion_executor.hpp</code></td>
+</tr>
+<tr>
+<td>Klassen / Structs / Enumtypen</td>
+<td><code>UpperCamelCase</code>, fachliche Rolle</td>
+<td><code>SerialChainKinematics</code>, <code>ExecutionTimingPolicy</code></td>
+</tr>
+<tr>
+<td>Funktionen / Methoden</td>
+<td><code>lower_snake_case</code>, Tätigkeit oder lesbarer Getter</td>
+<td><code>prepare_live_plan()</code>, <code>joint_limits()</code></td>
+</tr>
+<tr>
+<td>Variablen / Parameter</td>
+<td><code>lower_snake_case</code>, Rolle vor generischem Typ</td>
+<td><code>prepared_program</code>, <code>plan_mailbox</code>, <code>next_command</code></td>
+</tr>
+<tr>
+<td>Private Daten</td>
+<td>Aussagekräftiger Name plus <code>_</code></td>
+<td><code>execution_epoch_s_</code>, <code>next_tick_</code></td>
+</tr>
+<tr>
+<td>Konstanten</td>
+<td><code>constexpr</code> mit <code>lower_snake_case</code></td>
+<td><code>axis_count</code>, <code>controller_clock_id</code></td>
+</tr>
+<tr>
+<td>Enumwerte</td>
+<td><code>UpperCamelCase</code></td>
+<td><code>ExecutionStatus::Finished</code></td>
+</tr>
+<tr>
+<td>Build-Optionen / Makros</td>
+<td>Großbuchstaben mit Präfix <code>MOTION_</code></td>
+<td><code>MOTION_BUILD_TESTS</code></td>
+</tr>
+<tr>
+<td>Maße / Zähler</td>
+<td>Einheit bzw. Zählart als Suffix</td>
+<td><code>_s</code>, <code>_ms</code>, <code>_m</code>, <code>_rad</code>, <code>_count</code>, <code>_index</code>, <code>_ticks</code></td>
+</tr>
+<tr>
+<td>Transformationen</td>
+<td><code>target_from_source</code></td>
+<td><code>world_from_camera</code>, <code>parent_from_child</code></td>
+</tr>
+<tr>
+<td>Container</td>
+<td>Fachlicher Plural / Vektorrolle</td>
+<td><code>cached_commands_</code>, <code>joint_names()</code></td>
+</tr>
+</tbody>
+</table>
+<p>Mathematische Standardnotation wird beibehalten: <code>q</code>, <code>dq</code>, <code>ddq</code>, <code>J</code>, <code>s</code>,
+<code>u</code>, <code>N</code> und kurze Indizes sind innerhalb von Formeln eindeutig. Ein Gelenkvektor
+bekommt nicht pauschal das Suffix <code>_rad</code>, weil eine Kette rotatorische und
+prismatische Gelenke enthalten kann. Die Einheiten sind pro Achse definiert.
+Außerhalb numerischer Formeln werden sprechende Namen verwendet. Es gibt keine
+Typpräfixe wie <code>pObj</code>/<code>vecData</code> und keine neuen Sammeldateien <code>utils.hpp</code>.</p>
+<h2 id="chapter-naming_and_migration--tatsächlich-bereinigte-namen">Tatsächlich bereinigte Namen</h2>
+<p>Private Dispatcher-Felder wie <code>next_</code>, <code>fence_</code>, <code>last_</code>, <code>end_</code>, <code>cycle_</code> und
+<code>epoch_</code> heißen jetzt beispielsweise <code>next_tick_</code>, <code>committed_through_tick_</code>,
+<code>last_observed_time_s_</code>, <code>terminal_tick_</code>, <code>cycle_period_s_</code> und
+<code>execution_epoch_s_</code>. Veröffentlichte Snapshotwerte tragen <code>published_</code> im Namen.
+Die Quintik verwendet <code>duration_s_</code>, <code>initial_position_</code>, <code>position_delta_</code> und
+<code>start_timestamp_s_</code> anstelle der früheren Kurzformen. Mathematische Formeln
+und öffentliche Zustandsfelder bleiben fachlich unverändert.</p>
+<p>Allgemeine Uhrdaten heißen jetzt <strong><code>ClockTime</code></strong> und liegen unter
+<code>core/clock_time.hpp</code>. Der bisherige Name <code>TrackingTime</code> ist ein Alias desselben
+Typs. Die vorhandenen Feldnamen <code>seconds</code>, <code>clock</code>, <code>uncertainty_s</code> bleiben
+quellkompatibel. <code>clock</code> ist eine Uhrdomänen-ID, kein Uhr-Objekt.</p>
+<h2 id="chapter-naming_and_migration--bestehenden-c-code-übernehmen">Bestehenden C++-Code übernehmen</h2>
+<pre><code class="language-cpp">// Bisher weiterhin zulässig:
+#include &lt;motion/live_execution.hpp&gt;
+#include &lt;motion/robot_program.hpp&gt;
+
+// Für neuen / überarbeiteten Code:
+#include &lt;motion/core/clock_time.hpp&gt;
+#include &lt;motion/execution/live_motion_executor.hpp&gt;
+#include &lt;motion/program/robot_program.hpp&gt;
+</code></pre>
+<p>Alle 34 bisherigen flachen Header sind Weiterleitungen auf den jeweils
+zuständigen Header. Es gibt keine doppelte Implementierung. <code>namespace motion</code>,
+die Datenfelder q/dq/ddq und die bestehenden Targetnamen bleiben nutzbar;
+<code>RobotMotion::motion</code> ist das neue bevorzugte CMake-Target. Die Übernahme ist
+auf <strong>Quellkompatibilität</strong> ausgerichtet. Alle abhängigen C++-Binaries neu bauen;
+eine stabile ABI wird für diesen 0.x-Stand nicht zugesagt.</p>
+<p>Die vollständige maschinenlesbare Alt-/Neuzuordnung steht in
+<a href="architecture/file_migration.json">file_migration.json</a>. Beispiele:</p>
+<table>
+<thead>
+<tr>
+<th>Bisher</th>
+<th>Aktuell</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>include/motion/core.hpp</code></td>
+<td><code>include/motion/core/motion_types.hpp</code></td>
+</tr>
+<tr>
+<td><code>include/motion/serial.hpp</code></td>
+<td><code>include/motion/kinematics/serial_chain_kinematics.hpp</code></td>
+</tr>
+<tr>
+<td><code>include/motion/execution.hpp</code></td>
+<td><code>include/motion/execution/deadline_motion_executor.hpp</code></td>
+</tr>
+<tr>
+<td><code>include/motion/model_import.hpp</code></td>
+<td><code>include/motion/io/robot_model_import.hpp</code></td>
+</tr>
+<tr>
+<td><code>src/serial.cpp</code></td>
+<td><code>src/kinematics/serial_chain_kinematics.cpp</code></td>
+</tr>
+<tr>
+<td><code>tests/test_execution.cpp</code></td>
+<td><code>tests/execution/test_live_execution.cpp</code></td>
+</tr>
+<tr>
+<td><code>examples/program_simulator.cpp</code></td>
+<td><code>examples/programs/program_simulator.cpp</code></td>
+</tr>
+<tr>
+<td><code>programs/ur5e_demo.yaml</code></td>
+<td><code>programs/examples/ur5e_demo.yaml</code></td>
+</tr>
+<tr>
+<td><code>tools/generate_reference_models.py</code></td>
+<td><code>tools/models/generate_reference_models.py</code></td>
+</tr>
+<tr>
+<td><code>docs/VALIDATION.md</code></td>
+<td><code>docs/testing/validation.md</code></td>
+</tr>
+</tbody>
+</table>
+<p>Für verschobene Beispielprogramme sind die relativen Profilpfade angepasst.
+Eigene Programmdateien können an beliebiger Stelle liegen; ihre Modellpfade
+werden weiterhin relativ zu ihrer jeweiligen Programmdatei aufgelöst.
+CTest- und ausführbare Targetnamen wie <code>program_simulator</code> und <code>serial_tests</code>
+bleiben erhalten. Die Programme liegen weiterhin direkt im Build-Verzeichnis.</p>
+<h2 id="chapter-naming_and_migration--dokumentation-prüfen-und-erzeugen">Dokumentation prüfen und erzeugen</h2>
+<pre><code class="language-sh"># Standardbibliothek von Python genügt; prüft auch lokale Dokumentationslinks:
+python3 tools/architecture/check_structure.py
+python3 tools/architecture/check_public_headers.py --with-serial
+
+# Nur zur Regeneration der eingecheckten SVGs: zusätzlich Graphviz erforderlich.
+python3 tools/architecture/render_diagrams.py
+# Optional druckbare einzelne Diagramme:
+python3 tools/architecture/render_diagrams.py --format pdf
+
+# Zusammenhängendes Offline-Handbuch mit eingebetteten SVGs (optional):
+python3 -m pip install -r tools/requirements-docs.txt
+python3 tools/documentation/build_handbook.py
+python3 tools/documentation/build_handbook.py --check
+</code></pre>
+<p>Die fertige Datei <a href="handbook.html">docs/handbook.html</a> ist eingecheckt und
+lädt keine externen Ressourcen. Sie lässt sich lokal im Browser lesen oder mit
+der Browser-Druckfunktion als PDF speichern. Die Mermaid-Abläufe bleiben darin
+als Quelltexte erhalten; die UML-Klassendiagramme sind direkt eingebettete SVGs.
+Zum Einzelheader-Check optionaler Ruckig-Header zusätzlich
+<code>--ruckig-include build-all/_deps/ruckig-src/include</code> angeben.</p>
+<p>Der Diagrammrenderer prüft Namen von Klassen und angezeigten Methoden gegen die
+jeweiligen Header. Die Beziehungen und gezeigten Methodenausschnitte sind
+redaktionell gepflegt; der Check ist kein vollständiger C++-/UML-Parser.
+Die Spezifikation liegt in <code>docs/architecture/diagrams/class_diagrams.json</code>;
+DOT und SVG werden daraus erzeugt. Strukturprüfung und CMake-Anwenderprojekt
+laufen zusätzlich in CI. Fremdquellen und Lizenztexte werden nicht umbenannt
+oder stilistisch angepasst. Historische Prüfergebnisse bleiben versioniert.</p></section><section id="chapter-acceptance_plan"><h1 id="chapter-acceptance_plan--test-und-abnahmeplan-für-die-spätere-integration">Test- und Abnahmeplan für die spätere Integration</h1>
+<p>Derzeit wird die Bibliotheksbasis vorbereitet. Eure selbst entwickelte Steuerung
+und der Taktbereich <strong>1–20 ms</strong> sind bekannt; konkrete Scheduler-, Achs- und
+Transportadapter werden erst später entworfen. Die folgende Liste trennt
+vorhandene Softwareprüfungen von noch zu vereinbarenden Host-Verträgen.</p>
+<h2 id="chapter-acceptance_plan--schon-ausführbar">Schon ausführbar</h2>
+<table>
+<thead>
+<tr>
+<th>Prüfgebiet</th>
+<th>Vorhandener Nachweis</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Kinematische Grenzfälle</td>
+<td>Singularitäts-/Grenzannäherungen, Winkelumschläge, π-Orientierungen, kurze Linien, volle Kreise</td>
+</tr>
+<tr>
+<td>Unabhängige Kinematik</td>
+<td>1.866 FK/J-Vergleiche mit KDL sowie analytische und Differenz-Fixtures</td>
+</tr>
+<tr>
+<td>Programmzulassung</td>
+<td>Gesamtplan, Quellorte, Limits, transaktionale Ablehnung, CSV-Veröffentlichung</td>
+</tr>
+<tr>
+<td>Ausführung</td>
+<td>Zeit-/Datenfehler, Live-Aktivierung, Generationen, Fence, Snapshot, SPSC-Stress</td>
+</tr>
+<tr>
+<td>Speicher</td>
+<td>Beobachtete null C++-new/delete im Dispatcher-/Aktivierungspfad</td>
+</tr>
+<tr>
+<td>Fehlerhafte Beobachtungen</td>
+<td>Alter, Kausalität, Objektzuordnung, Revision, Ausreißer, vorbereiteter Halt</td>
+</tr>
+<tr>
+<td>Zufall/Fuzzing</td>
+<td>Reproduzierbare Programme, Parsermutationen, Ressourcenbudgets, libFuzzer</td>
+</tr>
+<tr>
+<td>Neue Struktur</td>
+<td>Kompatibilitätsheader, Diagrammdeklarationen, Links, separates CMake-Anwenderprojekt</td>
+</tr>
+<tr>
+<td>Host-Vertrag als Simulation</td>
+<td>Cacheausgabe bei 1/10/20 ms, spätes Zeitfenster, abgelehnte Achsübergabe</td>
+</tr>
+</tbody>
+</table>
+<p>Die konkreten ausgeführten Konfigurationen und Sanitizer-Ergebnisse stehen im
+<a href="#chapter-validation">Prüfbericht</a>. Diese Tests decken Softwareverträge ab,
+keine reale Maschinenabnahme.</p>
+<h2 id="chapter-acceptance_plan--vor-einem-echten-steuerungstest-verbindlich-festlegen">Vor einem echten Steuerungstest verbindlich festlegen</h2>
+<table>
+<thead>
+<tr>
+<th>Thema</th>
+<th>Benötigte Entscheidung / Schnittstelle</th>
+<th>Warum noch offen</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Host-API</td>
+<td>C++-Prozess, Threadmodell, Compiler/ABI oder notwendiger Sprachadapter</td>
+<td>Eigenentwicklung noch nicht konkret angebunden</td>
+</tr>
+<tr>
+<td>Takt</td>
+<td>Fester gewählter Wert in 1–20 ms, Startphase, Scheduling und Fehlerschwellen</td>
+<td>Bereich bekannt, Betriebspunkt und Lastfall nicht gewählt</td>
+</tr>
+<tr>
+<td>Uhrbezug</td>
+<td>Monotone Domäne, Unsicherheitsgrenze, Epochbindung und Startvorlauf</td>
+<td>Kein automatischer Uhren-/Startadapter vorhanden</td>
+</tr>
+<tr>
+<td>Achsabbildung</td>
+<td>Namen/Reihenfolge, Skalierung, Vorzeichen, Nullpunkte, m/rad ↔ Steuerungseinheiten</td>
+<td>Nominalmodelle enthalten keine Host-Encoderzuordnung</td>
+</tr>
+<tr>
+<td>Startfreigabe</td>
+<td>Frische Istwerte, Grenz-/Folgefehler, Ruhe, Referenzierung, Kalibrierung</td>
+<td>Dispatcher ist Sollwertausführung, kein Maschinen-Freigabeautomat</td>
+</tr>
+<tr>
+<td>Achsannahme</td>
+<td>Batch-/Atomizitätsvertrag, maximale Latenz, Rückmeldung, partielle Fehler, Delivery-Fence</td>
+<td>Treiber-/Hardwareadapter bewusst später</td>
+</tr>
+<tr>
+<td>Fehlerreaktion</td>
+<td>Verhalten bei Zeitfehler, Unterlauf, Treiberfehler, Abbruch, Verlust von Feedback</td>
+<td>Neue normale Befehle zu sperren definiert noch keinen physischen Halt</td>
+</tr>
+<tr>
+<td>Rücksetzung</td>
+<td>Wer quittiert; wie neuer Startzustand, neue Epoche und Generation entstehen</td>
+<td>Kein automatischer Reset/Resume im Executor</td>
+</tr>
+<tr>
+<td>Beobachtung</td>
+<td>Nichtblockierende Status-/Fehlerübergabe, Logformat und Zeitkorrelation</td>
+<td>UI-/Diagnosekanal gehört zur Host-Steuerung</td>
+</tr>
+<tr>
+<td>Kalibrierwechsel</td>
+<td>Aktive Programme halten/beenden; Revisionen an Programmauswahl binden</td>
+<td>Cache wird durch neue Frame-Revision nicht automatisch gestoppt</td>
+</tr>
+<tr>
+<td>Speicher</td>
+<td>Maximale Programmlänge, Cache- oder Ringmodus, gleichzeitig lebende Generationen</td>
+<td>Abhängig von gewähltem Takt und Host-RAM</td>
+</tr>
+</tbody>
+</table>
+<p>C-ABI, Shared-Memory-/Netzwerkprotokoll, automatischer Epochadapter und Hardware-
+Freigabe werden hier <strong>nicht als fertig implementiert</strong> dargestellt. Ein
+installierbares CMake-Paket, formale API-/ABI-Stabilität und plattformspezifische
+Build-/Deploymentvorgaben wären weitere Integrationsentscheidungen. Für den
+aktuellen Quellcodeeinbau ist <code>add_subdirectory</code> nachweislich nutzbar.</p>
+<h2 id="chapter-acceptance_plan--gestufter-testablauf">Gestufter Testablauf</h2>
+<ol>
+<li><strong>Host ohne Hardware:</strong> Bibliothek einbinden, Achsnamen/Dimensionen prüfen,
+   mit virtueller Uhr bei 1, 10 und 20 ms ausführen. Jeder Tick genau einmal;
+   letzter Befehl terminal und ruhig. Fehlerszenarien dürfen keine weiteren
+   normalen Befehle erzeugen. Eigene Programme zuerst mit <code>--check</code> und CSV prüfen.</li>
+<li><strong>Zielplattform ohne Bewegung:</strong> Gleicher Binary-/Compilerstand, reale monotone
+   Uhr, Ziel-Lastfälle, Scheduler, Speicher und Achsübergabe messen. Kein Catch-up,
+   auch bei Verzögerung/Preemption nicht. Timestampadapter und Startvorlauf testen.</li>
+<li><strong>Signalpfad mit deaktivierten Achsen:</strong> Einheiten/Mapping an unabhängigen
+   Testwerten prüfen. Treiberablehnung, partielle Übertragung, alte Rückmeldungen,
+   Queuefüllung und Abbruch gezielt injizieren. Commit-Fence und Diagnose abgleichen.</li>
+<li><strong>Begrenzter Bewegungsversuch:</strong> Erst nach Host-Freigabeprüfung mit für den
+   Aufbau festgelegten Grenzen und Stopreaktionen. Soll-/Istwerte und tatsächliche
+   Stillstandsbestätigung erfassen. Die Freigabe des Versuchs gehört zur Anlage.</li>
+<li><strong>Live-/Following-Funktionen:</strong> Erst nach stabilem Grundpfad überlappende
+   Generationen, Verlust von Updates und Kalibrierwechsel erproben. Speicher
+   erst nach korrekter Retirement-Antwort freigeben.</li>
+</ol>
+<h2 id="chapter-acceptance_plan--messprotokoll-pro-versuch">Messprotokoll pro Versuch</h2>
+<p>Mindestens Software-Commit, Modell-/Profilhash, Kalibrierungsrevision, Achsabbildung,
+Build-Optionen, Zielsystem, gewählter Takt und Timingpolicy dokumentieren. Pro
+Befehl: globale Ticknummer, Generation, Sollzeit, beobachtete Ausgabezeit,
+Uhrunsicherheit, Annahmezeit/-ergebnis, relevante Istwerte und Fehlerzustand.
+Logs über einen separaten Kanal abführen; Dateischreiben/Formatieren nicht in den
+beobachteten Zyklus mischen. Maximale und verteilte Latenzen unter definierten
+Lastfällen berichten, keine bloßen Mittelwerte als obere Grenzen ausgeben.</p>
+<p>Ein erfolgreicher Test muss für seinen konkreten Vertrag zeigen: kein alter oder
+doppelter neuer Befehl, kein Weiterlaufen nach verriegeltem Fehler, passende
+Anfangs-/Endzustände und vollständige Diagnose bei jeder Ablehnung. Timing und
+Istbewegung sind getrennte Messgrößen.</p></section><section id="chapter-robot_model_yaml"><h1 id="chapter-robot_model_yaml--kinematikbeschreibung-und-si-motion-profil">Kinematikbeschreibung und SI-Motion-Profil</h1>
+<p>Die aktuelle Austauschbeschreibung besteht aus <strong>URDF-Geometrie plus SI-YAML-
+Profil v1</strong>. Der öffentliche Import liegt in
+<code>motion/io/robot_model_import.hpp</code>. Er unterstützt serielle Ketten von 1–12
+beweglichen Achsen einschließlich fester Zwischensegmente. ROS, Xacro, Meshes
+oder Antriebsprotokolle werden dafür nicht benötigt.</p>
+<h2 id="chapter-robot_model_yaml--datei-und-api-zuordnung">Datei- und API-Zuordnung</h2>
+<pre><code class="language-cpp">const auto robot = motion::load_serial_robot_files(urdf_filename, profile_filename);
+// Alternativ getrennt aus In-Memory-Texten:
+const auto profile = motion::parse_serial_profile_yaml(profile_text);
+const auto robot_from_text = motion::import_serial_urdf(urdf_text, profile);
+</code></pre>
+<p>Bei <code>load_robot_program()</code> bestimmt <code>robot_profile</code> den Profilpfad relativ zur
+Programmdatei. Ohne <code>robot_urdf</code> liegt die erwartete Datei <code>robot.urdf</code> neben dem
+Profil. Das optionale Programmfeld <code>robot_urdf</code> ist ebenfalls relativ zur
+Programmdatei. <strong>Das Modellprofil selbst enthält keinen Dateipfad zur URDF.</strong>
+<code>load_serial_robot_files()</code> erhält beide Dateinamen ausdrücklich als Argumente.</p>
+<h2 id="chapter-robot_model_yaml--kleines-vollständiges-formatbeispiel">Kleines vollständiges Formatbeispiel</h2>
+<p>Ein rotatorisches Einachsmodell dient nur zur Erklärung des Formats; es ist kein
+Ersatz für ein Sechsachsmodell. Als <code>robot.urdf</code>:</p>
+<pre><code class="language-xml">&lt;robot name=&quot;one_axis_example&quot;&gt;
+  &lt;link name=&quot;base_link&quot;/&gt;
+  &lt;link name=&quot;flange&quot;/&gt;
+  &lt;joint name=&quot;axis_1&quot; type=&quot;revolute&quot;&gt;
+    &lt;parent link=&quot;base_link&quot;/&gt;
+    &lt;child link=&quot;flange&quot;/&gt;
+    &lt;origin xyz=&quot;0 0 0&quot; rpy=&quot;0 0 0&quot;/&gt;
+    &lt;axis xyz=&quot;0 0 1&quot;/&gt;
+    &lt;limit lower=&quot;-1&quot; upper=&quot;1&quot; velocity=&quot;0.5&quot;/&gt;
+  &lt;/joint&gt;
+&lt;/robot&gt;
+</code></pre>
+<p>Daneben als <code>profile.yaml</code>, mit ausschließlich beispielhaften Motion-Grenzen:</p>
+<pre><code class="language-yaml">schema_version: 1
+units: SI
+robot_name: one_axis_example
+base_link: base_link
+tip_link: flange
+base_pose:
+  xyz: [0, 0, 0]
+  rpy: [0, 0, 0]
+tool_offset:
+  xyz: [0.2, 0, 0]
+  rpy: [0, 0, 0]
+joints:
+  axis_1:
+    lower: -0.9
+    upper: 0.9
+    max_velocity: 0.25
+    max_acceleration: 1.0
+    max_jerk: 5.0
+tcp_limits:
+  max_linear_velocity: 0.25
+  max_linear_acceleration: 0.5
+  max_linear_jerk: 2.0
+  max_angular_velocity: 0.5
+  max_angular_acceleration: 1.0
+  max_angular_jerk: 5.0
+</code></pre>
+<h2 id="chapter-robot_model_yaml--profilfelder">Profilfelder</h2>
+<table>
+<thead>
+<tr>
+<th>Feld</th>
+<th>Pflicht / Bedeutung</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>schema_version</code>, <code>units</code></td>
+<td>Pflicht: 1 und SI</td>
+</tr>
+<tr>
+<td><code>robot_name</code>, <code>base_link</code>, <code>tip_link</code></td>
+<td>Pflicht: Name und ausgewählte serielle Kette</td>
+</tr>
+<tr>
+<td><code>base_pose</code></td>
+<td>Optional, Identität als Standard; <code>xyz</code> in m, <code>rpy</code> in rad</td>
+</tr>
+<tr>
+<td><code>tool_offset</code></td>
+<td>Optional, Identität als Standard; Transform von Tip/Flansch zum TCP</td>
+</tr>
+<tr>
+<td><code>joints</code></td>
+<td>Genau die beweglichen Gelenke der ausgewählten Kette, nach URDF-Namen</td>
+</tr>
+<tr>
+<td><code>max_acceleration</code>, <code>max_jerk</code> je Gelenk</td>
+<td>Pflicht, endlich und positiv</td>
+</tr>
+<tr>
+<td><code>lower</code>, <code>upper</code>, <code>max_velocity</code> je Gelenk</td>
+<td>Optional; dürfen URDF-Grenzen nur enger machen</td>
+</tr>
+<tr>
+<td><code>tcp_limits</code></td>
+<td>Alle sechs linearen/angularen v/a/Ruck-Grenzen, endlich und positiv</td>
+</tr>
+<tr>
+<td><code>solver</code></td>
+<td>Optional: lokale IK-Parameter, siehe unten</td>
+</tr>
+</tbody>
+</table>
+<p>Gelenkreihenfolge ergibt sich aus der Kette von Basis zu Tip, nicht aus der
+Reihenfolge einer YAML-Map. Namen anschließend mit <code>joint_names()</code> überprüfen.
+Für <code>continuous</code> sind im Profil endliche <code>lower</code>/<code>upper</code> als Softwarefenster
+notwendig, da zulässige Motion-Grenzen endlich sein müssen. Winkel werden nicht
+nachträglich auf ±π gefaltet. Gleichnamige/überzählige/fehlende Profilgelenke
+werden abgelehnt; feste URDF-Gelenke bekommen keinen Dynamikeintrag.</p>
+<p>Posekonvention: <code>base_pose</code> beschreibt Welt-aus-Basis, <code>tool_offset</code> den
+angehängten Flansch-aus-TCP-Transform. Es gilt
+<code>world_from_tcp = world_from_base * chain(q) * flange_from_tcp</code>.
+RPY wird als <code>Rz(yaw) * Ry(pitch) * Rx(roll)</code> interpretiert. Im Programmformat
+werden Orientierungen dagegen als Quaternionen <code>[w,x,y,z]</code> angegeben.</p>
+<h2 id="chapter-robot_model_yaml--unterstützte-urdf-teilmenge">Unterstützte URDF-Teilmenge</h2>
+<ul>
+<li><code>fixed</code>, <code>revolute</code>, <code>continuous</code>, <code>prismatic</code>, Origins und lokale Gelenkachsen.</li>
+<li>Bewegliche Gelenke benötigen ein positives Geschwindigkeitslimit;
+  <code>revolute</code>/<code>prismatic</code> zusätzlich endliche untere/obere Grenzen.</li>
+<li>Die ausgewählte Verbindung zwischen Basis und Tip muss eindeutig, zusammenhängend
+  und zyklusfrei sein. Mehrfach-Eltern und unterstützungsfremde Gelenktypen
+  werden abgelehnt.</li>
+<li><code>mimic</code>, <code>calibration</code> und <code>safety_controller</code> werden ausdrücklich nicht als
+  wirksame Kopplungs-/Kalibrierungs-/Sicherheitsmodelle interpretiert, sondern
+  bei betreffenden Gelenken abgelehnt.</li>
+<li>Visual-/Collision-/Inertialdaten sind keine vollständige Kollisions- oder
+  Dynamikprüfung in diesem Import. Es gibt keine automatische Netzwerk-/Mesh-
+  Auflösung und keine Makroausführung.</li>
+</ul>
+<p>Die Dateilader begrenzen URDF auf 8 MiB und Profile auf 1 MiB. Profil-Parser
+prüfen Schema, doppelte/unbekannte Schlüssel, endliche Werte und YAML-Budgets.
+Importfehler werden als <code>ModelImportError</code> ausgegeben; beim Programmladen werden
+sie mit dem Roboter-Quellort als <code>RobotProgramError</code> weitergegeben.</p>
+<h2 id="chapter-robot_model_yaml--optionale-lokale-ik-konfiguration">Optionale lokale IK-Konfiguration</h2>
+<table>
+<thead>
+<tr>
+<th><code>solver</code>-Feld</th>
+<th>Standard</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>max_iterations</code></td>
+<td>300, zulässige positive Ganzzahl bis 10.000</td>
+</tr>
+<tr>
+<td><code>position_tolerance_m</code></td>
+<td>1e-7</td>
+</tr>
+<tr>
+<td><code>orientation_tolerance_rad</code></td>
+<td>1e-7</td>
+</tr>
+<tr>
+<td><code>orientation_length_m</code></td>
+<td>0.25</td>
+</tr>
+<tr>
+<td><code>prismatic_scale_m</code></td>
+<td>0.1</td>
+</tr>
+<tr>
+<td><code>damping</code></td>
+<td>1e-3</td>
+</tr>
+<tr>
+<td><code>max_normalized_step</code></td>
+<td>0.25</td>
+</tr>
+<tr>
+<td><code>singularity_threshold</code></td>
+<td>1e-6</td>
+</tr>
+</tbody>
+</table>
+<p>Die Skalierungen mischen Positions-/Orientierungsfehler kontrolliert in der
+lokalen numerischen Suche. Parameter nicht ohne Vergleichs-/Grenzfallprüfung
+ändern. Ein abgelehnter lokaler IK-Lauf beweist nicht, dass keine andere
+Gelenkverzweigung zum Ziel existiert.</p>
+<p>Reale Referenzprofile und Herkunftsdaten liegen unter <code>models/</code>. Neue Grenzen,
+Nullpunkte, Werkzeugdaten oder Kalibrierungen für euren Aufbau müssen explizit
+versioniert und unabhängig von den öffentlichen nominalen Beispielen geprüft
+werden. Für die spätere Host-Zuordnung gilt der
+<a href="#chapter-interface_contracts">Schnittstellenvertrag</a>.</p></section><section id="chapter-robot_program_yaml"><h1 id="chapter-robot_program_yaml--eigene-roboterprogramme-importieren">Eigene Roboterprogramme importieren</h1>
+<p>Programmformat v1 aus dem Gespräch, neu implementiert und geprüft. Der Import
+benötigt den Standard-Build mit <code>MOTION_WITH_SERIAL=ON</code>, keinen Ruckig- oder
+CANopen-Anschluss.</p>
+<h2 id="chapter-robot_program_yaml--vollständiges-kleines-beispiel">Vollständiges kleines Beispiel</h2>
+<p>Speichere diese Datei unter <code>programs/mein_programm.yaml</code>:</p>
+<pre><code class="language-yaml">schema_version: 1
+units: SI
+frame: world
+robot_profile: ../models/ur5e/profile.yaml
+cycle_s: 0.01
+speed: 0.75
+start: home
+points:
+  home: {joints: [0.2, -0.6, 0.7, 0.3, 0.8, -0.2]}
+  approach: {joints: [0.21, -0.6, 0.7, 0.3, 0.8, -0.2]}
+subprograms:
+  pause:
+    - {type: WAIT, seconds: 0.05}
+steps:
+  - {type: PTP, target: approach}
+  - {type: CALL, program: pause}
+  - {type: PTP, target: home, speed: 0.5}
+</code></pre>
+<pre><code class="language-sh">./build/program_simulator programs/mein_programm.yaml --check
+./build/program_simulator programs/mein_programm.yaml --csv trace.csv
+python tools/visualization/plot_program_trace.py trace.csv --output trace.png
+</code></pre>
+<p>Die drei gelieferten <code>*_demo.yaml</code>-Dateien enthalten zusätzlich LIN und CIRC.
+Bei <code>--check</code> wird bereits <strong>das gesamte Programm geplant und zugelassen</strong>;
+lediglich die zyklische Wiedergabe entfällt. Ohne <code>--check</code> folgt die vollständige
+Simulation mit virtueller Uhr durch Producer und Dispatcher.</p>
+<h2 id="chapter-robot_program_yaml--koordinaten-modelle-und-punkte">Koordinaten, Modelle und Punkte</h2>
+<ul>
+<li><code>units: SI</code> bedeutet Meter, Radiant und Sekunden; keine implizite mm-/Grad-Umrechnung.</li>
+<li>Posen stehen im Modell-Weltkoordinatensystem. Nur <code>frame: world</code> ist zulässig.</li>
+<li>Quaternionen haben die Reihenfolge <strong>[w,x,y,z]</strong> und müssen normiert sein.</li>
+<li><code>robot_profile</code> und optional <code>robot_urdf</code> werden relativ zur <strong>Programmdatei</strong>
+  aufgelöst, unabhängig vom Arbeitsverzeichnis. Ohne <code>robot_urdf</code> wird <code>robot.urdf</code>
+  neben dem Profil geladen. Es wird kein Xacro ausgeführt oder Fremdcode geladen.</li>
+<li><code>start</code> ist ein benannter Gelenkpunkt oder <code>{joints: [...]}</code>. Diese Konfiguration
+  wird bei Simulationsbeginn als Stillstand vorausgesetzt; sie ist kein Fahrbefehl.</li>
+<li>Ein Punkt ist entweder <code>{joints: [...]}</code> oder
+  <code>{position: [x,y,z], orientation: [w,x,y,z]}</code>. Mischformen sind ungültig.</li>
+<li>Gelenkwerte stehen in der importierten Kettenreihenfolge. Prismatic: m; Rotary: rad.</li>
+</ul>
+<p><code>target</code> akzeptiert den Namen eines Punkts oder die jeweilige Punktbeschreibung
+als Inline-Mapping. PTP erlaubt alternativ die Kurzform <code>joints: [...]</code> direkt im
+Schritt. LIN verlangt <code>target</code>.</p>
+<h2 id="chapter-robot_program_yaml--befehle">Befehle</h2>
+<table>
+<thead>
+<tr>
+<th>Typ</th>
+<th>Felder</th>
+<th>Bedeutung</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>PTP</td>
+<td><code>target</code> <strong>oder</strong> <code>joints</code>, optional <code>speed</code></td>
+<td>Rest-to-rest-Gelenkquintik. Posen werden vorher über lokalen IK gelöst. Gelenk- und nichtlineare TCP-v/a/Ruck-Grenzen werden über die ganze Bahn geprüft; keine TCP-Geraden-Garantie.</td>
+</tr>
+<tr>
+<td>LIN</td>
+<td><code>target</code>, optional <code>speed</code></td>
+<td>Kartesische Linie mit glatter kürzester Quaternion-Drehung. Ein Gelenkpunkt liefert seine FK-Pose, keine vorgeschriebene terminale Gelenkbranche.</td>
+</tr>
+<tr>
+<td>CIRC</td>
+<td><code>center</code> <strong>oder</strong> <code>center_offset</code>, <code>normal</code>, <code>sweep_rad</code>, optional <code>orientation</code>, <code>speed</code></td>
+<td>Vorzeichenbehafteter Rechtshandbogen im Weltkoordinatensystem ab der aktuellen TCP-Pose. Betrag des Winkels höchstens 2pi.</td>
+</tr>
+<tr>
+<td>WAIT</td>
+<td>positive <code>seconds</code></td>
+<td>Stillstand mindestens für die angegebene Zeit.</td>
+</tr>
+<tr>
+<td>CALL</td>
+<td><code>program</code></td>
+<td>Vorab-Auflösen eines internen benannten Unterprogramms. Kein externer Skriptaufruf.</td>
+</tr>
+</tbody>
+</table>
+<p>Beispiel eines CIRC-Schritts:</p>
+<pre><code class="language-yaml">- type: CIRC
+  center_offset: [-0.002, 0, 0]
+  normal: [0, 0, 1]
+  sweep_rad: 0.5
+  speed: 0.5
+</code></pre>
+<p><code>center</code> ist ein absoluter Weltpunkt. <code>center_offset</code> wird als weltorientierter
+Vektor zur tatsächlichen Modell-FK am Anfang des Schritts addiert, <strong>nicht</strong> mit
+dem Werkzeug gedreht. Genau eine Darstellung ist erforderlich. Radius muss
+positiv und Normale senkrecht zum Startradius sein. Ein absoluter Mittelpunkt
+kann wegen verbleibender IK-/Spline-Residuen am vorausgehenden Schritt diese
+strenge Bedingung verletzen; Geometrie wird nicht stillschweigend projiziert.
+Ohne <code>orientation</code> bleibt die aktuelle Orientierung erhalten.</p>
+<p>Globales und schrittweises <code>speed</code> werden multipliziert. Der effektive Wert muss
+in [0.001,1] liegen. Er reduziert Geschwindigkeitsgrenzen mit s, Beschleunigung
+mit s² und Ruck mit s³, in Gelenk- und TCP-Domäne. Er kann keine Profilgrenze erhöhen.
+WAIT-Zeiten ändern sich dadurch nicht. Das ist keine Laufzeit-Geschwindigkeitsänderung.</p>
+<h2 id="chapter-robot_program_yaml--vorabprüfung-und-ausführung">Vorabprüfung und Ausführung</h2>
+<p>Alle Befehle werden vor Veröffentlichung des Programms geprüft. PTP verwendet
+Gelenkpolynomhüllen plus nichtlineare FK-Intervalljets; bei zu hohen TCP-Werten
+werden innerhalb eines festen Budgets längere Dauern versucht. LIN/CIRC werden
+über C2-Gelenksplines im Pose-Toleranzschlauch abgebildet und konservativ zeitgeplant.
+Standardtoleranzen: 0.2 mm und 0.5 mrad relativ zum nominalen Modell. Dies sind
+numerisch begrenzte Approximationen, keine exakten analytischen Sechsachs-LIN/CIRC.</p>
+<p>Alle Schrittgrenzen sind Stillstandspunkte. Segmente werden nur verlängert auf
+ganze Zyklen gelegt; WAIT wird nie verkürzt. Binäre Rundung kann an einer Grenze
+einen zusätzlichen Zyklus verursachen. Es wird kein implizites Blending aktiviert.
+Die Bibliothek bietet BlendedPosePath gesondert an.</p>
+<p>Fehler nennen Datei, Zeile/Spalte und Block/Schritt, soweit vorhanden. Die
+CLI listet die Zuordnung expandierter Segmente zu ihren Definitionen auf.
+Ein Fehler in einem späten Schritt verhindert die Veröffentlichung des ganzen
+Programms. Eine vorhandene CSV bleibt bei Ablehnung/fehlgeschlagener Simulation
+erhalten: Die CLI schreibt zunächst eine temporäre Datei und benennt erst nach
+Erfolg um.</p>
+<h2 id="chapter-robot_program_yaml--formate-und-budgets">Formate und Budgets</h2>
+<p>Genau ein YAML-Dokument, maximal 1 MiB; 50.000 YAML-Ereignisse, Tiefe 32;
+4.096 Punkte, 256 Unterprogramme, 10.000 Quellbefehle und 10.000 expandierte Befehle;
+Unterprogrammtiefe 16. YAML-Aliase, explizite Tags, doppelte/unbekannte Felder,
+rekursive Aufrufe, nichtendliche Werte und nicht unterstützte Instruktionen
+werden abgelehnt. Auch unbenutzte Definitionen werden syntaktisch und bezüglich
+Aufrufreferenzen geprüft. Kinematische Zulassung betrifft das expandierte Hauptprogramm.</p>
+<p>WAIT höchstens eine Stunde; Referenzprogramm höchstens 24 Stunden.
+PTP-Zeitverlängerung: maximal 16 Versuche, jeweils höchstens eine Stunde.
+<code>cycle_s</code>: 0.0001..1 s, Standard 0.01; <code>epoch_s</code>: Standard 0.
+Das Zeitraster muss ausreichende numerische Auflösung besitzen.
+Simulation: Standard maximal 1.000.000 Ticks, mit <code>--max-ticks Anzahl</code> explizit
+bis zu 10.000.000. <code>--check</code> ist auch für längere geprüfte Programme möglich.
+Eine konservative Ablehnung beweist keine globale Unlösbarkeit.</p>
+<h2 id="chapter-robot_program_yaml--c-schnittstelle-und-csv">C++-Schnittstelle und CSV</h2>
+<pre><code class="language-cpp">#include &quot;motion/robot_program.hpp&quot;
+const auto prepared = motion::load_robot_program(&quot;programs/examples/ur5e_demo.yaml&quot;);
+const auto report = motion::simulate_robot_program(prepared);
+</code></pre>
+<p>Alternativ: <code>parse_robot_program_yaml(text, name)</code> und
+<code>compile_robot_program(source, imported_robot)</code>. Der Programmquellwert ist über
+seine öffentliche Schnittstelle unveränderlich. Das Ergebnis enthält einen
+IJointProgram-kompatiblen Referenzplan und das CycleAlignedProgram.
+Planen, Samplen, CSV und Simulation allozieren; sie gehören nicht in den RT-Thread.</p>
+<p>CSV: Tick, relative <code>time_s</code>, absolute <code>timestamp_s</code>, expandiertes Segment (ab 1),
+lokaler Quellschritt, q/dq/ddq/Ruck je Gelenk, tatsächliche Modell-FK mit
+TCP-Position/Quaternion, lineare/angulare TCP-v/a/Ruck-Komponenten. Dezimalpunkt
+und 17-stellige Präzision sind locale-unabhängig. Der C++-Simulator stellt die
+Streamformatierung wieder her. Berichts-/Plot-Maxima sind Sample-Diagnostik;
+die kontinuierliche Zulassung erfolgt vorher.</p>
+<p>Der optionale Matplotlib-Plotter erzeugt PNG/SVG/PDF und akzeptiert bis zu
+100.000 endliche, streng zeitlich geordnete Samples. Es handelt sich um
+Sollreferenzen, keine Hardwaremessungen. Digitale I/O, eingangsabhängige WAITs,
+Hersteller-/G-Code-Import und sensorabhängige Programmverzweigungen sind nicht
+Bestandteil dieses Formats.</p></section><section id="chapter-validation"><h1 id="chapter-validation--struktur-und-integrationsgrundlage-0123-29102026">Struktur- und Integrationsgrundlage — 0.12.3, 29.10.2026</h1>
+<p>Aufgabenbezogene Projektstruktur, Benennungsregeln und Integrationsverträge für
+eine selbst entwickelte Steuerung mit <strong>1–20 ms</strong>. Die konkrete Anbindung wird
+später geplant. Einstieg: <a href="#chapter-readme">Dokumentation</a>,
+<a href="#chapter-controller_integration">Handbuch</a>,
+<a href="#chapter-class_diagrams">UML-Klassendiagramme</a>.</p>
+<p>Linux, GCC 14.2.0, CMake 4.4.4, C++20; eigene Targets mit strikten Warnungen,
+aktive Test-Assertions auch in Release. Alle C++-Abhängigkeiten aus lokalen
+hashgebundenen Quellarchiven.</p>
+<table>
+<thead>
+<tr>
+<th>Serial</th>
+<th>Ruckig</th>
+<th>Konfiguration</th>
+<th>Ergebnis</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ON</td>
+<td>ON</td>
+<td>Release</td>
+<td><strong>27/27</strong></td>
+</tr>
+<tr>
+<td>ON</td>
+<td>ON</td>
+<td>Debug ASan/UBSan, -O1 -g1</td>
+<td><strong>27/27</strong></td>
+</tr>
+<tr>
+<td>ON</td>
+<td>OFF</td>
+<td>Standard-Release</td>
+<td><strong>25/25</strong></td>
+</tr>
+<tr>
+<td>OFF</td>
+<td>OFF</td>
+<td>Minimal-Release</td>
+<td><strong>10/10</strong></td>
+</tr>
+<tr>
+<td>OFF</td>
+<td>ON</td>
+<td>Ruckig ohne Serial</td>
+<td><strong>12/12</strong></td>
+</tr>
+</tbody>
+</table>
+<p>Zusätzliche Nachweise dieses Pakets:</p>
+<ul>
+<li>Alle <strong>34 bisherigen flachen Header</strong> bleiben Forwarder; alte und neue Pfade
+  sowie der Alias <code>TrackingTime = ClockTime</code> werden gemeinsam kompiliert.</li>
+<li><strong>36 kanonische Header einzeln</strong> kompiliert, einschließlich optionaler Ruckig-
+  Header; zusätzlich 32 im normalen Serial-Build ohne Ruckig. Damit sind
+  versteckte Abhängigkeiten durch zufällige Include-Reihenfolge geprüft.</li>
+<li><strong>Separates CMake-Anwenderprojekt</strong> mit Serial-Standard sowie minimal ohne Serial
+  gebaut und ausgeführt. Tests, Beispiele und KDL erscheinen darin nicht als
+  ungewollte Targets. Minimaler externer Consumer auch mit ASan/UBSan erfolgreich;
+  die Sanitizer-Compiler-/Linkoptionen werden über das öffentliche Target vererbt.</li>
+<li>Neuer ausführbarer Vertragstest: vollständige Cacheausgabe bei <strong>1/10/20 ms</strong>,
+  Fehler durch verspäteten Takt und verweigerte Achsannahme. Fehlerpfad fordert
+  genau einmal einen Host-Stopp an und gibt danach keine weiteren normalen
+  Befehle aus. Ideale virtuelle Uhr und simulierte Achsen, kein Timingbenchmark.</li>
+<li><strong>Sieben UML-Sichten</strong>: Deklarations-/Methodennamen gegen Header geprüft,
+  DOT/SVG lokal erzeugt. <strong>80 Migrationsziele</strong> und lokale Dokumentationslinks
+  geprüft. Offline-HTML wird aus den Texten und SVGs erstellt und prüft seine
+  internen Anker; es lädt keine externen Ressourcen.</li>
+<li>Das vollständige URDF-/Profilbeispiel aus dem neuen Modellhandbuch mit einem
+  PTP-Programm importiert, geplant und virtuell ausgeführt.</li>
+<li>Verschobener Referenzmodellgenerator reproduziert Modelle, Profile, FK-Fixtures
+  und Beispielprogramme <strong>byteidentisch</strong>.</li>
+<li>Clang 19.1.7/libFuzzer: neuer Pfadaufbau gebaut, neun Korpuseingaben direkt
+  wiedergegeben und <strong>10.000 weitere Mutationen</strong> mit ASan/UBSan ohne Crash,
+  Timeout oder Befund ausgeführt. Die früheren 150.000 Eingaben bleiben ein
+  versionierter Nachweis von 0.12.2, kein erneut behaupteter Lauf dieses Pakets.</li>
+<li>C++-Formatprüfung, Python-Syntax und CI-Konfiguration geprüft. Die CI enthält
+  zusätzlich Struktur-/Dokumentationsprüfung und externes Anwenderprojekt.</li>
+</ul>
+<p>Lokal: <code>ASAN_OPTIONS=detect_leaks=0</code>, <code>UBSAN_OPTIONS=halt_on_error=1</code>;
+LeakSanitizer ist in dieser Prozess-Trace-Umgebung nicht als geprüft angegeben.
+Die Ergebnisse betreffen Software und Simulation. Die Handbücher benennen
+Startfreigabe, Zeitbezug, tatsächliche Achsannahme, Istwert-/Fehlerreaktion und
+Zielplattformmessung als noch zu vereinbarende Host-Verträge.</p>
+<hr />
+<h1 id="chapter-validation--robustheitsprüfung-0122-29102026">Robustheitsprüfung — 0.12.2, 29.10.2026</h1>
+<p>Alle vier beauftragten Software-Prüfpakete sind umgesetzt. Details und Replay:
+<a href="testing/robustness.md">ROBUSTNESS.md</a>. Linux, GCC 14.2.0, CMake 4.4.4, C++20;
+<code>-Wall -Wextra -Wpedantic -Werror</code>, aktive Assertions auch in Release.
+Die Abhängigkeiten einschließlich der testweisen KDL-Referenz wurden aus
+lokalen, hashgebundenen Quellarchiven gebaut.</p>
+<table>
+<thead>
+<tr>
+<th>Serial</th>
+<th>Ruckig</th>
+<th>Konfiguration</th>
+<th>Ergebnis</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ON</td>
+<td>ON</td>
+<td>Release, KDL-Referenz ON</td>
+<td><strong>21/21</strong></td>
+</tr>
+<tr>
+<td>ON</td>
+<td>ON</td>
+<td>Debug, ASan/UBSan, -O1 -g1</td>
+<td><strong>21/21</strong></td>
+</tr>
+<tr>
+<td>ON</td>
+<td>OFF</td>
+<td>Standard-Release, KDL-Referenz ON</td>
+<td><strong>19/19</strong></td>
+</tr>
+<tr>
+<td>OFF</td>
+<td>OFF</td>
+<td>Minimal-Release</td>
+<td><strong>9/9</strong></td>
+</tr>
+<tr>
+<td>OFF</td>
+<td>ON</td>
+<td>Ruckig ohne Serial</td>
+<td><strong>11/11</strong></td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>360 lokale IK-Grenzfallziele: 137 zugelassen, 223 mit Diagnose abgelehnt;
+  zusätzliche kurze/Null-Linien, volle Kreise, Quaternion-Vorzeichen und Grenzverletzungen.</li>
+<li>Unabhängiges Orocos KDL 1.5.1: <strong>1.866 FK/J-Vergleiche</strong>, größte absolute
+  Abweichungen 3,56·10⁻¹⁵ / 3,11·10⁻¹⁵.</li>
+<li>Fehler während der Ausführung, verspätete/fenced Wechsel, belegte Übergaben,
+  doppelte/ungültige Befehle, 100 zufällige Pufferabläufe;
+  stale-/Kalibrierungswechsel mit Auslauf in den vorgeprüften Halt.</li>
+<li><strong>120 Zufallsprogramme</strong>, 59.506 ausgegebene Befehle, 240 transaktional
+  abgelehnte Übernahmen; <strong>12.000 Parser-Mutationen</strong> (132 akzeptiert,
+  11.868 abgelehnt), explizite Ressourcenbudgets und Replay.</li>
+<li>Clang <strong>19.1.7</strong>, libFuzzer plus ASan/UBSan: <strong>50.000 + 100.000</strong> Eingaben,
+  zweiter Lauf auf fortgesetztem/ergänztem Korpus; keine Crashes, Timeouts oder
+  Sanitizer-Befunde. Zweiter Lauf: 71 s, 5.338 Coverage-Punkte (<code>cov</code>) laut libFuzzer,
+  912 Korpuseinträge / 267 KiB, RSS 459 MiB. Diese Coverage-Zahl ist kein Prozentwert.</li>
+<li>Zusätzliche CLI-Prüfung: bereits vorhandene CSV bleibt sowohl bei überschrittenem
+  Tick-Budget als auch bei einem ungültigen späten Programmschritt byteidentisch;
+  keine übrig gebliebenen temporären Dateien.</li>
+<li>Gefundene und behobene Fehler: XYZ-Gantry muss beide Identitätsquaternion-
+  Vorzeichen akzeptieren und nichtendliche Posen/Gelenke/Seeds ablehnen.</li>
+</ul>
+<p>Lokal: <code>ASAN_OPTIONS=detect_leaks=0</code>, <code>UBSAN_OPTIONS=halt_on_error=1</code>.
+LeakSanitizer ist wegen der Prozess-Trace-Umgebung nicht als geprüft angegeben.
+Die CI-Konfiguration enthält die fünf Build-Varianten und zusätzlich einen
+50.000er-libFuzzer-Job; diese Tabelle berichtet die tatsächlich lokal ausgeführten
+Cloud-Prüfungen, keinen noch unbestätigten GitHub-Actions-Lauf.</p>
+<p>Die nominalen Robotermodelle, gemeinsame Modellparameter beim KDL-Vergleich,
+Engineering-Intervallhüllen und lokale IK behalten ihre dokumentierten Grenzen.
+Hardware, Raspberry-Pi-Echtzeit und CANopen wurden nicht geprüft; CANopen bleibt
+wie beauftragt ausgeklammert. Die folgenden Ergebnisse sind historisch.</p>
+<hr />
+<h1 id="chapter-validation--erneute-prüfung-der-rekonstruktion-29102026">Erneute Prüfung der Rekonstruktion — 29.10.2026</h1>
+<p>Linux, GCC 14.2.0, CMake 4.4.4, C++20; eigene Targets mit
+<code>-Wall -Wextra -Wpedantic -Werror</code>. Assertions sind auch in Release aktiv.
+Fremdheader sind System-Includes; ihre Quellen bleiben unverändert.
+Diese Ergebnisse gehören zum <strong>rekonstruierten</strong> Stand 0.12.1.</p>
+<table>
+<thead>
+<tr>
+<th>Serial</th>
+<th>Ruckig</th>
+<th>Konfiguration</th>
+<th>Ergebnis</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ON</td>
+<td>ON</td>
+<td>Release</td>
+<td>16/16</td>
+</tr>
+<tr>
+<td>ON</td>
+<td>ON</td>
+<td>Debug ASan/UBSan, -O0 -g1</td>
+<td>16/16</td>
+</tr>
+<tr>
+<td>ON</td>
+<td>OFF</td>
+<td>Standard-Release</td>
+<td>14/14</td>
+</tr>
+<tr>
+<td>OFF</td>
+<td>OFF</td>
+<td>Minimal-Release</td>
+<td>8/8</td>
+</tr>
+<tr>
+<td>OFF</td>
+<td>ON</td>
+<td>Ruckig ohne Serial</td>
+<td>10/10</td>
+</tr>
+</tbody>
+</table>
+<p>Alle Konfigurationen wurden mit gebündelten Quellarchiven gebaut. Ruckig wurde
+in der finalen Matrix ebenfalls aus dem lokalen versions-/hashgebundenen Archiv
+gebaut, nicht aus einem versteckten alten Build-/Netzwerkcache. Sanitizer:
+<code>ASAN_OPTIONS=detect_leaks=0</code>, <code>UBSAN_OPTIONS=halt_on_error=1</code>.
+LeakSanitizer wird unter der lokalen Prozess-Trace-Umgebung nicht als geprüft behauptet.</p>
+<h2 id="chapter-validation--nachweise">Nachweise</h2>
+<ul>
+<li><strong>Seriell:</strong> unabhängige homogene FK-Fixtures für drei Modelle und drei
+  Konfigurationen; 45 lokale IK-Rücklösungen; J*dq-Identität sowie zentrale
+  Differenzen für v/a/Ruck auf zeitabhängigen q/dq/ddq. Ein analytischer
+  Einachs-Pendel-/Rotationsfall prüft die Ableitungskette unabhängig.</li>
+<li><strong>Import:</strong> verpflichtende SI-Limits, Duplicate-/Unknown-/Tag-Rejection,
+  Unsupported-Mimic- und ungültige Dimensionen. Modell-Kinematik und Motion-
+  Grenzen bleiben getrennt; kein automatisches Makro-/Skript- oder Mesh-Laden.</li>
+<li><strong>Polynome/Hüllen:</strong> geschlossene Quintik-/Ruck-Referenz, endliche Bereiche,
+  zu schnelle Kandidaten, Intervallarithmetik, klar freie Endpunkte mit
+  Hindernis im Inneren. Zulassung prüft kontinuierliche Hüllen; Samples
+  sind ergänzende Regression, kein Beweisersatz.</li>
+<li><strong>SCARA/Delta/Blends:</strong> FK/IK und zeitliche Ableitungsketten, unabhängige
+  symmetrische Delta-Kugelgeometrie; Delta LIN/CIRC-Splines im Pose-Schlauch,
+  konservative Zeitplanung und ein Blend mit nichtverschwindender Tangente
+  am inneren Wegpunkt.</li>
+<li><strong>Programme:</strong> strikte Schema-/Werte-/Quellortprüfung, Alias-/Tag-/Mehrdokument-
+  Rejection, fehlende/rekursive CALLs, Größen-/Nesting-/Expansionsbudgets,
+  unabhängige XYZ-LIN/CIRC-Geometrie, WAIT, Geschwindigkeitsreduktion und PTP-
+  TCP-Grenzen. Ein Fehler in Schritt 2 verhindert ein neues Gesamtprogramm;
+  der vorher gültige Plan bleibt unverändert.</li>
+<li><strong>Ausführung:</strong> exakter Live-Grenzzustand, Generation, Aktivierung einmalig,
+  Delivery-Fence-Rejection, atomarer paralleler Snapshot-Leser; 10.000
+  Zwei-Thread-Postfachanfragen und 100.000 SPSC-Einträge. Deadline-/Zweiuhr-
+  Preemption-Fehler verriegeln und schreiben keinen neuen Ausgabebefehl.
+  Kein ThreadSanitizer-/WCET-Zertifikat wird behauptet.</li>
+<li><strong>Allokationen:</strong> abgefangene C++-new/delete-Aufrufe zeigen null Allokation
+  oder Freigabe während Cache-Dispatch, Live-Aktivierung, Snapshot, Fence
+  und Acknowledgement. Konstruktion, Planung, Samplen und Freigabe bleiben
+  außerhalb des beobachteten zyklischen Bereichs. Kein allgemeiner malloc-
+  oder Benutzer-Callback-Nachweis.</li>
+<li><strong>Stopps:</strong> geschlossene Dauer-/Wegformeln für beide Vorzeichen sowie
+  Dreiecks-/Beschleunigungsplateau-Fälle; 300 bewegte Zufallszustände;
+  Bernstein-Phasenhüllen gegen Samples, innere Positions-/Geschwindigkeits-
+  Verletzungen, Rest-Padding, vorbereiteter Prefix-Stop und Online-Retargeting
+  mit bewegten Endpunkten. Kandidaten werden unabhängig integriert/geprüft.</li>
+<li><strong>Tracking:</strong> Frame-Rotation/Komposition, positive Uhrunsicherheit, absolute
+  Encoder-Offset-Kompensation, stale/clock/causal/horizon Rejection, Historien-
+  Ausreißer. Beschleunigungsänderungsfehler werden mit Encoder-Skalierung
+  berücksichtigt. Unmögliche TCP-Horizonte und ein Halt mit überhöhter
+  Winkelgeschwindigkeit werden abgelehnt.</li>
+<li><strong>Following:</strong> UR5e, ABB und FANUC erreichen jeweils 29 überlappende
+  Aktivierungen ohne Zwischenhalt und danach den vorbereiteten Halt.
+  Maximaler nominaler Simulationsfehler ungefähr 0.230/0.231/0.231 µm.
+  Das ist Modellübereinstimmung, keine physische Genauigkeit.</li>
+<li><strong>Kalibrierung:</strong> gewichteter starrer Fit, unabhängiger zurückgehaltener Punkt,
+  Richtung des Transforms, kollineare Daten und Ausreißer-Residuen.</li>
+<li><strong>Linux:</strong> monotone Uhr, absoluter Termin in der Vergangenheit,
+  Uhrdomänen-/Setup-Fehler und Statistik. Ein separater 20-Sample-/10-ms-
+  Host-Probe beobachtete maximal etwa 0.098 ms Verspätung und null vollständig
+  verpasste Perioden. Das ist kein Raspberry-Pi-/CAN-/Drive-Nachweis.</li>
+</ul>
+<h2 id="chapter-validation--beispiele-und-export">Beispiele und Export</h2>
+<table>
+<thead>
+<tr>
+<th>Rekonstruiertes Programm</th>
+<th>Ausgerichtete Dauer</th>
+<th>Befehle</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>UR5e</td>
+<td>9.86 s</td>
+<td>987</td>
+</tr>
+<tr>
+<td>ABB IRB120</td>
+<td>10.38 s</td>
+<td>1039</td>
+</tr>
+<tr>
+<td>FANUC LR Mate 200iD</td>
+<td>9.97 s</td>
+<td>998</td>
+</tr>
+</tbody>
+</table>
+<p>Alle Programme haben fünf Stillstandsgrenzen und terminal dq/ddq=0 ohne
+Dispatch-Fehler. Laufzeiten unterscheiden sich von den verlorenen Originalen,
+weil Hüllen/Implementierung neu rekonstruiert wurden.</p>
+<p>Zusätzliche CLI-Prüfungen: anderes Arbeitsverzeichnis, <code>--check</code> ohne Playback,
+ungültige Argumente, begrenzte Simulations-Ticks und unveränderte bestehende CSV
+bei Ablehnung. Export enthält alle geordneten Ticks, absolute Zeit und terminalen
+Stillstand. Der optionale Matplotlib-Plot wurde als PNG erzeugt und visuell
+geprüft; er ist keine C++-Build-Abhängigkeit.</p>
+<p>Alle zehn neu gepinnten öffentlichen Quelldateien bestehen ihre SHA256-Prüfung;
+die Offline-Regeneration der Modelle, FK-Fixtures und Beispielprogramme ist
+byteidentisch. Lizenzen und neue Quellprovenienz liegen bei.</p>
+<h2 id="chapter-validation--grenzen">Grenzen</h2>
+<p>Quelltext-/ABI-/Testergebnisidentität mit der verlorenen v0.12.0 wird nicht
+behauptet. CANopen ist bewusst nicht rekonstruiert. Vollständige Payload-/Torque-
+und Link-/Selbstkollisionsmodule sowie einige frühere Komfort-/Benchmark-APIs
+fehlen. Dafür werden keine stillen Ersatzgarantien ausgegeben.</p>
+<p>Keine reale Hardware war verbunden. Physische Kalibrierung, Bus-/Antriebs-
+Interpolation, unabhängige Sicherheit und harte Echtzeit bleiben externe
+Abnahmearbeit. Numerische Hüllen sind keine zertifizierte Intervallarithmetik;
+IK und Stopps lösen lokale Kandidaten, keine globale Feasibility.</p>
+<p>Die GitHub-CI ist eingerichtet; diese Tabelle beschreibt lokale Prüfungen.
+Ein Remote-CI-Ergebnis wird nur nach tatsächlicher Beobachtung behauptet.</p></section></body></html>

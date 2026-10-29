@@ -1,0 +1,15 @@
+digraph uml {
+graph [rankdir=LR, bgcolor="white", pad="0.25", nodesep="0.35", ranksep="0.8"];
+node [shape=plain, fontname="DejaVu Sans", fontsize=10];
+edge [fontname="DejaVu Sans", fontsize=9, color="#475569"];
+clock [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5"><TR><TD BGCOLOR="#dbeafe"><B>LinuxMonotonicClock</B></TD></TR><TR><TD ALIGN="LEFT">now()</TD></TR><TR><TD ALIGN="LEFT">wait_until(deadline)</TD></TR></TABLE>>];
+time [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5"><TR><TD BGCOLOR="#dbeafe"><B>ClockTime</B></TD></TR><TR><TD ALIGN="LEFT">seconds, clock, uncertainty_s</TD></TR></TABLE>>];
+options [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5"><TR><TD BGCOLOR="#dbeafe"><B>RealtimeThreadOptions</B></TD></TR><TR><TD ALIGN="LEFT">fifo_priority, cpu, lock_memory</TD></TR></TABLE>>];
+result [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5"><TR><TD BGCOLOR="#dbeafe"><B>RealtimeSetupResult</B></TD></TR><TR><TD ALIGN="LEFT">errors: vector&lt;string&gt;</TD></TR></TABLE>>];
+stats [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5"><TR><TD BGCOLOR="#dbeafe"><B>CycleTimingStatistics</B></TD></TR><TR><TD ALIGN="LEFT">observe(due, actual, cycle)</TD></TR><TR><TD ALIGN="LEFT">average_lateness_s()</TD></TR></TABLE>>];
+correspondence [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5"><TR><TD BGCOLOR="#dbeafe"><B>PointCorrespondence</B></TD></TR></TABLE>>];
+fit [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5"><TR><TD BGCOLOR="#dbeafe"><B>RigidCalibrationResult</B></TD></TR></TABLE>>];
+clock -> time [style=dashed, arrowhead=vee, label="CLOCK_MONOTONIC"];
+options -> result [style=dashed, arrowhead=vee, label="configure_realtime_thread()"];
+correspondence -> fit [style=dashed, arrowhead=vee, label="fit_rigid_calibration(); Nicht-RT"];
+}

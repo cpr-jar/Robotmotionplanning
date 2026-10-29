@@ -10,7 +10,7 @@ Exact commits, URLs and hashes are in upstream/manifest.json; upstream authors,
 licenses and package metadata remain beside their files. These are newly pinned
 recovery inputs; equality to the inaccessible former manifest is not asserted.
 
-`tools/generate_reference_models.py` performs only reviewed scalar expansion and
+`tools/models/generate_reference_models.py` performs only reviewed scalar expansion and
 whitelisted AST arithmetic; it never runs Xacro/ROS, eval, external expressions
 or network requests. It creates expanded geometry-only URDFs, SI YAML profiles,
 independent homogeneous-matrix FK fixtures and the three example programs.

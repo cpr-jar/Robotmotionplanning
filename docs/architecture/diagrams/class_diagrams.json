@@ -1,0 +1,904 @@
+[
+  {
+    "id": "kinematics",
+    "title": "Kinematik und Zustände",
+    "nodes": [
+      {
+        "id": "state",
+        "name": "JointState",
+        "header": "include/motion/core/motion_types.hpp",
+        "methods": [],
+        "fields": [
+          "q, dq, ddq: Vector",
+          "timestamp_s: double"
+        ]
+      },
+      {
+        "id": "ik",
+        "name": "IKinematics",
+        "header": "include/motion/core/motion_types.hpp",
+        "methods": [
+          "dof()",
+          "fk(q)",
+          "ik(target, seed)",
+          "jacobian(q)"
+        ],
+        "fields": []
+      },
+      {
+        "id": "differential",
+        "name": "IDifferentialKinematics",
+        "header": "include/motion/kinematics/differential_kinematics.hpp",
+        "methods": [
+          "position_limits()",
+          "singularity(q)",
+          "differentiate(q, dq, ddq, jerk)"
+        ],
+        "fields": []
+      },
+      {
+        "id": "serial",
+        "name": "SerialChainKinematics",
+        "header": "include/motion/kinematics/serial_chain_kinematics.hpp",
+        "methods": [
+          "ik_detailed(target, seed)",
+          "joint_names()",
+          "base_pose()",
+          "tool_offset()"
+        ],
+        "fields": []
+      },
+      {
+        "id": "gantry",
+        "name": "CartesianGantry",
+        "header": "include/motion/core/motion_types.hpp",
+        "methods": [
+          "fk(q)",
+          "ik(target, seed)"
+        ],
+        "fields": []
+      },
+      {
+        "id": "scara",
+        "name": "ScaraKinematics",
+        "header": "include/motion/kinematics/reference_kinematics.hpp",
+        "methods": [
+          "fk(q)",
+          "ik(target, seed)"
+        ],
+        "fields": []
+      },
+      {
+        "id": "delta",
+        "name": "DeltaKinematics",
+        "header": "include/motion/kinematics/reference_kinematics.hpp",
+        "methods": [
+          "fk(q)",
+          "ik(target, seed)"
+        ],
+        "fields": []
+      }
+    ],
+    "edges": [
+      [
+        "differential",
+        "ik",
+        "inherits",
+        ""
+      ],
+      [
+        "serial",
+        "differential",
+        "inherits",
+        ""
+      ],
+      [
+        "scara",
+        "differential",
+        "inherits",
+        ""
+      ],
+      [
+        "delta",
+        "differential",
+        "inherits",
+        ""
+      ],
+      [
+        "gantry",
+        "ik",
+        "inherits",
+        ""
+      ]
+    ]
+  },
+  {
+    "id": "planning",
+    "title": "Geometrie, Kinematikabbildung und Zeitplanung",
+    "nodes": [
+      {
+        "id": "fixed",
+        "name": "IFixedOrientationPath",
+        "header": "include/motion/planning/cartesian_path.hpp",
+        "methods": [
+          "evaluate(s)",
+          "bounds()"
+        ],
+        "fields": []
+      },
+      {
+        "id": "line",
+        "name": "CartesianLinePath",
+        "header": "include/motion/planning/cartesian_path.hpp",
+        "methods": [
+          "evaluate(s)"
+        ],
+        "fields": []
+      },
+      {
+        "id": "arc",
+        "name": "CartesianArcPath",
+        "header": "include/motion/planning/cartesian_path.hpp",
+        "methods": [
+          "evaluate(s)"
+        ],
+        "fields": []
+      },
+      {
+        "id": "pose",
+        "name": "IPosePath",
+        "header": "include/motion/planning/pose_path.hpp",
+        "methods": [
+          "evaluate(s)",
+          "bounds()"
+        ],
+        "fields": []
+      },
+      {
+        "id": "sweep",
+        "name": "PoseSweepPath",
+        "header": "include/motion/planning/pose_path.hpp",
+        "methods": [
+          "evaluate(s)"
+        ],
+        "fields": []
+      },
+      {
+        "id": "blend",
+        "name": "BlendedPosePath",
+        "header": "include/motion/planning/pose_path.hpp",
+        "methods": [
+          "evaluate(s)"
+        ],
+        "fields": []
+      },
+      {
+        "id": "bounded",
+        "name": "IBoundedJointPath",
+        "header": "include/motion/planning/cartesian_path.hpp",
+        "methods": [
+          "evaluate(s)",
+          "bounds()"
+        ],
+        "fields": []
+      },
+      {
+        "id": "spline",
+        "name": "CartesianSplinePath",
+        "header": "include/motion/planning/cartesian_spline.hpp",
+        "methods": [
+          "evaluate(s)",
+          "admitted_position_error_m()"
+        ],
+        "fields": []
+      },
+      {
+        "id": "timing",
+        "name": "PathTimeParameterizer",
+        "header": "include/motion/planning/path_time_parameterization.hpp",
+        "methods": [
+          "plan(path, initial, limits)"
+        ],
+        "fields": []
+      },
+      {
+        "id": "timed",
+        "name": "TimedPathTrajectory",
+        "header": "include/motion/planning/path_time_parameterization.hpp",
+        "methods": [
+          "sample(time_s)",
+          "sample_motion(time_s)"
+        ],
+        "fields": []
+      },
+      {
+        "id": "trajectory",
+        "name": "ITrajectory",
+        "header": "include/motion/planning/joint_trajectory.hpp",
+        "methods": [
+          "duration()",
+          "sample(time_s)"
+        ],
+        "fields": []
+      }
+    ],
+    "edges": [
+      [
+        "line",
+        "fixed",
+        "inherits",
+        ""
+      ],
+      [
+        "arc",
+        "fixed",
+        "inherits",
+        ""
+      ],
+      [
+        "sweep",
+        "pose",
+        "inherits",
+        ""
+      ],
+      [
+        "blend",
+        "pose",
+        "inherits",
+        ""
+      ],
+      [
+        "sweep",
+        "fixed",
+        "owns",
+        "shared_ptr<const>"
+      ],
+      [
+        "spline",
+        "bounded",
+        "inherits",
+        ""
+      ],
+      [
+        "spline",
+        "pose",
+        "uses",
+        "zugelassener Pose-Schlauch"
+      ],
+      [
+        "timing",
+        "bounded",
+        "uses",
+        "kontinuierliche Hüllen"
+      ],
+      [
+        "timing",
+        "timed",
+        "uses",
+        "erzeugt PlanResult"
+      ],
+      [
+        "timed",
+        "trajectory",
+        "inherits",
+        ""
+      ],
+      [
+        "timed",
+        "bounded",
+        "owns",
+        "shared_ptr<const>"
+      ]
+    ]
+  },
+  {
+    "id": "program",
+    "title": "Programme und ausführbare Schedules",
+    "nodes": [
+      {
+        "id": "source",
+        "name": "RobotProgramSource",
+        "header": "include/motion/program/robot_program.hpp",
+        "methods": [
+          "start()",
+          "instructions()",
+          "cycle_s()",
+          "epoch_s()"
+        ],
+        "fields": []
+      },
+      {
+        "id": "instruction",
+        "name": "ProgramInstruction",
+        "header": "include/motion/program/robot_program.hpp",
+        "methods": [],
+        "fields": [
+          "operation, target, speed",
+          "center, normal, sweep_rad",
+          "seconds, location"
+        ]
+      },
+      {
+        "id": "prepared",
+        "name": "PreparedRobotProgram",
+        "header": "include/motion/program/robot_program.hpp",
+        "methods": [],
+        "fields": [
+          "reference: shared_ptr<const RobotProgram>",
+          "schedule: shared_ptr<const CycleAlignedProgram>"
+        ]
+      },
+      {
+        "id": "program",
+        "name": "RobotProgram",
+        "header": "include/motion/program/robot_program.hpp",
+        "methods": [
+          "sample_segment(index, time_s)",
+          "sample_motion(index, time_s)",
+          "robot()"
+        ],
+        "fields": []
+      },
+      {
+        "id": "joint",
+        "name": "IJointProgram",
+        "header": "include/motion/program/joint_program.hpp",
+        "methods": [
+          "segment_count()",
+          "segment_duration(index)",
+          "initial_state()",
+          "joint_limits()"
+        ],
+        "fields": []
+      },
+      {
+        "id": "grid",
+        "name": "CycleAlignedProgram",
+        "header": "include/motion/execution/cycle_aligned_program.hpp",
+        "methods": [
+          "sample_tick(tick)",
+          "cycle_s()",
+          "time_scale(index)"
+        ],
+        "fields": []
+      },
+      {
+        "id": "schedule",
+        "name": "IExecutionSchedule",
+        "header": "include/motion/execution/execution_schedule.hpp",
+        "methods": [
+          "total_ticks()",
+          "tick_time(tick)",
+          "boundary_ticks()",
+          "sample_tick(tick)"
+        ],
+        "fields": []
+      }
+    ],
+    "edges": [
+      [
+        "source",
+        "instruction",
+        "owns",
+        "vollständig validierte Liste"
+      ],
+      [
+        "source",
+        "prepared",
+        "uses",
+        "compile_robot_program()"
+      ],
+      [
+        "prepared",
+        "program",
+        "owns",
+        "immutable reference"
+      ],
+      [
+        "prepared",
+        "grid",
+        "owns",
+        "immutable schedule"
+      ],
+      [
+        "program",
+        "joint",
+        "inherits",
+        ""
+      ],
+      [
+        "grid",
+        "joint",
+        "inherits",
+        ""
+      ],
+      [
+        "grid",
+        "schedule",
+        "inherits",
+        ""
+      ],
+      [
+        "grid",
+        "joint",
+        "owns",
+        "source: shared_ptr<const>"
+      ]
+    ]
+  },
+  {
+    "id": "buffered_execution",
+    "title": "Gepufferte zyklische Ausführung",
+    "nodes": [
+      {
+        "id": "producer",
+        "name": "BufferedMotionProducer<N>",
+        "header": "include/motion/execution/setpoint_buffer.hpp",
+        "methods": [
+          "fill(ring, budget)",
+          "initial_command()"
+        ],
+        "fields": []
+      },
+      {
+        "id": "ring",
+        "name": "SpscSetpointBuffer<N, Capacity>",
+        "header": "include/motion/execution/setpoint_buffer.hpp",
+        "methods": [
+          "try_push(command)",
+          "try_pop(command)"
+        ],
+        "fields": []
+      },
+      {
+        "id": "command",
+        "name": "FixedJointCommand<N>",
+        "header": "include/motion/execution/setpoint_buffer.hpp",
+        "methods": [],
+        "fields": [
+          "q, dq, ddq: array<double, N>",
+          "timestamp_s, program_time_s",
+          "tick, terminal"
+        ]
+      },
+      {
+        "id": "executor",
+        "name": "DeadlineMotionExecutor<N>",
+        "header": "include/motion/execution/deadline_motion_executor.hpp",
+        "methods": [
+          "poll(ring, now, output)",
+          "poll_clock(ring, clock, output)",
+          "fault()"
+        ],
+        "fields": []
+      },
+      {
+        "id": "schedule",
+        "name": "IExecutionSchedule",
+        "header": "include/motion/execution/execution_schedule.hpp",
+        "methods": [
+          "sample_tick(tick)",
+          "joint_limits()"
+        ],
+        "fields": []
+      },
+      {
+        "id": "policy",
+        "name": "ExecutionTimingPolicy",
+        "header": "include/motion/execution/execution_types.hpp",
+        "methods": [],
+        "fields": [
+          "max_early_s, max_late_s",
+          "max_clock_uncertainty_s",
+          "dispatch_latency_bound_s"
+        ]
+      },
+      {
+        "id": "time",
+        "name": "ClockTime",
+        "header": "include/motion/core/clock_time.hpp",
+        "methods": [],
+        "fields": [
+          "seconds, clock, uncertainty_s"
+        ]
+      }
+    ],
+    "edges": [
+      [
+        "producer",
+        "schedule",
+        "owns",
+        "shared_ptr<const>; Nicht-RT"
+      ],
+      [
+        "producer",
+        "ring",
+        "uses",
+        "ein Producer"
+      ],
+      [
+        "ring",
+        "command",
+        "owns",
+        "feste Kapazität"
+      ],
+      [
+        "executor",
+        "ring",
+        "uses",
+        "ein Consumer"
+      ],
+      [
+        "executor",
+        "schedule",
+        "owns",
+        "shared_ptr<const>"
+      ],
+      [
+        "executor",
+        "policy",
+        "owns",
+        "Timing-Vertrag"
+      ],
+      [
+        "executor",
+        "time",
+        "uses",
+        "explizite Uhrdomäne"
+      ],
+      [
+        "executor",
+        "command",
+        "uses",
+        "Running / Finished: neuer Befehl"
+      ]
+    ]
+  },
+  {
+    "id": "live_execution",
+    "title": "Vorbereiteter Cache und Live-Planwechsel",
+    "nodes": [
+      {
+        "id": "plan",
+        "name": "PreparedLivePlan<N>",
+        "header": "include/motion/execution/live_motion_executor.hpp",
+        "methods": [
+          "command(global_tick)",
+          "end_tick()",
+          "stamp()"
+        ],
+        "fields": [
+          "cached_commands_: vector<FixedJointCommand<N>>"
+        ]
+      },
+      {
+        "id": "stamp",
+        "name": "LivePlanStamp",
+        "header": "include/motion/execution/live_motion_executor.hpp",
+        "methods": [],
+        "fields": [
+          "generation, parent_generation",
+          "start_tick, clock"
+        ]
+      },
+      {
+        "id": "mailbox",
+        "name": "LivePlanMailbox<N>",
+        "header": "include/motion/execution/live_motion_executor.hpp",
+        "methods": [
+          "try_offer(plan)",
+          "try_response(response)"
+        ],
+        "fields": []
+      },
+      {
+        "id": "response",
+        "name": "LivePlanResponse",
+        "header": "include/motion/execution/live_motion_executor.hpp",
+        "methods": [],
+        "fields": [
+          "status, generation",
+          "retired_generation, activation_tick"
+        ]
+      },
+      {
+        "id": "executor",
+        "name": "LiveMotionExecutor<N>",
+        "header": "include/motion/execution/live_motion_executor.hpp",
+        "methods": [
+          "poll_clock(clock, output)",
+          "service_requests()",
+          "commit_delivery(generation, through)",
+          "snapshot()"
+        ],
+        "fields": []
+      },
+      {
+        "id": "snapshot",
+        "name": "LiveExecutionSnapshot",
+        "header": "include/motion/execution/live_motion_executor.hpp",
+        "methods": [],
+        "fields": [
+          "generation, next_tick",
+          "committed_through, fault, finished"
+        ]
+      },
+      {
+        "id": "command",
+        "name": "LiveJointCommand<N>",
+        "header": "include/motion/execution/live_motion_executor.hpp",
+        "methods": [],
+        "fields": [
+          "joints: FixedJointCommand<N>",
+          "generation"
+        ]
+      }
+    ],
+    "edges": [
+      [
+        "plan",
+        "stamp",
+        "owns",
+        "unveränderliche Identität"
+      ],
+      [
+        "mailbox",
+        "plan",
+        "borrows",
+        "eine offene Anfrage; kein Besitzer"
+      ],
+      [
+        "mailbox",
+        "response",
+        "owns",
+        "eine Antwort"
+      ],
+      [
+        "executor",
+        "plan",
+        "borrows",
+        "active / pending; Planer hält Speicher"
+      ],
+      [
+        "executor",
+        "mailbox",
+        "borrows",
+        "SPSC-Handshake"
+      ],
+      [
+        "executor",
+        "snapshot",
+        "uses",
+        "atomare Veröffentlichung"
+      ],
+      [
+        "executor",
+        "command",
+        "uses",
+        "maximal ein neuer Befehl pro Tick"
+      ]
+    ]
+  },
+  {
+    "id": "tracking_stops",
+    "title": "Optionales Conveyor-Following und vorbereiteter Halt",
+    "nodes": [
+      {
+        "id": "frames",
+        "name": "TrackingFrameSnapshot",
+        "header": "include/motion/tracking/frame_snapshot.hpp",
+        "methods": [
+          "revision()",
+          "resolve(frame)",
+          "valid(time)"
+        ],
+        "fields": []
+      },
+      {
+        "id": "predictor",
+        "name": "ConveyorTargetPredictor",
+        "header": "include/motion/tracking/conveyor_target_predictor.hpp",
+        "methods": [
+          "predict(object, encoder, frames, now, at)"
+        ],
+        "fields": []
+      },
+      {
+        "id": "history",
+        "name": "ConveyorObservationHistory",
+        "header": "include/motion/tracking/conveyor_following.hpp",
+        "methods": [
+          "ingest(object, encoder, frames, now)",
+          "predict(frames, now, at)",
+          "reset(object, revision)"
+        ],
+        "fields": []
+      },
+      {
+        "id": "following",
+        "name": "KinematicConveyorFollower<N>",
+        "header": "include/motion/tracking/conveyor_following.hpp",
+        "methods": [
+          "plan(initial, epoch, cycle, stamp, horizon, history, frames, now)"
+        ],
+        "fields": []
+      },
+      {
+        "id": "stopplanner",
+        "name": "JointStopPlanner",
+        "header": "include/motion/planning/joint_stop.hpp",
+        "methods": [
+          "plan(initial)"
+        ],
+        "fields": []
+      },
+      {
+        "id": "stop",
+        "name": "JointStopTrajectory",
+        "header": "include/motion/planning/joint_stop.hpp",
+        "methods": [
+          "sample(time_s)",
+          "bounds()",
+          "enclose_state(lo, hi)"
+        ],
+        "fields": []
+      },
+      {
+        "id": "polynomial",
+        "name": "PolynomialStopSchedule",
+        "header": "include/motion/execution/stop_schedules.hpp",
+        "methods": [
+          "sample_tick(tick)",
+          "fallback()"
+        ],
+        "fields": []
+      },
+      {
+        "id": "cache",
+        "name": "PreparedLivePlan<N>",
+        "header": "include/motion/execution/live_motion_executor.hpp",
+        "methods": [
+          "command(tick)"
+        ],
+        "fields": []
+      }
+    ],
+    "edges": [
+      [
+        "predictor",
+        "frames",
+        "uses",
+        "statische Revision / Gültigkeit"
+      ],
+      [
+        "history",
+        "predictor",
+        "owns",
+        "Prognose mit Gates"
+      ],
+      [
+        "following",
+        "history",
+        "uses",
+        "frisch / kausal / zugeordnet"
+      ],
+      [
+        "following",
+        "stopplanner",
+        "uses",
+        "Fallback außerhalb RT"
+      ],
+      [
+        "stopplanner",
+        "stop",
+        "uses",
+        "erzeugt zugelassenen Halt"
+      ],
+      [
+        "polynomial",
+        "stop",
+        "owns",
+        "shared_ptr<const>"
+      ],
+      [
+        "following",
+        "polynomial",
+        "uses",
+        "bewegter Horizont + Halt"
+      ],
+      [
+        "following",
+        "cache",
+        "uses",
+        "erzeugt vollständigen Cache"
+      ]
+    ]
+  },
+  {
+    "id": "platform_calibration",
+    "title": "Zeitplattform und Kalibrierdaten",
+    "nodes": [
+      {
+        "id": "clock",
+        "name": "LinuxMonotonicClock",
+        "header": "include/motion/platform/linux_realtime.hpp",
+        "methods": [
+          "now()",
+          "wait_until(deadline)"
+        ],
+        "fields": []
+      },
+      {
+        "id": "time",
+        "name": "ClockTime",
+        "header": "include/motion/core/clock_time.hpp",
+        "methods": [],
+        "fields": [
+          "seconds, clock, uncertainty_s"
+        ]
+      },
+      {
+        "id": "options",
+        "name": "RealtimeThreadOptions",
+        "header": "include/motion/platform/linux_realtime.hpp",
+        "methods": [],
+        "fields": [
+          "fifo_priority, cpu, lock_memory"
+        ]
+      },
+      {
+        "id": "result",
+        "name": "RealtimeSetupResult",
+        "header": "include/motion/platform/linux_realtime.hpp",
+        "methods": [],
+        "fields": [
+          "errors: vector<string>"
+        ]
+      },
+      {
+        "id": "stats",
+        "name": "CycleTimingStatistics",
+        "header": "include/motion/platform/linux_realtime.hpp",
+        "methods": [
+          "observe(due, actual, cycle)",
+          "average_lateness_s()"
+        ],
+        "fields": []
+      },
+      {
+        "id": "correspondence",
+        "name": "PointCorrespondence",
+        "header": "include/motion/calibration/rigid_calibration.hpp",
+        "methods": [],
+        "fields": []
+      },
+      {
+        "id": "fit",
+        "name": "RigidCalibrationResult",
+        "header": "include/motion/calibration/rigid_calibration.hpp",
+        "methods": [],
+        "fields": []
+      }
+    ],
+    "edges": [
+      [
+        "clock",
+        "time",
+        "uses",
+        "CLOCK_MONOTONIC"
+      ],
+      [
+        "options",
+        "result",
+        "uses",
+        "configure_realtime_thread()"
+      ],
+      [
+        "correspondence",
+        "fit",
+        "uses",
+        "fit_rigid_calibration(); Nicht-RT"
+      ]
+    ]
+  }
+]

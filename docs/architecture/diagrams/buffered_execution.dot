@@ -1,0 +1,20 @@
+digraph uml {
+graph [rankdir=LR, bgcolor="white", pad="0.25", nodesep="0.35", ranksep="0.8"];
+node [shape=plain, fontname="DejaVu Sans", fontsize=10];
+edge [fontname="DejaVu Sans", fontsize=9, color="#475569"];
+producer [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5"><TR><TD BGCOLOR="#dbeafe"><B>BufferedMotionProducer&lt;N&gt;</B></TD></TR><TR><TD ALIGN="LEFT">fill(ring, budget)</TD></TR><TR><TD ALIGN="LEFT">initial_command()</TD></TR></TABLE>>];
+ring [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5"><TR><TD BGCOLOR="#dbeafe"><B>SpscSetpointBuffer&lt;N, Capacity&gt;</B></TD></TR><TR><TD ALIGN="LEFT">try_push(command)</TD></TR><TR><TD ALIGN="LEFT">try_pop(command)</TD></TR></TABLE>>];
+command [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5"><TR><TD BGCOLOR="#dbeafe"><B>FixedJointCommand&lt;N&gt;</B></TD></TR><TR><TD ALIGN="LEFT">q, dq, ddq: array&lt;double, N&gt;</TD></TR><TR><TD ALIGN="LEFT">timestamp_s, program_time_s</TD></TR><TR><TD ALIGN="LEFT">tick, terminal</TD></TR></TABLE>>];
+executor [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5"><TR><TD BGCOLOR="#dbeafe"><B>DeadlineMotionExecutor&lt;N&gt;</B></TD></TR><TR><TD ALIGN="LEFT">poll(ring, now, output)</TD></TR><TR><TD ALIGN="LEFT">poll_clock(ring, clock, output)</TD></TR><TR><TD ALIGN="LEFT">fault()</TD></TR></TABLE>>];
+schedule [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5"><TR><TD BGCOLOR="#dbeafe"><B>IExecutionSchedule</B></TD></TR><TR><TD ALIGN="LEFT">sample_tick(tick)</TD></TR><TR><TD ALIGN="LEFT">joint_limits()</TD></TR></TABLE>>];
+policy [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5"><TR><TD BGCOLOR="#dbeafe"><B>ExecutionTimingPolicy</B></TD></TR><TR><TD ALIGN="LEFT">max_early_s, max_late_s</TD></TR><TR><TD ALIGN="LEFT">max_clock_uncertainty_s</TD></TR><TR><TD ALIGN="LEFT">dispatch_latency_bound_s</TD></TR></TABLE>>];
+time [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5"><TR><TD BGCOLOR="#dbeafe"><B>ClockTime</B></TD></TR><TR><TD ALIGN="LEFT">seconds, clock, uncertainty_s</TD></TR></TABLE>>];
+producer -> schedule [dir=both, arrowtail=diamond, arrowhead=none, label="shared_ptr<const>; Nicht-RT"];
+producer -> ring [style=dashed, arrowhead=vee, label="ein Producer"];
+ring -> command [dir=both, arrowtail=diamond, arrowhead=none, label="feste Kapazität"];
+executor -> ring [style=dashed, arrowhead=vee, label="ein Consumer"];
+executor -> schedule [dir=both, arrowtail=diamond, arrowhead=none, label="shared_ptr<const>"];
+executor -> policy [dir=both, arrowtail=diamond, arrowhead=none, label="Timing-Vertrag"];
+executor -> time [style=dashed, arrowhead=vee, label="explizite Uhrdomäne"];
+executor -> command [style=dashed, arrowhead=vee, label="Running / Finished: neuer Befehl"];
+}

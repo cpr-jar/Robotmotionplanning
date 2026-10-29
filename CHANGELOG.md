@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.12.3 — Integration groundwork and project structure, 2026-10-29
+
+- Grouped public headers, sources, tests, examples, programs, tools and documentation
+  by task; retained all 34 flat public headers as compatibility forwarders.
+- Added `ClockTime` in core (retaining `TrackingTime` as an alias), separated execution
+  value types and clarified private timing/dispatch names without changing motion laws.
+- Split library, test and example CMake configuration; added `RobotMotion::motion`
+  and `RobotMotion::serial` aliases and verified a standalone CMake consumer.
+- Added an executable virtual controller-contract example for 1/10/20 ms plus
+  latched deadline/axis-refusal scenarios; concrete controller integration remains later work.
+- Added a detailed German integration/data/model-format handbook, naming/migration rules,
+  API/module catalog, seven SVG UML diagrams and sequence/state views.
+- Added a self-contained offline HTML handbook, diagram/declaration/link checks,
+  isolated-header compilation and documentation/consumer CI verification.
+
 ## 0.12.2 — Robustness verification, 2026-10-29
 
 - Added kinematic edge cases: near singularities/limits, angle wrap and quaternion

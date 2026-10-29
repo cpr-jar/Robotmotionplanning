@@ -10,7 +10,7 @@ unmodified tagged checkout, excluding .git.
 The independent FK/J tests additionally build a subset of **Orocos KDL 1.5.1**
 (LGPL 2.1 or later). Its complete, unmodified upstream source archive is bundled;
 the exact tag commit and SHA256 are in kdl-provenance.json and
-test_support/kdl/CMakeLists.txt. COPYING is retained in the archive and copied
+test_support/kinematics/kdl/CMakeLists.txt. COPYING is retained in the archive and copied
 into licenses/orocos-kdl-1.5.1-COPYING. KDL links only into the reference test,
 not the motion libraries or simulator. MOTION_WITH_KDL_REFERENCE=OFF omits it.
 

@@ -1,0 +1,19 @@
+digraph uml {
+graph [rankdir=LR, bgcolor="white", pad="0.25", nodesep="0.35", ranksep="0.8"];
+node [shape=plain, fontname="DejaVu Sans", fontsize=10];
+edge [fontname="DejaVu Sans", fontsize=9, color="#475569"];
+plan [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5"><TR><TD BGCOLOR="#dbeafe"><B>PreparedLivePlan&lt;N&gt;</B></TD></TR><TR><TD ALIGN="LEFT">cached_commands_: vector&lt;FixedJointCommand&lt;N&gt;&gt;</TD></TR><TR><TD ALIGN="LEFT">command(global_tick)</TD></TR><TR><TD ALIGN="LEFT">end_tick()</TD></TR><TR><TD ALIGN="LEFT">stamp()</TD></TR></TABLE>>];
+stamp [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5"><TR><TD BGCOLOR="#dbeafe"><B>LivePlanStamp</B></TD></TR><TR><TD ALIGN="LEFT">generation, parent_generation</TD></TR><TR><TD ALIGN="LEFT">start_tick, clock</TD></TR></TABLE>>];
+mailbox [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5"><TR><TD BGCOLOR="#dbeafe"><B>LivePlanMailbox&lt;N&gt;</B></TD></TR><TR><TD ALIGN="LEFT">try_offer(plan)</TD></TR><TR><TD ALIGN="LEFT">try_response(response)</TD></TR></TABLE>>];
+response [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5"><TR><TD BGCOLOR="#dbeafe"><B>LivePlanResponse</B></TD></TR><TR><TD ALIGN="LEFT">status, generation</TD></TR><TR><TD ALIGN="LEFT">retired_generation, activation_tick</TD></TR></TABLE>>];
+executor [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5"><TR><TD BGCOLOR="#dbeafe"><B>LiveMotionExecutor&lt;N&gt;</B></TD></TR><TR><TD ALIGN="LEFT">poll_clock(clock, output)</TD></TR><TR><TD ALIGN="LEFT">service_requests()</TD></TR><TR><TD ALIGN="LEFT">commit_delivery(generation, through)</TD></TR><TR><TD ALIGN="LEFT">snapshot()</TD></TR></TABLE>>];
+snapshot [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5"><TR><TD BGCOLOR="#dbeafe"><B>LiveExecutionSnapshot</B></TD></TR><TR><TD ALIGN="LEFT">generation, next_tick</TD></TR><TR><TD ALIGN="LEFT">committed_through, fault, finished</TD></TR></TABLE>>];
+command [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5"><TR><TD BGCOLOR="#dbeafe"><B>LiveJointCommand&lt;N&gt;</B></TD></TR><TR><TD ALIGN="LEFT">joints: FixedJointCommand&lt;N&gt;</TD></TR><TR><TD ALIGN="LEFT">generation</TD></TR></TABLE>>];
+plan -> stamp [dir=both, arrowtail=diamond, arrowhead=none, label="unveränderliche Identität"];
+mailbox -> plan [style=dashed, arrowhead=vee, label="eine offene Anfrage; kein Besitzer"];
+mailbox -> response [dir=both, arrowtail=diamond, arrowhead=none, label="eine Antwort"];
+executor -> plan [style=dashed, arrowhead=vee, label="active / pending; Planer hält Speicher"];
+executor -> mailbox [style=dashed, arrowhead=vee, label="SPSC-Handshake"];
+executor -> snapshot [style=dashed, arrowhead=vee, label="atomare Veröffentlichung"];
+executor -> command [style=dashed, arrowhead=vee, label="maximal ein neuer Befehl pro Tick"];
+}

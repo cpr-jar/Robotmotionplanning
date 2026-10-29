@@ -1,0 +1,27 @@
+digraph uml {
+graph [rankdir=LR, bgcolor="white", pad="0.25", nodesep="0.35", ranksep="0.8"];
+node [shape=plain, fontname="DejaVu Sans", fontsize=10];
+edge [fontname="DejaVu Sans", fontsize=9, color="#475569"];
+fixed [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5"><TR><TD BGCOLOR="#dbeafe"><B>IFixedOrientationPath</B></TD></TR><TR><TD ALIGN="LEFT">evaluate(s)</TD></TR><TR><TD ALIGN="LEFT">bounds()</TD></TR></TABLE>>];
+line [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5"><TR><TD BGCOLOR="#dbeafe"><B>CartesianLinePath</B></TD></TR><TR><TD ALIGN="LEFT">evaluate(s)</TD></TR></TABLE>>];
+arc [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5"><TR><TD BGCOLOR="#dbeafe"><B>CartesianArcPath</B></TD></TR><TR><TD ALIGN="LEFT">evaluate(s)</TD></TR></TABLE>>];
+pose [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5"><TR><TD BGCOLOR="#dbeafe"><B>IPosePath</B></TD></TR><TR><TD ALIGN="LEFT">evaluate(s)</TD></TR><TR><TD ALIGN="LEFT">bounds()</TD></TR></TABLE>>];
+sweep [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5"><TR><TD BGCOLOR="#dbeafe"><B>PoseSweepPath</B></TD></TR><TR><TD ALIGN="LEFT">evaluate(s)</TD></TR></TABLE>>];
+blend [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5"><TR><TD BGCOLOR="#dbeafe"><B>BlendedPosePath</B></TD></TR><TR><TD ALIGN="LEFT">evaluate(s)</TD></TR></TABLE>>];
+bounded [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5"><TR><TD BGCOLOR="#dbeafe"><B>IBoundedJointPath</B></TD></TR><TR><TD ALIGN="LEFT">evaluate(s)</TD></TR><TR><TD ALIGN="LEFT">bounds()</TD></TR></TABLE>>];
+spline [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5"><TR><TD BGCOLOR="#dbeafe"><B>CartesianSplinePath</B></TD></TR><TR><TD ALIGN="LEFT">evaluate(s)</TD></TR><TR><TD ALIGN="LEFT">admitted_position_error_m()</TD></TR></TABLE>>];
+timing [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5"><TR><TD BGCOLOR="#dbeafe"><B>PathTimeParameterizer</B></TD></TR><TR><TD ALIGN="LEFT">plan(path, initial, limits)</TD></TR></TABLE>>];
+timed [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5"><TR><TD BGCOLOR="#dbeafe"><B>TimedPathTrajectory</B></TD></TR><TR><TD ALIGN="LEFT">sample(time_s)</TD></TR><TR><TD ALIGN="LEFT">sample_motion(time_s)</TD></TR></TABLE>>];
+trajectory [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5"><TR><TD BGCOLOR="#dbeafe"><B>ITrajectory</B></TD></TR><TR><TD ALIGN="LEFT">duration()</TD></TR><TR><TD ALIGN="LEFT">sample(time_s)</TD></TR></TABLE>>];
+line -> fixed [arrowhead=empty, label=""];
+arc -> fixed [arrowhead=empty, label=""];
+sweep -> pose [arrowhead=empty, label=""];
+blend -> pose [arrowhead=empty, label=""];
+sweep -> fixed [dir=both, arrowtail=diamond, arrowhead=none, label="shared_ptr<const>"];
+spline -> bounded [arrowhead=empty, label=""];
+spline -> pose [style=dashed, arrowhead=vee, label="zugelassener Pose-Schlauch"];
+timing -> bounded [style=dashed, arrowhead=vee, label="kontinuierliche Hüllen"];
+timing -> timed [style=dashed, arrowhead=vee, label="erzeugt PlanResult"];
+timed -> trajectory [arrowhead=empty, label=""];
+timed -> bounded [dir=both, arrowtail=diamond, arrowhead=none, label="shared_ptr<const>"];
+}

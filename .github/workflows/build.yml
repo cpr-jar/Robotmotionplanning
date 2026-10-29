@@ -37,8 +37,8 @@ jobs:
       - if: matrix.serial == 'ON'
         name: Import, check and export user program
         run: |
-          ./build/program_simulator programs/ur5e_demo.yaml --check
-          ./build/program_simulator programs/ur5e_demo.yaml --csv build/trace.csv
+          ./build/program_simulator programs/examples/ur5e_demo.yaml --check
+          ./build/program_simulator programs/examples/ur5e_demo.yaml --csv build/trace.csv
   parser-fuzz:
     runs-on: ubuntu-latest
     env:
@@ -52,10 +52,33 @@ jobs:
       - name: Bounded coverage-guided fuzz run
         run: |
           mkdir -p build-fuzz/corpus build-fuzz/findings
-          cp tests/fuzz_corpus/*.yaml build-fuzz/corpus/
+          cp tests/fuzz/corpus/*.yaml build-fuzz/corpus/
           ./build-fuzz/program_parser_fuzzer build-fuzz/corpus -runs=50000 -max_len=8192 -timeout=5 -rss_limit_mb=1024 -seed=4028751910 -artifact_prefix=build-fuzz/findings/
       - uses: actions/upload-artifact@v4
         if: failure()
         with:
           name: parser-fuzz-findings
           path: build-fuzz/findings/
+  structure-and-consumer:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check layout, diagram declarations and standalone public headers
+        run: |
+          python3 tools/architecture/check_structure.py
+          python3 tools/architecture/check_public_headers.py --with-serial
+      - name: Check reproducible offline handbook
+        run: |
+          python3 -m venv build-doc-venv
+          build-doc-venv/bin/pip install -r tools/requirements-docs.txt
+          build-doc-venv/bin/python tools/documentation/build_handbook.py --check
+      - name: Build separate controller consumer with library defaults
+        run: |
+          cmake -S examples/integration/consumer -B build-consumer -DROBOT_MOTION_SOURCE_DIR="$GITHUB_WORKSPACE" -DCMAKE_BUILD_TYPE=Release
+          cmake --build build-consumer --parallel 2
+          ./build-consumer/controller_consumer
+      - name: Check sanitizer propagation to an external minimal consumer
+        run: |
+          cmake -S examples/integration/consumer -B build-consumer-asan -DROBOT_MOTION_SOURCE_DIR="$GITHUB_WORKSPACE" -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS_DEBUG="-O1 -g1" -DMOTION_WITH_SERIAL=OFF -DMOTION_SANITIZE=ON
+          cmake --build build-consumer-asan --parallel 2
+          UBSAN_OPTIONS=halt_on_error=1 ./build-consumer-asan/controller_consumer

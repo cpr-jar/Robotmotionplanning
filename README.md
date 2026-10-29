@@ -1,11 +1,20 @@
-# Robot Motion C++ — 0.12.2
+# Robot Motion C++ — 0.12.3
 
-Dieses Projekt wurde am 29.10.2026 aus der erneut hochgeladenen ZIP **v0.2.0** und
-dem Gespräch rekonstruiert. Es ist eine neu geprüfte Implementierung, keine
-byteidentische Wiederherstellung der verlorenen v0.12.0.
-[Wiederherstellungsbericht](docs/RECOVERY_STATUS.md) · [Programmformat](docs/ROBOT_PROGRAMS.md)
-· [Architektur](docs/ARCHITECTURE.md) · [Prüfbericht](docs/VALIDATION.md).
-Die anschließenden vier Robustheitspakete sind in [Robustheitstests](docs/ROBUSTNESS.md) beschrieben.
+C++20-Bibliothek für Roboterkinematik, Bewegungsplanung, Anwenderprogramme und
+zeitlich geprüfte Sollwertausgabe. Der Quellcode ist nach Aufgaben gegliedert;
+die Einbindung in eine eigene Steuerung ist für einen Taktbereich von 1–20 ms
+beschrieben. Die konkrete Host-/Achsanbindung wird später festgelegt.
+
+**[Dokumentationsübersicht](docs/README.md)** ·
+[Integrationshandbuch](docs/integration/controller_integration.md) ·
+[Klassendiagramme](docs/architecture/class_diagrams.md) ·
+[Offline-Handbuch](docs/handbook.html) (lokal im Browser öffnen, auch als PDF druckbar).
+
+Die Basis wurde aus der hochgeladenen ZIP **v0.2.0** und dem Gespräch
+rekonstruiert; sie ist keine byteidentische Wiederherstellung der verlorenen v0.12.0.
+[Wiederherstellungsbericht](docs/history/recovery_status.md) · [Programmformat](docs/formats/robot_program_yaml.md)
+· [Architektur](docs/architecture/overview.md) · [Prüfbericht](docs/testing/validation.md).
+Die anschließenden vier Robustheitspakete sind in [Robustheitstests](docs/testing/robustness.md) beschrieben.
 
 ## Starten
 
@@ -17,20 +26,35 @@ C++-Abhängigkeiten liegen als versions- und hashgebundene Quellarchive bei;
 cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
 cmake --build build --parallel 2
 ctest --test-dir build --output-on-failure
-./build/program_simulator programs/ur5e_demo.yaml --check
-./build/program_simulator programs/ur5e_demo.yaml --csv trace.csv
+./build/program_simulator programs/examples/ur5e_demo.yaml --check
+./build/program_simulator programs/examples/ur5e_demo.yaml --csv trace.csv
 ```
 
 Weitere vollständige Beispiele:
-`programs/abb_irb120_demo.yaml` und `programs/fanuc_lrmate200id_demo.yaml`.
+`programs/examples/abb_irb120_demo.yaml` und `programs/examples/fanuc_lrmate200id_demo.yaml`.
 Kopiere eine passende Beispieldatei und passe Punkte und Schritte an.
 Der Simulator verbindet sich mit keiner Hardware.
+
+Der Vertragstest für eine spätere Eigensteuerung verwendet eine ideale virtuelle
+Uhr und simulierte Achsen:
+
+```sh
+./build/controller_contract_example programs/examples/ur5e_demo.yaml 1 normal
+./build/controller_contract_example programs/examples/ur5e_demo.yaml 20 normal
+./build/controller_contract_example programs/examples/ur5e_demo.yaml 10 late-clock
+./build/controller_contract_example programs/examples/ur5e_demo.yaml 10 sink-refusal
+```
+
+Für einen Quellcodeeinbau wird `RobotMotion::motion` mit `add_subdirectory`
+verlinkt. Tests und Beispiele sind dabei standardmäßig ausgeschaltet.
+[CMake-Beispiel](examples/integration/consumer/CMakeLists.txt),
+[Benennung und Migration](docs/development/naming_and_migration.md).
 
 Optionales Plotten der Gelenk- und TCP-Verläufe:
 
 ```sh
 python -m pip install -r tools/requirements-optional.txt
-python tools/plot_program_trace.py trace.csv --output trace.png
+python tools/visualization/plot_program_trace.py trace.csv --output trace.png
 ```
 
 Der Plotter unterstützt PNG/SVG/PDF. Python ist für C++-Build, Import und
@@ -77,7 +101,7 @@ Online-Retargeting und Conveyor-Following benötigen `MOTION_WITH_RUCKIG=ON`.
 Linux bietet zusätzlich `platform_timing_probe [Anzahl]` für Host-Zeitdiagnostik.
 Der standardmäßig gebaute KDL-FK/J-Vergleich benötigt ebenfalls kein Netzwerk und
 verlinkt KDL nur in den Test. `MOTION_WITH_KDL_REFERENCE=OFF` lässt ihn aus.
-Parser-Fuzzing mit Clang, Replay und Seeds: [Anleitung](docs/ROBUSTNESS.md).
+Parser-Fuzzing mit Clang, Replay und Seeds: [Anleitung](docs/testing/robustness.md).
 
 ## Grenzen der Wiederherstellung
 
@@ -99,6 +123,6 @@ Dispatch-Test sind kein Nachweis physischer Ausführung oder harter Echtzeit.
 Zielrepository: https://github.com/cpr-jar/Robotmotionplanning
 
 Der fortgeführte Quellstand liegt auf `recovery/reconstructed-v0.12.1`.
-[Quell-ZIP v0.12.2](https://github.com/cpr-jar/Robotmotionplanning/archive/refs/tags/v0.12.2.zip).
+[Quell-ZIP v0.12.3](https://github.com/cpr-jar/Robotmotionplanning/archive/refs/tags/v0.12.3.zip).
 Die frühere Rekonstruktionssicherung v0.12.1 bleibt zusätzlich als Git-Bundle in
 `backups/` erhalten; sie wird durch neue Versionen nicht überschrieben.

@@ -1,0 +1,21 @@
+digraph uml {
+graph [rankdir=LR, bgcolor="white", pad="0.25", nodesep="0.35", ranksep="0.8"];
+node [shape=plain, fontname="DejaVu Sans", fontsize=10];
+edge [fontname="DejaVu Sans", fontsize=9, color="#475569"];
+frames [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5"><TR><TD BGCOLOR="#dbeafe"><B>TrackingFrameSnapshot</B></TD></TR><TR><TD ALIGN="LEFT">revision()</TD></TR><TR><TD ALIGN="LEFT">resolve(frame)</TD></TR><TR><TD ALIGN="LEFT">valid(time)</TD></TR></TABLE>>];
+predictor [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5"><TR><TD BGCOLOR="#dbeafe"><B>ConveyorTargetPredictor</B></TD></TR><TR><TD ALIGN="LEFT">predict(object, encoder, frames, now, at)</TD></TR></TABLE>>];
+history [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5"><TR><TD BGCOLOR="#dbeafe"><B>ConveyorObservationHistory</B></TD></TR><TR><TD ALIGN="LEFT">ingest(object, encoder, frames, now)</TD></TR><TR><TD ALIGN="LEFT">predict(frames, now, at)</TD></TR><TR><TD ALIGN="LEFT">reset(object, revision)</TD></TR></TABLE>>];
+following [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5"><TR><TD BGCOLOR="#dbeafe"><B>KinematicConveyorFollower&lt;N&gt;</B></TD></TR><TR><TD ALIGN="LEFT">plan(initial, epoch, cycle, stamp, horizon, history, frames, now)</TD></TR></TABLE>>];
+stopplanner [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5"><TR><TD BGCOLOR="#dbeafe"><B>JointStopPlanner</B></TD></TR><TR><TD ALIGN="LEFT">plan(initial)</TD></TR></TABLE>>];
+stop [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5"><TR><TD BGCOLOR="#dbeafe"><B>JointStopTrajectory</B></TD></TR><TR><TD ALIGN="LEFT">sample(time_s)</TD></TR><TR><TD ALIGN="LEFT">bounds()</TD></TR><TR><TD ALIGN="LEFT">enclose_state(lo, hi)</TD></TR></TABLE>>];
+polynomial [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5"><TR><TD BGCOLOR="#dbeafe"><B>PolynomialStopSchedule</B></TD></TR><TR><TD ALIGN="LEFT">sample_tick(tick)</TD></TR><TR><TD ALIGN="LEFT">fallback()</TD></TR></TABLE>>];
+cache [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5"><TR><TD BGCOLOR="#dbeafe"><B>PreparedLivePlan&lt;N&gt;</B></TD></TR><TR><TD ALIGN="LEFT">command(tick)</TD></TR></TABLE>>];
+predictor -> frames [style=dashed, arrowhead=vee, label="statische Revision / Gültigkeit"];
+history -> predictor [dir=both, arrowtail=diamond, arrowhead=none, label="Prognose mit Gates"];
+following -> history [style=dashed, arrowhead=vee, label="frisch / kausal / zugeordnet"];
+following -> stopplanner [style=dashed, arrowhead=vee, label="Fallback außerhalb RT"];
+stopplanner -> stop [style=dashed, arrowhead=vee, label="erzeugt zugelassenen Halt"];
+polynomial -> stop [dir=both, arrowtail=diamond, arrowhead=none, label="shared_ptr<const>"];
+following -> polynomial [style=dashed, arrowhead=vee, label="bewegter Horizont + Halt"];
+following -> cache [style=dashed, arrowhead=vee, label="erzeugt vollständigen Cache"];
+}

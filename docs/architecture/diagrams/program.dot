@@ -1,0 +1,20 @@
+digraph uml {
+graph [rankdir=LR, bgcolor="white", pad="0.25", nodesep="0.35", ranksep="0.8"];
+node [shape=plain, fontname="DejaVu Sans", fontsize=10];
+edge [fontname="DejaVu Sans", fontsize=9, color="#475569"];
+source [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5"><TR><TD BGCOLOR="#dbeafe"><B>RobotProgramSource</B></TD></TR><TR><TD ALIGN="LEFT">start()</TD></TR><TR><TD ALIGN="LEFT">instructions()</TD></TR><TR><TD ALIGN="LEFT">cycle_s()</TD></TR><TR><TD ALIGN="LEFT">epoch_s()</TD></TR></TABLE>>];
+instruction [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5"><TR><TD BGCOLOR="#dbeafe"><B>ProgramInstruction</B></TD></TR><TR><TD ALIGN="LEFT">operation, target, speed</TD></TR><TR><TD ALIGN="LEFT">center, normal, sweep_rad</TD></TR><TR><TD ALIGN="LEFT">seconds, location</TD></TR></TABLE>>];
+prepared [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5"><TR><TD BGCOLOR="#dbeafe"><B>PreparedRobotProgram</B></TD></TR><TR><TD ALIGN="LEFT">reference: shared_ptr&lt;const RobotProgram&gt;</TD></TR><TR><TD ALIGN="LEFT">schedule: shared_ptr&lt;const CycleAlignedProgram&gt;</TD></TR></TABLE>>];
+program [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5"><TR><TD BGCOLOR="#dbeafe"><B>RobotProgram</B></TD></TR><TR><TD ALIGN="LEFT">sample_segment(index, time_s)</TD></TR><TR><TD ALIGN="LEFT">sample_motion(index, time_s)</TD></TR><TR><TD ALIGN="LEFT">robot()</TD></TR></TABLE>>];
+joint [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5"><TR><TD BGCOLOR="#dbeafe"><B>IJointProgram</B></TD></TR><TR><TD ALIGN="LEFT">segment_count()</TD></TR><TR><TD ALIGN="LEFT">segment_duration(index)</TD></TR><TR><TD ALIGN="LEFT">initial_state()</TD></TR><TR><TD ALIGN="LEFT">joint_limits()</TD></TR></TABLE>>];
+grid [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5"><TR><TD BGCOLOR="#dbeafe"><B>CycleAlignedProgram</B></TD></TR><TR><TD ALIGN="LEFT">sample_tick(tick)</TD></TR><TR><TD ALIGN="LEFT">cycle_s()</TD></TR><TR><TD ALIGN="LEFT">time_scale(index)</TD></TR></TABLE>>];
+schedule [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5"><TR><TD BGCOLOR="#dbeafe"><B>IExecutionSchedule</B></TD></TR><TR><TD ALIGN="LEFT">total_ticks()</TD></TR><TR><TD ALIGN="LEFT">tick_time(tick)</TD></TR><TR><TD ALIGN="LEFT">boundary_ticks()</TD></TR><TR><TD ALIGN="LEFT">sample_tick(tick)</TD></TR></TABLE>>];
+source -> instruction [dir=both, arrowtail=diamond, arrowhead=none, label="vollständig validierte Liste"];
+source -> prepared [style=dashed, arrowhead=vee, label="compile_robot_program()"];
+prepared -> program [dir=both, arrowtail=diamond, arrowhead=none, label="immutable reference"];
+prepared -> grid [dir=both, arrowtail=diamond, arrowhead=none, label="immutable schedule"];
+program -> joint [arrowhead=empty, label=""];
+grid -> joint [arrowhead=empty, label=""];
+grid -> schedule [arrowhead=empty, label=""];
+grid -> joint [dir=both, arrowtail=diamond, arrowhead=none, label="source: shared_ptr<const>"];
+}

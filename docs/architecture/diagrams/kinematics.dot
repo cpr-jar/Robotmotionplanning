@@ -1,0 +1,17 @@
+digraph uml {
+graph [rankdir=LR, bgcolor="white", pad="0.25", nodesep="0.35", ranksep="0.8"];
+node [shape=plain, fontname="DejaVu Sans", fontsize=10];
+edge [fontname="DejaVu Sans", fontsize=9, color="#475569"];
+state [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5"><TR><TD BGCOLOR="#dbeafe"><B>JointState</B></TD></TR><TR><TD ALIGN="LEFT">q, dq, ddq: Vector</TD></TR><TR><TD ALIGN="LEFT">timestamp_s: double</TD></TR></TABLE>>];
+ik [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5"><TR><TD BGCOLOR="#dbeafe"><B>IKinematics</B></TD></TR><TR><TD ALIGN="LEFT">dof()</TD></TR><TR><TD ALIGN="LEFT">fk(q)</TD></TR><TR><TD ALIGN="LEFT">ik(target, seed)</TD></TR><TR><TD ALIGN="LEFT">jacobian(q)</TD></TR></TABLE>>];
+differential [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5"><TR><TD BGCOLOR="#dbeafe"><B>IDifferentialKinematics</B></TD></TR><TR><TD ALIGN="LEFT">position_limits()</TD></TR><TR><TD ALIGN="LEFT">singularity(q)</TD></TR><TR><TD ALIGN="LEFT">differentiate(q, dq, ddq, jerk)</TD></TR></TABLE>>];
+serial [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5"><TR><TD BGCOLOR="#dbeafe"><B>SerialChainKinematics</B></TD></TR><TR><TD ALIGN="LEFT">ik_detailed(target, seed)</TD></TR><TR><TD ALIGN="LEFT">joint_names()</TD></TR><TR><TD ALIGN="LEFT">base_pose()</TD></TR><TR><TD ALIGN="LEFT">tool_offset()</TD></TR></TABLE>>];
+gantry [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5"><TR><TD BGCOLOR="#dbeafe"><B>CartesianGantry</B></TD></TR><TR><TD ALIGN="LEFT">fk(q)</TD></TR><TR><TD ALIGN="LEFT">ik(target, seed)</TD></TR></TABLE>>];
+scara [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5"><TR><TD BGCOLOR="#dbeafe"><B>ScaraKinematics</B></TD></TR><TR><TD ALIGN="LEFT">fk(q)</TD></TR><TR><TD ALIGN="LEFT">ik(target, seed)</TD></TR></TABLE>>];
+delta [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5"><TR><TD BGCOLOR="#dbeafe"><B>DeltaKinematics</B></TD></TR><TR><TD ALIGN="LEFT">fk(q)</TD></TR><TR><TD ALIGN="LEFT">ik(target, seed)</TD></TR></TABLE>>];
+differential -> ik [arrowhead=empty, label=""];
+serial -> differential [arrowhead=empty, label=""];
+scara -> differential [arrowhead=empty, label=""];
+delta -> differential [arrowhead=empty, label=""];
+gantry -> ik [arrowhead=empty, label=""];
+}
