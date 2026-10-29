@@ -1,0 +1,82 @@
+[
+  {
+    "key": "ur",
+    "repo": "UniversalRobots/Universal_Robots_ROS2_Description",
+    "commit": "81f7c9fe003c2f0e02eec5a7253f1b262ad38b61",
+    "path": "urdf/ur_macro.xacro",
+    "url": "https://raw.githubusercontent.com/UniversalRobots/Universal_Robots_ROS2_Description/81f7c9fe003c2f0e02eec5a7253f1b262ad38b61/urdf/ur_macro.xacro",
+    "sha256": "5e496360ce0f5c7e7302a49e93f65ae9f52a4a433689d2c08298ff0e9d1648bc"
+  },
+  {
+    "key": "ur",
+    "repo": "UniversalRobots/Universal_Robots_ROS2_Description",
+    "commit": "81f7c9fe003c2f0e02eec5a7253f1b262ad38b61",
+    "path": "config/ur5e/default_kinematics.yaml",
+    "url": "https://raw.githubusercontent.com/UniversalRobots/Universal_Robots_ROS2_Description/81f7c9fe003c2f0e02eec5a7253f1b262ad38b61/config/ur5e/default_kinematics.yaml",
+    "sha256": "4ffc6086bb0118a5a8e4a3576ef41de878de946710799ea4835789063fa9c0bc"
+  },
+  {
+    "key": "ur",
+    "repo": "UniversalRobots/Universal_Robots_ROS2_Description",
+    "commit": "81f7c9fe003c2f0e02eec5a7253f1b262ad38b61",
+    "path": "config/ur5e/joint_limits.yaml",
+    "url": "https://raw.githubusercontent.com/UniversalRobots/Universal_Robots_ROS2_Description/81f7c9fe003c2f0e02eec5a7253f1b262ad38b61/config/ur5e/joint_limits.yaml",
+    "sha256": "1e908454a0fb073761a0c675f708eb003ca7d5333a9e0863ef87fe40d9abb3c7"
+  },
+  {
+    "key": "ur",
+    "repo": "UniversalRobots/Universal_Robots_ROS2_Description",
+    "commit": "81f7c9fe003c2f0e02eec5a7253f1b262ad38b61",
+    "path": "LICENSE",
+    "url": "https://raw.githubusercontent.com/UniversalRobots/Universal_Robots_ROS2_Description/81f7c9fe003c2f0e02eec5a7253f1b262ad38b61/LICENSE",
+    "sha256": "143077f9f6a8de5a99f78c2c2472801fb53cf240277ef661642f079b9acdfff8"
+  },
+  {
+    "key": "abb",
+    "repo": "ros-industrial/abb",
+    "commit": "45f4769d826cf3ac62a65495f2db67b78b0c81df",
+    "path": "abb_irb120_support/urdf/irb120_3_58_macro.xacro",
+    "url": "https://raw.githubusercontent.com/ros-industrial/abb/45f4769d826cf3ac62a65495f2db67b78b0c81df/abb_irb120_support/urdf/irb120_3_58_macro.xacro",
+    "sha256": "25f1b00a7388d02c35422b4a34b865a5f0ec1c76630edf6a613e56224bc74522"
+  },
+  {
+    "key": "abb",
+    "repo": "ros-industrial/abb",
+    "commit": "45f4769d826cf3ac62a65495f2db67b78b0c81df",
+    "path": "abb_irb120_support/package.xml",
+    "url": "https://raw.githubusercontent.com/ros-industrial/abb/45f4769d826cf3ac62a65495f2db67b78b0c81df/abb_irb120_support/package.xml",
+    "sha256": "1d15e0dc351c46c8cb5e2b8d0cec7377fd7589b7a57ef52643c0e9426d7781bb"
+  },
+  {
+    "key": "abb",
+    "repo": "ros-industrial/abb",
+    "commit": "45f4769d826cf3ac62a65495f2db67b78b0c81df",
+    "path": "abb_irb120_support/LICENSE",
+    "url": "https://raw.githubusercontent.com/ros-industrial/abb/45f4769d826cf3ac62a65495f2db67b78b0c81df/abb_irb120_support/LICENSE",
+    "sha256": "074e6e32c86a4c0ef8b3ed25b721ca23aca83df277cd88106ef7177c354615ff"
+  },
+  {
+    "key": "fanuc",
+    "repo": "ros-industrial/fanuc",
+    "commit": "d8f42bd73584b255df87098395512538882caea1",
+    "path": "fanuc_lrmate200id_support/urdf/lrmate200id_macro.xacro",
+    "url": "https://raw.githubusercontent.com/ros-industrial/fanuc/d8f42bd73584b255df87098395512538882caea1/fanuc_lrmate200id_support/urdf/lrmate200id_macro.xacro",
+    "sha256": "e9f0183b6a62ba6cf7aa4f7dd42624b0a3f73657d730338cc3e32a09f9de494d"
+  },
+  {
+    "key": "fanuc",
+    "repo": "ros-industrial/fanuc",
+    "commit": "d8f42bd73584b255df87098395512538882caea1",
+    "path": "fanuc_lrmate200id_support/package.xml",
+    "url": "https://raw.githubusercontent.com/ros-industrial/fanuc/d8f42bd73584b255df87098395512538882caea1/fanuc_lrmate200id_support/package.xml",
+    "sha256": "e4cb2e28bb5afaad52ccc48e3272344dcea2c4cba2c395a13694cd06c8a1f348"
+  },
+  {
+    "key": "fanuc",
+    "repo": "ros-industrial/fanuc",
+    "commit": "d8f42bd73584b255df87098395512538882caea1",
+    "path": "LICENSE",
+    "url": "https://raw.githubusercontent.com/ros-industrial/fanuc/d8f42bd73584b255df87098395512538882caea1/LICENSE",
+    "sha256": "84fd5e7adf8b18c239ff05bc4ef9c1364392113f38542be79d0798f1ea952cdc"
+  }
+]

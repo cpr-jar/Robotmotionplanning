@@ -1,0 +1,60 @@
+# Reconstructed nominal SI program, quaternion [w,x,y,z].
+schema_version: 1
+units: SI
+frame: world
+robot_profile: ../models/fanuc_lrmate200id/profile.yaml
+cycle_s: 0.01
+speed: 0.75
+start: home
+points:
+  home:
+    joints:
+    - 0.2
+    - -0.6
+    - 0.7
+    - 0.3
+    - 0.8
+    - -0.2
+  approach:
+    joints:
+    - 0.21
+    - -0.6
+    - 0.7
+    - 0.3
+    - 0.8
+    - -0.2
+  work:
+    position:
+    - -0.11737232580873987
+    - -0.0058935750060593985
+    - 1.0028863080416324
+    orientation:
+    - -0.06363716566236868
+    - -0.25858833923925256
+    - 0.07624087341689322
+    - 0.960869247700526
+subprograms:
+  process:
+  - type: LIN
+    target: work
+    speed: 0.5
+  - type: CIRC
+    center_offset:
+    - -0.002
+    - 0
+    - 0
+    normal:
+    - 0
+    - 0
+    - 1
+    sweep_rad: 0.5
+    speed: 0.5
+  - type: WAIT
+    seconds: 0.05
+steps:
+- type: PTP
+  target: approach
+- type: CALL
+  program: process
+- type: PTP
+  target: home

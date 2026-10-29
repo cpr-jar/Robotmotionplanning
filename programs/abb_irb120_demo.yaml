@@ -1,0 +1,60 @@
+# Reconstructed nominal SI program, quaternion [w,x,y,z].
+schema_version: 1
+units: SI
+frame: world
+robot_profile: ../models/abb_irb120/profile.yaml
+cycle_s: 0.01
+speed: 0.75
+start: home
+points:
+  home:
+    joints:
+    - 0.2
+    - -0.6
+    - 0.7
+    - 0.3
+    - 0.8
+    - -0.2
+  approach:
+    joints:
+    - 0.21
+    - -0.6
+    - 0.7
+    - 0.3
+    - 0.8
+    - -0.2
+  work:
+    position:
+    - 0.19499302585576625
+    - 0.055695577181793285
+    - 0.4982370078050818
+    orientation:
+    - 0.3254492279208048
+    - -0.12372044491986572
+    - 0.9275866093881097
+    - 0.1354958805220767
+subprograms:
+  process:
+  - type: LIN
+    target: work
+    speed: 0.5
+  - type: CIRC
+    center_offset:
+    - -0.002
+    - 0
+    - 0
+    normal:
+    - 0
+    - 0
+    - 1
+    sweep_rad: 0.5
+    speed: 0.5
+  - type: WAIT
+    seconds: 0.05
+steps:
+- type: PTP
+  target: approach
+- type: CALL
+  program: process
+- type: PTP
+  target: home

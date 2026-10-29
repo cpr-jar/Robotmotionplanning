@@ -1,0 +1,38 @@
+# PROTOTYPE CAPS, NOT manufacturer acceleration/jerk ratings.
+schema_version: 1
+units: SI
+robot_name: abb_irb120
+base_link: base_link
+tip_link: tool0
+joints:
+  joint_1:
+    max_acceleration: 1.0
+    max_jerk: 5.0
+    max_velocity: 0.5
+  joint_2:
+    max_acceleration: 1.0
+    max_jerk: 5.0
+    max_velocity: 0.5
+  joint_3:
+    max_acceleration: 1.0
+    max_jerk: 5.0
+    max_velocity: 0.5
+  joint_4:
+    max_acceleration: 1.0
+    max_jerk: 5.0
+    max_velocity: 0.5
+  joint_5:
+    max_acceleration: 1.0
+    max_jerk: 5.0
+    max_velocity: 0.5
+  joint_6:
+    max_acceleration: 1.0
+    max_jerk: 5.0
+    max_velocity: 0.5
+tcp_limits:
+  max_linear_velocity: 0.25
+  max_linear_acceleration: 0.5
+  max_linear_jerk: 2.0
+  max_angular_velocity: 0.5
+  max_angular_acceleration: 1.0
+  max_angular_jerk: 5.0
