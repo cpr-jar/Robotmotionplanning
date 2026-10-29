@@ -5,7 +5,7 @@
 ```sh
 git clone https://github.com/cpr-jar/Robotmotionplanning.git
 cd Robotmotionplanning
-git checkout v0.12.1-reconstructed
+git checkout v0.12.1-reconstructed-final
 cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
 cmake --build build --parallel 2
 ctest --test-dir build --output-on-failure
@@ -23,11 +23,14 @@ schützt nicht vor Verlust der gesamten Cloud-Umgebung.
 
 ## Aus dem Git-Bundle
 
-Die vollständige Bundle-Datei enthält alle gespeicherten Commits, Tags, Quellen
-und Abhängigkeiten. Es wird kein Zugriff auf die alte Arbeitsumgebung benötigt.
+Die Bundle-Datei liegt unter `backups/robot-motion-cpp-v0.12.1-reconstructed.bundle`.
+Sie enthält den vollständigen Quellverlauf samt den zum Sicherungszeitpunkt
+vorhandenen Tags und Abhängigkeiten. Der nachfolgende Commit, der die Bundle-Datei
+selbst hinzufügt, ist naturgemäß nicht Teil dieser Datei. Der gesicherte Quell-Commit
+steht in `backups/checksums.json`. Es wird kein Zugriff auf die alte Arbeitsumgebung benötigt.
 
 ```sh
-git clone robot-motion-cpp-v0.12.1-reconstructed.bundle Robotmotionplanning
+git clone backups/robot-motion-cpp-v0.12.1-reconstructed.bundle Robotmotionplanning
 cd Robotmotionplanning
 git remote set-url origin https://github.com/cpr-jar/Robotmotionplanning.git
 git checkout recovery/reconstructed-v0.12.1

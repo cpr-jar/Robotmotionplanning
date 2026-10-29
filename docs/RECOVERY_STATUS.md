@@ -33,8 +33,10 @@ Minimal und Ruckig-only. Frühere Zahlen aus dem Gespräch wurden nicht übernom
 **Dauerhafte Sicherung:** https://github.com/cpr-jar/Robotmotionplanning
 
 Branch `recovery/reconstructed-v0.12.1`; finale Kennzeichnung
-`v0.12.1-reconstructed`. Zusätzlich werden ein Quell-ZIP, Git-Bundle und private
-Sicherungsseite bereitgestellt. Ein Git-Bundle enthält den Git-Verlauf samt
+`v0.12.1-reconstructed-final`. Quell-ZIP und Git-Bundle werden direkt im
+freigegebenen GitHub-Repository bereitgestellt. Die zusätzlich vorbereitete private
+Site wurde nicht veröffentlicht: Die automatische Freigabeprüfung ließ dieses
+zusätzliche Veröffentlichungsziel ohne ausdrückliche Nutzerfreigabe nicht zu. Ein Git-Bundle enthält den Git-Verlauf samt
 Quellen und Abhängigkeiten und kann ohne die ursprüngliche Cloud-Umgebung
 geklont werden. Native Repository-Zugangsdaten werden nicht in Dateien gespeichert.
 
