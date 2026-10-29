@@ -1,0 +1,23 @@
+digraph motion {
+ graph [rankdir=TB,bgcolor="white",pad="0.2",nodesep="0.35",ranksep="0.4"];
+ node [shape=box,style="rounded,filled",fillcolor="#edf6fc",color="#739bb8",fontname="DejaVu Sans",fontsize=10,margin="0.14,0.12"];
+ edge [color="#526d82",fontname="DejaVu Sans",fontsize=10];
+ command [label="Nächster Bewegungsbefehl"];
+ subgraph cluster_ptp {label="PTP · Ziel erreichen";fontname="DejaVu Sans";color="#8cb5dd";
+ ptp_goal [label="Ziel-Gelenkwerte übernehmen\noder Zielpose einmal per IK lösen"];
+ ptp_path [label="Glatter Gelenkverlauf\nvon Start-q nach Ziel-q"];
+ ptp_caps [label="Gelenk- UND TCP-Grenzen\nüber die Bewegung prüfen\nDauer ggf. begrenzt verlängern"];
+ ptp_goal->ptp_path->ptp_caps;
+ }
+ subgraph cluster_cart {label="LIN / CIRC · TCP-Weg vorgeben";fontname="DejaVu Sans";color="#74b79b";
+ cart_path [label="Gerade / Kreisbogen\n+ Orientierungsverlauf bestimmen",fillcolor="#e8f5ef"];
+ cart_ik [label="Entlang des Weges IK lösen\njeweils vom vorigen Zustand aus",fillcolor="#e8f5ef"];
+ spline [label="Glatte Gelenksplines aufbauen\nGelenkgrenzen und Pose-Toleranz prüfen",fillcolor="#e8f5ef"];
+ cart_time [label="Zeitverlauf aus Gelenk- und\nTCP-Ableitungshüllen bestimmen",fillcolor="#e8f5ef"];
+ cart_path->cart_ik->spline->cart_time;
+ }
+ admit [label="Nur bei erfolgreicher Gesamtprüfung:\nProgramm auf ganzzahlige Takte ausrichten",fillcolor="#fff6df"];
+ command->ptp_goal [label="PTP"];
+ command->cart_path [label="LIN / CIRC"];
+ ptp_caps->admit;cart_time->admit;
+}

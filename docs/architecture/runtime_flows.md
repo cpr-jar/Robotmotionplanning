@@ -1,5 +1,9 @@
 # Laufzeitabläufe und Zustände
 
+Für den Einstieg ohne Robotik-Vorkenntnisse:
+[Bewegungsplanung verstehen](../tutorials/motion_planning_basics.md) erklärt
+FK/IK, PTP/LIN/CIRC, Weg und Zeit sowie die Sollwertausgabe mit Ablaufdiagrammen.
+
 Die Sequenzen zeigen Rollen der späteren Host-Anwendung und vorhandene
 Bibliotheksobjekte. Rollen wie „Achsschnittstelle“ oder „Freigabe“ sind noch
 keine implementierten Hardwareadapter. Die sieben strukturellen UML-Sichten

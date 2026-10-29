@@ -7,16 +7,17 @@ Integrationsaufgaben ausdrücklich.
 
 | Lesereihenfolge | Dokument | Inhalt |
 | --- | --- | --- |
-| 1 | [Integrationshandbuch](integration/controller_integration.md) | Verantwortlichkeiten, Build, Vorbereitung, zyklische Übergabe, Lebensdauer, Timing und Fehler |
-| 2 | [Daten- und Schnittstellenvertrag](integration/interface_contracts.md) | Einheiten, Achsreihenfolge, Zustände, Rückgabewerte, Uhrdomänen und Threadzuordnung |
-| 3 | [Architektur und Klassendiagramme](architecture/class_diagrams.md) | Sieben UML-Sichten als SVG; Vererbung, Besitz und geliehene Referenzen |
-| 4 | [Laufzeitabläufe](architecture/runtime_flows.md) | Sequenzen, Zustandstabelle und Live-Handshake |
-| 5 | [Ordner- und Modulkatalog](architecture/module_catalog.md) | Zuständigkeit jedes Moduls und relevante Dateien |
-| 6 | [Benennungsregeln](development/naming_and_migration.md) | Dateinamen, Variablennamen, mathematische Notation und Altpfad-Migration |
-| 7 | [Test- und Abnahmeplan](integration/acceptance_plan.md) | Vorhandene Nachweise, spätere Steuerungstests und offene Entscheidungen |
-| 8 | [Modellformat](formats/robot_model_yaml.md) / [Programmformat](formats/robot_program_yaml.md) | URDF/SI-Profil, Modellreferenzen, PTP/LIN/CIRC, WAIT/CALL und Quellorte |
-| 9 | [Prüfbericht](testing/validation.md) / [Robustheitstests](testing/robustness.md) | Tatsächlich ausgeführte Prüfungen und reproduzierbare Seeds |
-| 10 | [Roadmap](planning/roadmap.md) | Noch offene Funktionspakete und Hardwaregrenzen |
+| 1 | [Einsteiger-Tutorial mit Ablaufdiagrammen](tutorials/motion_planning_basics.md) | Vom Bewegungsauftrag zur Sollwertausgabe; FK/IK, PTP/LIN/CIRC, Grenzen und ein Zahlenbeispiel |
+| 2 | [Integrationshandbuch](integration/controller_integration.md) | Verantwortlichkeiten, Build, Vorbereitung, zyklische Übergabe, Lebensdauer, Timing und Fehler |
+| 3 | [Daten- und Schnittstellenvertrag](integration/interface_contracts.md) | Einheiten, Achsreihenfolge, Zustände, Rückgabewerte, Uhrdomänen und Threadzuordnung |
+| 4 | [Architektur und Klassendiagramme](architecture/class_diagrams.md) | Sieben UML-Sichten als SVG; Vererbung, Besitz und geliehene Referenzen |
+| 5 | [Laufzeitabläufe](architecture/runtime_flows.md) | Sequenzen, Zustandstabelle und Live-Handshake |
+| 6 | [Ordner- und Modulkatalog](architecture/module_catalog.md) | Zuständigkeit jedes Moduls und relevante Dateien |
+| 7 | [Benennungsregeln](development/naming_and_migration.md) | Dateinamen, Variablennamen, mathematische Notation und Altpfad-Migration |
+| 8 | [Test- und Abnahmeplan](integration/acceptance_plan.md) | Vorhandene Nachweise, spätere Steuerungstests und offene Entscheidungen |
+| 9 | [Modellformat](formats/robot_model_yaml.md) / [Programmformat](formats/robot_program_yaml.md) | URDF/SI-Profil, Modellreferenzen, PTP/LIN/CIRC, WAIT/CALL und Quellorte |
+| 10 | [Prüfbericht](testing/validation.md) / [Robustheitstests](testing/robustness.md) | Tatsächlich ausgeführte Prüfungen und reproduzierbare Seeds |
+| 11 | [Roadmap](planning/roadmap.md) | Noch offene Funktionspakete und Hardwaregrenzen |
 
 Die Diagramme sind eingecheckt. Zum Lesen wird weder Python noch Graphviz
 benötigt; die SVG-Dateien lassen sich im Browser öffnen. Für eine zusammenhängende

@@ -1,0 +1,13 @@
+digraph path_time {
+ graph [rankdir=LR,bgcolor="white",pad="0.2",nodesep="0.4",ranksep="0.45"];
+ node [shape=box,style="rounded,filled",fillcolor="#edf6fc",color="#739bb8",fontname="DejaVu Sans",fontsize=11,margin="0.16,0.12"];
+ edge [color="#526d82",fontname="DejaVu Sans",fontsize=10];
+ path [label="Weg q(s)\nWo liegen die Achsen\nbei einem bestimmten Wegfortschritt?"];
+ time [label="Zeitgesetz s(t)\nWie schnell schreitet\ndie Bewegung voran?",fillcolor="#fff6df"];
+ motion [label="Trajektorie q(t)\nWeg mit passender Zeitplanung",fillcolor="#ddf3eb"];
+ posfail [label="Geometrie unzulässig?\nZiel, Weg oder Lösungszweig ändern",fillcolor="#fce8e8",color="#b96c6c"];
+ speedfail [label="Nur v/a/Ruck zu hoch?\nMehr Zeit kann helfen\ninnerhalb des vorgesehenen Verfahrens"];
+ path->motion [label="Weg"];
+ time->motion [label="Zeit"];
+ path->posfail [style=dashed];time->speedfail [style=dashed];
+}

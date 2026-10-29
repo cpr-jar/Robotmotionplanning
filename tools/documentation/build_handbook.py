@@ -17,6 +17,7 @@ ROOT = Path(__file__).resolve().parents[2]
 OUTPUT = ROOT / 'docs/handbook.html'
 CHAPTERS = [
     'docs/README.md',
+    'docs/tutorials/motion_planning_basics.md',
     'docs/integration/controller_integration.md',
     'docs/integration/interface_contracts.md',
     'docs/architecture/class_diagrams.md',
@@ -43,7 +44,15 @@ def chapter_html(path):
             raise ValueError(f'Only local SVG diagrams are supported: {target}')
         svg = svg_file.read_text()
         svg = svg[svg.index('<svg'):]
-        svg = re.sub(r'\bid="([^"]+)"', lambda m: 'id="figure-' + svg_file.stem + '-' + m[1] + '"', svg)
+        # Namespace complete SVGs, including reusable paths and plot clip paths.
+        # Matplotlib SVGs use both xlink:href and url(#id), unlike simple Graphviz nodes.
+        prefix = chapter_id + '--figure-' + svg_file.stem + '-'
+        identifiers = {name: prefix + name for name in re.findall(r'\bid="([^"]+)"', svg)}
+        svg = re.sub(r'\bid="([^"]+)"', lambda m: 'id="' + identifiers[m[1]] + '"', svg)
+        svg = re.sub(r'\bhref="#([^"]+)"',
+                     lambda m: 'href="#' + identifiers.get(m[1], m[1]) + '"', svg)
+        svg = re.sub(r'url\(#([^)]+)\)',
+                     lambda m: 'url(#' + identifiers.get(m[1], m[1]) + ')', svg)
         return '<figure>' + svg + '<figcaption>' + escape(title) + '</figcaption></figure>'
 
     content = re.sub(r'!\[([^]]*)\]\(([^)]+)\)', image, content)
@@ -63,7 +72,9 @@ def chapter_html(path):
     content = re.sub(r'\]\(([^)]+)\)', link, content)
     rendered = markdown.markdown(content, extensions=['tables', 'fenced_code', 'toc'],
                                  extension_configs={'toc': {'slugify': slugify_unicode}})
-    rendered = re.sub(r'\bid="([^"]+)"', lambda m: 'id="' + chapter_id + '--' + m[1] + '"', rendered)
+    rendered = re.sub(r'\bid="([^"]+)"',
+                      lambda m: 'id="' + (m[1] if m[1].startswith(chapter_id + '--figure-')
+                                          else chapter_id + '--' + m[1]) + '"', rendered)
     rendered = re.sub(r'href="#(?!chapter-)([^"]+)"', lambda m: 'href="#' + chapter_id + '--' + m[1] + '"', rendered)
     return '<section id="' + chapter_id + '">' + rendered + '</section>'
 
@@ -80,8 +91,11 @@ class AnchorCheck(HTMLParser):
             if attributes['id'] in self.ids:
                 raise ValueError('Duplicate HTML ID: ' + attributes['id'])
             self.ids.add(attributes['id'])
-        if attributes.get('href', '').startswith('#'):
-            self.targets.add(attributes['href'][1:])
+        for key in ('href', 'xlink:href'):
+            if attributes.get(key, '').startswith('#'):
+                self.targets.add(attributes[key][1:])
+        for value in attributes.values():
+            self.targets.update(re.findall(r'url\(#([^)]+)\)', value))
 
 
 def build():
@@ -106,7 +120,8 @@ figure{margin:24px 0;overflow:auto}figure svg{max-width:100%;height:auto}figcapt
 </style></head><body>
 <h1 id="handbook-top">Robot Motion C++ 0.12.3</h1>
 <p>Integrationsgrundlage für eine selbst entwickelte Steuerung, Zyklusbereich 1–20 ms.
-Diese Datei enthält Texte und UML-SVGs offline. Die Mermaid-Ablaufquellen sind als Code erhalten;
+Diese Datei enthält Texte, UML- und Tutorial-Ablaufdiagramme sowie die Lehrkurve offline.
+Weitere Mermaid-Ablaufquellen sind als Code erhalten;
 GitHub rendert sie in der Markdown-Ausgabe. Druck/PDF ist über die Druckfunktion des Browsers möglich.</p>
 <nav><ol>''' + ''.join(navigation) + '</ol></nav>' + ''.join(sections) + '</body></html>\n'
     check = AnchorCheck()

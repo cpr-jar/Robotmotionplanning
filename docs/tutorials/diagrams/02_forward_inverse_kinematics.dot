@@ -1,0 +1,13 @@
+digraph kinematics {
+ graph [rankdir=LR,bgcolor="white",pad="0.2",nodesep="0.5",ranksep="0.45"];
+ node [shape=box,style="rounded,filled",fillcolor="#edf6fc",color="#739bb8",fontname="DejaVu Sans",fontsize=11,margin="0.15,0.12"];
+ edge [color="#526d82",fontname="DejaVu Sans",fontsize=10];
+ q [label="Gelenkstellungen q\nz. B. sechs Achswinkel"];
+ fk [label="FK · Vorwärtskinematik\nRobotergeometrie ausrechnen",fillcolor="#ddf3eb"];
+ tcp [label="Werkzeugpose\nPosition + Orientierung"];
+ target [label="Gewünschte Werkzeugpose\n+ bisherige Gelenkstellung als Startschätzung"];
+ ik [label="IK · Inverse Kinematik\nlokale numerische Suche",fillcolor="#fff6df"];
+ result [label="Passende Gelenkstellungen\noder begründete Ablehnung"];
+ q->fk->tcp;
+ target->ik->result;
+}

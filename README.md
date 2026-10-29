@@ -6,6 +6,7 @@ die Einbindung in eine eigene Steuerung ist für einen Taktbereich von 1–20 ms
 beschrieben. Die konkrete Host-/Achsanbindung wird später festgelegt.
 
 **[Dokumentationsübersicht](docs/README.md)** ·
+[Einsteiger-Tutorial mit Ablaufdiagrammen](docs/tutorials/motion_planning_basics.md) ·
 [Integrationshandbuch](docs/integration/controller_integration.md) ·
 [Klassendiagramme](docs/architecture/class_diagrams.md) ·
 [Offline-Handbuch](docs/handbook.html) (lokal im Browser öffnen, auch als PDF druckbar).

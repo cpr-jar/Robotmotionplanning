@@ -13,9 +13,10 @@ figure{margin:24px 0;overflow:auto}figure svg{max-width:100%;height:auto}figcapt
 </style></head><body>
 <h1 id="handbook-top">Robot Motion C++ 0.12.3</h1>
 <p>Integrationsgrundlage für eine selbst entwickelte Steuerung, Zyklusbereich 1–20 ms.
-Diese Datei enthält Texte und UML-SVGs offline. Die Mermaid-Ablaufquellen sind als Code erhalten;
+Diese Datei enthält Texte, UML- und Tutorial-Ablaufdiagramme sowie die Lehrkurve offline.
+Weitere Mermaid-Ablaufquellen sind als Code erhalten;
 GitHub rendert sie in der Markdown-Ausgabe. Druck/PDF ist über die Druckfunktion des Browsers möglich.</p>
-<nav><ol><li><a href="#chapter-readme">Dokumentation für Entwicklung und Steuerungseinbindung</a></li><li><a href="#chapter-controller_integration">Integrationshandbuch für die eigene Steuerung</a></li><li><a href="#chapter-interface_contracts">Daten- und Schnittstellenverträge</a></li><li><a href="#chapter-class_diagrams">UML-Klassendiagramme</a></li><li><a href="#chapter-runtime_flows">Laufzeitabläufe und Zustände</a></li><li><a href="#chapter-module_catalog">Ordner und Modulzuständigkeiten</a></li><li><a href="#chapter-naming_and_migration">Benennung und Migration ab 0.12.3</a></li><li><a href="#chapter-acceptance_plan">Test- und Abnahmeplan für die spätere Integration</a></li><li><a href="#chapter-robot_model_yaml">Kinematikbeschreibung und SI-Motion-Profil</a></li><li><a href="#chapter-robot_program_yaml">Eigene Roboterprogramme importieren</a></li><li><a href="#chapter-validation">Struktur- und Integrationsgrundlage — 0.12.3, 29.10.2026</a></li></ol></nav><section id="chapter-readme"><h1 id="chapter-readme--dokumentation-für-entwicklung-und-steuerungseinbindung">Dokumentation für Entwicklung und Steuerungseinbindung</h1>
+<nav><ol><li><a href="#chapter-readme">Dokumentation für Entwicklung und Steuerungseinbindung</a></li><li><a href="#chapter-motion_planning_basics">Bewegungsplanung verstehen – ein kleines Tutorial</a></li><li><a href="#chapter-controller_integration">Integrationshandbuch für die eigene Steuerung</a></li><li><a href="#chapter-interface_contracts">Daten- und Schnittstellenverträge</a></li><li><a href="#chapter-class_diagrams">UML-Klassendiagramme</a></li><li><a href="#chapter-runtime_flows">Laufzeitabläufe und Zustände</a></li><li><a href="#chapter-module_catalog">Ordner und Modulzuständigkeiten</a></li><li><a href="#chapter-naming_and_migration">Benennung und Migration ab 0.12.3</a></li><li><a href="#chapter-acceptance_plan">Test- und Abnahmeplan für die spätere Integration</a></li><li><a href="#chapter-robot_model_yaml">Kinematikbeschreibung und SI-Motion-Profil</a></li><li><a href="#chapter-robot_program_yaml">Eigene Roboterprogramme importieren</a></li><li><a href="#chapter-validation">Struktur- und Integrationsgrundlage — 0.12.3, 29.10.2026</a></li></ol></nav><section id="chapter-readme"><h1 id="chapter-readme--dokumentation-für-entwicklung-und-steuerungseinbindung">Dokumentation für Entwicklung und Steuerungseinbindung</h1>
 <p>Stand: <strong>0.12.3</strong>. Die Zielsteuerung ist eine Eigenentwicklung; die konkrete
 Adapterplanung folgt später. Der betrachtete Zyklusbereich beträgt <strong>1–20 ms</strong>.
 Die Dokumente beschreiben die vorhandene Bibliothek und benennen noch offene
@@ -31,51 +32,56 @@ Integrationsaufgaben ausdrücklich.</p>
 <tbody>
 <tr>
 <td>1</td>
+<td><a href="#chapter-motion_planning_basics">Einsteiger-Tutorial mit Ablaufdiagrammen</a></td>
+<td>Vom Bewegungsauftrag zur Sollwertausgabe; FK/IK, PTP/LIN/CIRC, Grenzen und ein Zahlenbeispiel</td>
+</tr>
+<tr>
+<td>2</td>
 <td><a href="#chapter-controller_integration">Integrationshandbuch</a></td>
 <td>Verantwortlichkeiten, Build, Vorbereitung, zyklische Übergabe, Lebensdauer, Timing und Fehler</td>
 </tr>
 <tr>
-<td>2</td>
+<td>3</td>
 <td><a href="#chapter-interface_contracts">Daten- und Schnittstellenvertrag</a></td>
 <td>Einheiten, Achsreihenfolge, Zustände, Rückgabewerte, Uhrdomänen und Threadzuordnung</td>
 </tr>
 <tr>
-<td>3</td>
+<td>4</td>
 <td><a href="#chapter-class_diagrams">Architektur und Klassendiagramme</a></td>
 <td>Sieben UML-Sichten als SVG; Vererbung, Besitz und geliehene Referenzen</td>
 </tr>
 <tr>
-<td>4</td>
+<td>5</td>
 <td><a href="#chapter-runtime_flows">Laufzeitabläufe</a></td>
 <td>Sequenzen, Zustandstabelle und Live-Handshake</td>
 </tr>
 <tr>
-<td>5</td>
+<td>6</td>
 <td><a href="#chapter-module_catalog">Ordner- und Modulkatalog</a></td>
 <td>Zuständigkeit jedes Moduls und relevante Dateien</td>
 </tr>
 <tr>
-<td>6</td>
+<td>7</td>
 <td><a href="#chapter-naming_and_migration">Benennungsregeln</a></td>
 <td>Dateinamen, Variablennamen, mathematische Notation und Altpfad-Migration</td>
 </tr>
 <tr>
-<td>7</td>
+<td>8</td>
 <td><a href="#chapter-acceptance_plan">Test- und Abnahmeplan</a></td>
 <td>Vorhandene Nachweise, spätere Steuerungstests und offene Entscheidungen</td>
 </tr>
 <tr>
-<td>8</td>
+<td>9</td>
 <td><a href="#chapter-robot_model_yaml">Modellformat</a> / <a href="#chapter-robot_program_yaml">Programmformat</a></td>
 <td>URDF/SI-Profil, Modellreferenzen, PTP/LIN/CIRC, WAIT/CALL und Quellorte</td>
 </tr>
 <tr>
-<td>9</td>
+<td>10</td>
 <td><a href="#chapter-validation">Prüfbericht</a> / <a href="testing/robustness.md">Robustheitstests</a></td>
 <td>Tatsächlich ausgeführte Prüfungen und reproduzierbare Seeds</td>
 </tr>
 <tr>
-<td>10</td>
+<td>11</td>
 <td><a href="planning/roadmap.md">Roadmap</a></td>
 <td>Noch offene Funktionspakete und Hardwaregrenzen</td>
 </tr>
@@ -84,7 +90,1481 @@ Integrationsaufgaben ausdrücklich.</p>
 <p>Die Diagramme sind eingecheckt. Zum Lesen wird weder Python noch Graphviz
 benötigt; die SVG-Dateien lassen sich im Browser öffnen. Für eine zusammenhängende
 Offline-Ausgabe siehe <a href="#chapter-naming_and_migration--dokumentation-prüfen-und-erzeugen">Handbuch erzeugen</a>.
-Historische Wiederherstellung und Sicherung stehen unter <a href="history/recovery_status.md">history</a>.</p></section><section id="chapter-controller_integration"><h1 id="chapter-controller_integration--integrationshandbuch-für-die-eigene-steuerung">Integrationshandbuch für die eigene Steuerung</h1>
+Historische Wiederherstellung und Sicherung stehen unter <a href="history/recovery_status.md">history</a>.</p></section><section id="chapter-motion_planning_basics"><h1 id="chapter-motion_planning_basics--bewegungsplanung-verstehen-ein-kleines-tutorial">Bewegungsplanung verstehen – ein kleines Tutorial</h1>
+<p><strong>Für wen?</strong> Für alle, die nachvollziehen möchten, wie aus „Fahre dorthin“ eine
+Folge von Achssollwerten wird. Du brauchst dafür keine Kenntnisse über
+Robotik-Solver. Lesedauer ungefähr 10–15 Minuten.</p>
+<p>Wir betrachten unsere vorhandene Bibliothek: serielle Roboter, Programme mit
+PTP/LIN/CIRC/WAIT und eine spätere Eigensteuerung mit 1–20 ms Takt. Die Diagramme
+erklären die Softwareabläufe als vereinfachte Übersichten; Details stehen bei den
+weiterführenden Links. Sie legen noch keine konkrete Hardwareanbindung fest.</p>
+<h2 id="chapter-motion_planning_basics--1-die-grundidee-ein-auftrag-wird-zu-vielen-kleinen-sollwerten">1. Die Grundidee: ein Auftrag wird zu vielen kleinen Sollwerten</h2>
+<p>Stell dir einen Greifer vor, der von einer Ablage zu einem Werkstück fahren soll.
+„Zum Werkstück“ reicht den Motoren als Information nicht. Die Software muss wissen:</p>
+<ul>
+<li>Wo stehen die Achsen am Anfang, und welches Ziel ist gemeint?</li>
+<li>Welchen Weg sollen Greifer und Achsen nehmen?</li>
+<li>Wie schnell dürfen sie sich bewegen, beschleunigen und ihre Beschleunigung ändern?</li>
+<li>Welche Achswerte müssen zu welchem Zeitpunkt ausgegeben werden?</li>
+</ul>
+<p>Daraus entsteht eine <strong>Trajektorie</strong>: eine Bewegung mit festgelegtem Zeitverlauf.</p>
+<figure><svg width="489pt" height="634pt"
+ viewBox="0.00 0.00 488.80 633.80" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="chapter-motion_planning_basics--figure-01_planning_pipeline-graph0" class="graph" transform="scale(1 1) rotate(0) translate(14.4 619.4)">
+<title>pipeline</title>
+<polygon fill="white" stroke="transparent" points="-14.4,14.4 -14.4,-619.4 474.4,-619.4 474.4,14.4 -14.4,14.4"/>
+<!-- input -->
+<g id="chapter-motion_planning_basics--figure-01_planning_pipeline-node1" class="node">
+<title>input</title>
+<path fill="#edf6fc" stroke="#739bb8" d="M361,-605C361,-605 123,-605 123,-605 117,-605 111,-599 111,-593 111,-593 111,-575 111,-575 111,-569 117,-563 123,-563 123,-563 361,-563 361,-563 367,-563 373,-569 373,-575 373,-575 373,-593 373,-593 373,-599 367,-605 361,-605"/>
+<text text-anchor="middle" x="242" y="-587.2" font-family="DejaVu Sans" font-size="11.00">1 · Auftrag verstehen</text>
+<text text-anchor="middle" x="242" y="-575.2" font-family="DejaVu Sans" font-size="11.00">Programm + Robotergeometrie + Grenzen</text>
+</g>
+<!-- geometry -->
+<g id="chapter-motion_planning_basics--figure-01_planning_pipeline-node2" class="node">
+<title>geometry</title>
+<path fill="#edf6fc" stroke="#739bb8" d="M343.5,-532C343.5,-532 140.5,-532 140.5,-532 134.5,-532 128.5,-526 128.5,-520 128.5,-520 128.5,-502 128.5,-502 128.5,-496 134.5,-490 140.5,-490 140.5,-490 343.5,-490 343.5,-490 349.5,-490 355.5,-496 355.5,-502 355.5,-502 355.5,-520 355.5,-520 355.5,-526 349.5,-532 343.5,-532"/>
+<text text-anchor="middle" x="242" y="-514.2" font-family="DejaVu Sans" font-size="11.00">2 · Bewegungsweg bestimmen</text>
+<text text-anchor="middle" x="242" y="-502.2" font-family="DejaVu Sans" font-size="11.00">PTP: Gelenkweg · LIN/CIRC: TCP&#45;Weg</text>
+</g>
+<!-- input&#45;&gt;geometry -->
+<g id="chapter-motion_planning_basics--figure-01_planning_pipeline-edge1" class="edge">
+<title>input&#45;&gt;geometry</title>
+<path fill="none" stroke="#526d82" d="M242,-562.84C242,-556.6 242,-549.58 242,-542.79"/>
+<polygon fill="#526d82" stroke="#526d82" points="245.5,-542.45 242,-532.45 238.5,-542.45 245.5,-542.45"/>
+</g>
+<!-- timing -->
+<g id="chapter-motion_planning_basics--figure-01_planning_pipeline-node3" class="node">
+<title>timing</title>
+<path fill="#edf6fc" stroke="#739bb8" d="M377,-459C377,-459 107,-459 107,-459 101,-459 95,-453 95,-447 95,-447 95,-429 95,-429 95,-423 101,-417 107,-417 107,-417 377,-417 377,-417 383,-417 389,-423 389,-429 389,-429 389,-447 389,-447 389,-453 383,-459 377,-459"/>
+<text text-anchor="middle" x="242" y="-441.2" font-family="DejaVu Sans" font-size="11.00">3 · Zeitverlauf und Grenzen prüfen</text>
+<text text-anchor="middle" x="242" y="-429.2" font-family="DejaVu Sans" font-size="11.00">Position, Geschwindigkeit, Beschleunigung, Ruck</text>
+</g>
+<!-- geometry&#45;&gt;timing -->
+<g id="chapter-motion_planning_basics--figure-01_planning_pipeline-edge2" class="edge">
+<title>geometry&#45;&gt;timing</title>
+<path fill="none" stroke="#526d82" d="M242,-489.84C242,-483.6 242,-476.58 242,-469.79"/>
+<polygon fill="#526d82" stroke="#526d82" points="245.5,-469.45 242,-459.45 238.5,-469.45 245.5,-469.45"/>
+</g>
+<!-- admit -->
+<g id="chapter-motion_planning_basics--figure-01_planning_pipeline-node4" class="node">
+<title>admit</title>
+<path fill="#fff6df" stroke="#739bb8" d="M230.6,-382.26C230.6,-382.26 125.4,-347.74 125.4,-347.74 119.7,-345.87 119.7,-342.13 125.4,-340.26 125.4,-340.26 230.6,-305.74 230.6,-305.74 236.3,-303.87 247.7,-303.87 253.4,-305.74 253.4,-305.74 358.6,-340.26 358.6,-340.26 364.3,-342.13 364.3,-345.87 358.6,-347.74 358.6,-347.74 253.4,-382.26 253.4,-382.26 247.7,-384.13 236.3,-384.13 230.6,-382.26"/>
+<text text-anchor="middle" x="242" y="-347.2" font-family="DejaVu Sans" font-size="11.00">Ganzes Programm</text>
+<text text-anchor="middle" x="242" y="-335.2" font-family="DejaVu Sans" font-size="11.00">zulässig?</text>
+</g>
+<!-- timing&#45;&gt;admit -->
+<g id="chapter-motion_planning_basics--figure-01_planning_pipeline-edge3" class="edge">
+<title>timing&#45;&gt;admit</title>
+<path fill="none" stroke="#526d82" d="M242,-416.58C242,-410.54 242,-403.62 242,-396.54"/>
+<polygon fill="#526d82" stroke="#526d82" points="245.5,-396.1 242,-386.1 238.5,-396.1 245.5,-396.1"/>
+</g>
+<!-- grid -->
+<g id="chapter-motion_planning_basics--figure-01_planning_pipeline-node5" class="node">
+<title>grid</title>
+<path fill="#edf6fc" stroke="#739bb8" d="M223.5,-261C223.5,-261 28.5,-261 28.5,-261 22.5,-261 16.5,-255 16.5,-249 16.5,-249 16.5,-231 16.5,-231 16.5,-225 22.5,-219 28.5,-219 28.5,-219 223.5,-219 223.5,-219 229.5,-219 235.5,-225 235.5,-231 235.5,-231 235.5,-249 235.5,-249 235.5,-255 229.5,-261 223.5,-261"/>
+<text text-anchor="middle" x="126" y="-243.2" font-family="DejaVu Sans" font-size="11.00">4 · Auf Steuerungstakte ausrichten</text>
+<text text-anchor="middle" x="126" y="-231.2" font-family="DejaVu Sans" font-size="11.00">z. B. alle 10 ms</text>
+</g>
+<!-- admit&#45;&gt;grid -->
+<g id="chapter-motion_planning_basics--figure-01_planning_pipeline-edge4" class="edge">
+<title>admit&#45;&gt;grid</title>
+<path fill="none" stroke="#526d82" d="M207.82,-312.95C191.66,-298.74 172.51,-281.9 156.8,-268.08"/>
+<polygon fill="#526d82" stroke="#526d82" points="158.76,-265.14 148.94,-261.17 154.13,-270.4 158.76,-265.14"/>
+<text text-anchor="middle" x="183" y="-279" font-family="DejaVu Sans" font-size="10.00">Ja</text>
+</g>
+<!-- reject -->
+<g id="chapter-motion_planning_basics--figure-01_planning_pipeline-node9" class="node">
+<title>reject</title>
+<path fill="#fce8e8" stroke="#b96c6c" d="M448,-261C448,-261 270,-261 270,-261 264,-261 258,-255 258,-249 258,-249 258,-231 258,-231 258,-225 264,-219 270,-219 270,-219 448,-219 448,-219 454,-219 460,-225 460,-231 460,-231 460,-249 460,-249 460,-255 454,-261 448,-261"/>
+<text text-anchor="middle" x="359" y="-243.2" font-family="DejaVu Sans" font-size="11.00">Keine neue Programmfreigabe</text>
+<text text-anchor="middle" x="359" y="-231.2" font-family="DejaVu Sans" font-size="11.00">Diagnose mit Quelle und Schritt</text>
+</g>
+<!-- admit&#45;&gt;reject -->
+<g id="chapter-motion_planning_basics--figure-01_planning_pipeline-edge5" class="edge">
+<title>admit&#45;&gt;reject</title>
+<path fill="none" stroke="#b96c6c" d="M276.47,-312.95C292.77,-298.74 312.09,-281.9 327.93,-268.08"/>
+<polygon fill="#b96c6c" stroke="#b96c6c" points="330.63,-270.38 335.87,-261.17 326.03,-265.1 330.63,-270.38"/>
+<text text-anchor="middle" x="329.5" y="-279" font-family="DejaVu Sans" font-size="10.00">Nein</text>
+</g>
+<!-- values -->
+<g id="chapter-motion_planning_basics--figure-01_planning_pipeline-node6" class="node">
+<title>values</title>
+<path fill="#edf6fc" stroke="#739bb8" d="M240,-188C240,-188 12,-188 12,-188 6,-188 0,-182 0,-176 0,-176 0,-158 0,-158 0,-152 6,-146 12,-146 12,-146 240,-146 240,-146 246,-146 252,-152 252,-158 252,-158 252,-176 252,-176 252,-182 246,-188 240,-188"/>
+<text text-anchor="middle" x="126" y="-170.2" font-family="DejaVu Sans" font-size="11.00">5 · Feste Sollwerte vorbereiten</text>
+<text text-anchor="middle" x="126" y="-158.2" font-family="DejaVu Sans" font-size="11.00">vollständiger Cache oder Producer/Puffer</text>
+</g>
+<!-- grid&#45;&gt;values -->
+<g id="chapter-motion_planning_basics--figure-01_planning_pipeline-edge6" class="edge">
+<title>grid&#45;&gt;values</title>
+<path fill="none" stroke="#526d82" d="M126,-218.84C126,-212.6 126,-205.58 126,-198.79"/>
+<polygon fill="#526d82" stroke="#526d82" points="129.5,-198.45 126,-188.45 122.5,-198.45 129.5,-198.45"/>
+</g>
+<!-- dispatch -->
+<g id="chapter-motion_planning_basics--figure-01_planning_pipeline-node7" class="node">
+<title>dispatch</title>
+<path fill="#ddf3eb" stroke="#65a48a" d="M213,-115C213,-115 39,-115 39,-115 33,-115 27,-109 27,-103 27,-103 27,-85 27,-85 27,-79 33,-73 39,-73 39,-73 213,-73 213,-73 219,-73 225,-79 225,-85 225,-85 225,-103 225,-103 225,-109 219,-115 213,-115"/>
+<text text-anchor="middle" x="126" y="-97.2" font-family="DejaVu Sans" font-size="11.00">6 · Zur richtigen Zeit ausgeben</text>
+<text text-anchor="middle" x="126" y="-85.2" font-family="DejaVu Sans" font-size="11.00">Tick und Zeitfenster prüfen</text>
+</g>
+<!-- values&#45;&gt;dispatch -->
+<g id="chapter-motion_planning_basics--figure-01_planning_pipeline-edge7" class="edge">
+<title>values&#45;&gt;dispatch</title>
+<path fill="none" stroke="#526d82" d="M126,-145.84C126,-139.6 126,-132.58 126,-125.79"/>
+<polygon fill="#526d82" stroke="#526d82" points="129.5,-125.45 126,-115.45 122.5,-125.45 129.5,-125.45"/>
+</g>
+<!-- host -->
+<g id="chapter-motion_planning_basics--figure-01_planning_pipeline-node8" class="node">
+<title>host</title>
+<path fill="#f2f3f5" stroke="#919daa" d="M219,-42C219,-42 33,-42 33,-42 27,-42 21,-36 21,-30 21,-30 21,-12 21,-12 21,-6 27,0 33,0 33,0 219,0 219,0 225,0 231,-6 231,-12 231,-12 231,-30 231,-30 231,-36 225,-42 219,-42"/>
+<text text-anchor="middle" x="126" y="-24.2" font-family="DejaVu Sans" font-size="11.00">Eigene Steuerung / Antriebe</text>
+<text text-anchor="middle" x="126" y="-12.2" font-family="DejaVu Sans" font-size="11.00">Annahme, Regelung und Istwerte</text>
+</g>
+<!-- dispatch&#45;&gt;host -->
+<g id="chapter-motion_planning_basics--figure-01_planning_pipeline-edge8" class="edge">
+<title>dispatch&#45;&gt;host</title>
+<path fill="none" stroke="#526d82" d="M126,-72.84C126,-66.6 126,-59.58 126,-52.79"/>
+<polygon fill="#526d82" stroke="#526d82" points="129.5,-52.45 126,-42.45 122.5,-52.45 129.5,-52.45"/>
+</g>
+</g>
+</svg>
+<figcaption>Vom Bewegungsauftrag zur Sollwertausgabe</figcaption></figure>
+
+<p><strong>Wichtig:</strong> Beim hier betrachteten YAML-Programmimport wird zunächst das ganze
+Programm vorbereitet und geprüft. Erst danach werden feste Sollwerte ausgegeben.
+Wird beim Planen ein späterer Schritt als ungültig erkannt, verhindert das die
+Freigabe dieses neuen Gesamtprogramms. Es wird nicht erst ein halbes
+Programm gefahren und dann der Rest geplant.</p>
+<h2 id="chapter-motion_planning_basics--2-die-wichtigsten-begriffe-ohne-vorkenntnisse">2. Die wichtigsten Begriffe ohne Vorkenntnisse</h2>
+<table>
+<thead>
+<tr>
+<th>Begriff</th>
+<th>Anschauliche Bedeutung</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Gelenk / Achse</td>
+<td>Eine bewegliche Verbindung des Roboters: drehend oder verschiebend</td>
+</tr>
+<tr>
+<td>Gelenkstellung <code>q</code></td>
+<td>Die Winkel bzw. Wege aller Achsen, in einer festen Reihenfolge</td>
+</tr>
+<tr>
+<td>TCP</td>
+<td>Der gedachte Arbeitspunkt des Werkzeugs, z. B. die Greiferspitze</td>
+</tr>
+<tr>
+<td>Pose</td>
+<td>Position <strong>und</strong> Orientierung eines Körpers oder Werkzeugs</td>
+</tr>
+<tr>
+<td>Kinematik</td>
+<td>Der geometrische Zusammenhang zwischen Achsen und Werkzeugpose</td>
+</tr>
+<tr>
+<td>Bahn / Weg</td>
+<td>Wo die Bewegung entlangführt, zunächst ohne feste Dauer</td>
+</tr>
+<tr>
+<td>Trajektorie</td>
+<td>Bahn <strong>mit</strong> Zeitverlauf: Wo sind die Achsen zur Zeit t?</td>
+</tr>
+<tr>
+<td>Sollwert</td>
+<td>Der geplante Wert, den die Steuerung ausgeben soll</td>
+</tr>
+<tr>
+<td>Istwert</td>
+<td>Der tatsächlich gemessene Wert der Maschine</td>
+</tr>
+<tr>
+<td>Zyklus / Tick</td>
+<td>Ein Ausführungsschritt des vereinbarten Zeitrasters</td>
+</tr>
+</tbody>
+</table>
+<p>Intern gelten SI-Einheiten: m, rad und s. Ein Radiant entspricht ungefähr 57,3°.
+Drehachsen und Schiebeachsen können in einer Kette gemischt sein. Deshalb ist
+ein Gelenkvektor nicht automatisch eine Liste von sechs Gradwerten.</p>
+<h3 id="chapter-motion_planning_basics--wie-kommen-geometrie-und-grenzen-ins-projekt">Wie kommen Geometrie und Grenzen ins Projekt?</h3>
+<p>Die <strong>URDF</strong> beschreibt Gelenke, Achsen und geometrische Abstände. Das <strong>SI-YAML-
+Profil</strong> ergänzt die zulässigen Bewegungsgrenzen sowie Basis und Werkzeug.
+Das <strong>Anwenderprogramm</strong> beschreibt Ziele und Bewegungsbefehle.</p>
+<p>Diese drei Informationen erfüllen verschiedene Aufgaben: Ein geometrisch
+bekanntes Ziel ist noch keine zulässige Bewegung, und ein Programmstartwert
+ist noch kein bestätigter Istwert der Maschine.</p>
+<h2 id="chapter-motion_planning_basics--3-fk-und-ik-zwei-unterschiedliche-fragen-an-dieselbe-geometrie">3. FK und IK: zwei unterschiedliche Fragen an dieselbe Geometrie</h2>
+<figure><svg width="736pt" height="149pt"
+ viewBox="0.00 0.00 735.80 148.80" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="chapter-motion_planning_basics--figure-02_forward_inverse_kinematics-graph0" class="graph" transform="scale(1 1) rotate(0) translate(14.4 134.4)">
+<title>kinematics</title>
+<polygon fill="white" stroke="transparent" points="-14.4,14.4 -14.4,-134.4 721.4,-134.4 721.4,14.4 -14.4,14.4"/>
+<!-- q -->
+<g id="chapter-motion_planning_basics--figure-02_forward_inverse_kinematics-node1" class="node">
+<title>q</title>
+<path fill="#edf6fc" stroke="#739bb8" d="M200,-42C200,-42 77,-42 77,-42 71,-42 65,-36 65,-30 65,-30 65,-12 65,-12 65,-6 71,0 77,0 77,0 200,0 200,0 206,0 212,-6 212,-12 212,-12 212,-30 212,-30 212,-36 206,-42 200,-42"/>
+<text text-anchor="middle" x="138.5" y="-24.2" font-family="DejaVu Sans" font-size="11.00">Gelenkstellungen q</text>
+<text text-anchor="middle" x="138.5" y="-12.2" font-family="DejaVu Sans" font-size="11.00">z. B. sechs Achswinkel</text>
+</g>
+<!-- fk -->
+<g id="chapter-motion_planning_basics--figure-02_forward_inverse_kinematics-node2" class="node">
+<title>fk</title>
+<path fill="#ddf3eb" stroke="#739bb8" d="M487,-42C487,-42 321,-42 321,-42 315,-42 309,-36 309,-30 309,-30 309,-12 309,-12 309,-6 315,0 321,0 321,0 487,0 487,0 493,0 499,-6 499,-12 499,-12 499,-30 499,-30 499,-36 493,-42 487,-42"/>
+<text text-anchor="middle" x="404" y="-24.2" font-family="DejaVu Sans" font-size="11.00">FK · Vorwärtskinematik</text>
+<text text-anchor="middle" x="404" y="-12.2" font-family="DejaVu Sans" font-size="11.00">Robotergeometrie ausrechnen</text>
+</g>
+<!-- q&#45;&gt;fk -->
+<g id="chapter-motion_planning_basics--figure-02_forward_inverse_kinematics-edge1" class="edge">
+<title>q&#45;&gt;fk</title>
+<path fill="none" stroke="#526d82" d="M212.2,-21C238.91,-21 269.7,-21 298.64,-21"/>
+<polygon fill="#526d82" stroke="#526d82" points="298.79,-24.5 308.79,-21 298.79,-17.5 298.79,-24.5"/>
+</g>
+<!-- tcp -->
+<g id="chapter-motion_planning_basics--figure-02_forward_inverse_kinematics-node3" class="node">
+<title>tcp</title>
+<path fill="#edf6fc" stroke="#739bb8" d="M682.5,-42C682.5,-42 555.5,-42 555.5,-42 549.5,-42 543.5,-36 543.5,-30 543.5,-30 543.5,-12 543.5,-12 543.5,-6 549.5,0 555.5,0 555.5,0 682.5,0 682.5,0 688.5,0 694.5,-6 694.5,-12 694.5,-12 694.5,-30 694.5,-30 694.5,-36 688.5,-42 682.5,-42"/>
+<text text-anchor="middle" x="619" y="-24.2" font-family="DejaVu Sans" font-size="11.00">Werkzeugpose</text>
+<text text-anchor="middle" x="619" y="-12.2" font-family="DejaVu Sans" font-size="11.00">Position + Orientierung</text>
+</g>
+<!-- fk&#45;&gt;tcp -->
+<g id="chapter-motion_planning_basics--figure-02_forward_inverse_kinematics-edge2" class="edge">
+<title>fk&#45;&gt;tcp</title>
+<path fill="none" stroke="#526d82" d="M499.04,-21C510.39,-21 521.93,-21 533.14,-21"/>
+<polygon fill="#526d82" stroke="#526d82" points="533.32,-24.5 543.32,-21 533.32,-17.5 533.32,-24.5"/>
+</g>
+<!-- target -->
+<g id="chapter-motion_planning_basics--figure-02_forward_inverse_kinematics-node4" class="node">
+<title>target</title>
+<path fill="#edf6fc" stroke="#739bb8" d="M265,-120C265,-120 12,-120 12,-120 6,-120 0,-114 0,-108 0,-108 0,-90 0,-90 0,-84 6,-78 12,-78 12,-78 265,-78 265,-78 271,-78 277,-84 277,-90 277,-90 277,-108 277,-108 277,-114 271,-120 265,-120"/>
+<text text-anchor="middle" x="138.5" y="-102.2" font-family="DejaVu Sans" font-size="11.00">Gewünschte Werkzeugpose</text>
+<text text-anchor="middle" x="138.5" y="-90.2" font-family="DejaVu Sans" font-size="11.00">+ bisherige Gelenkstellung als Startschätzung</text>
+</g>
+<!-- ik -->
+<g id="chapter-motion_planning_basics--figure-02_forward_inverse_kinematics-node5" class="node">
+<title>ik</title>
+<path fill="#fff6df" stroke="#739bb8" d="M471.5,-120C471.5,-120 336.5,-120 336.5,-120 330.5,-120 324.5,-114 324.5,-108 324.5,-108 324.5,-90 324.5,-90 324.5,-84 330.5,-78 336.5,-78 336.5,-78 471.5,-78 471.5,-78 477.5,-78 483.5,-84 483.5,-90 483.5,-90 483.5,-108 483.5,-108 483.5,-114 477.5,-120 471.5,-120"/>
+<text text-anchor="middle" x="404" y="-102.2" font-family="DejaVu Sans" font-size="11.00">IK · Inverse Kinematik</text>
+<text text-anchor="middle" x="404" y="-90.2" font-family="DejaVu Sans" font-size="11.00">lokale numerische Suche</text>
+</g>
+<!-- target&#45;&gt;ik -->
+<g id="chapter-motion_planning_basics--figure-02_forward_inverse_kinematics-edge3" class="edge">
+<title>target&#45;&gt;ik</title>
+<path fill="none" stroke="#526d82" d="M277.04,-99C289.58,-99 302.06,-99 314.01,-99"/>
+<polygon fill="#526d82" stroke="#526d82" points="314.37,-102.5 324.37,-99 314.37,-95.5 314.37,-102.5"/>
+</g>
+<!-- result -->
+<g id="chapter-motion_planning_basics--figure-02_forward_inverse_kinematics-node6" class="node">
+<title>result</title>
+<path fill="#edf6fc" stroke="#739bb8" d="M695,-120C695,-120 543,-120 543,-120 537,-120 531,-114 531,-108 531,-108 531,-90 531,-90 531,-84 537,-78 543,-78 543,-78 695,-78 695,-78 701,-78 707,-84 707,-90 707,-90 707,-108 707,-108 707,-114 701,-120 695,-120"/>
+<text text-anchor="middle" x="619" y="-102.2" font-family="DejaVu Sans" font-size="11.00">Passende Gelenkstellungen</text>
+<text text-anchor="middle" x="619" y="-90.2" font-family="DejaVu Sans" font-size="11.00">oder begründete Ablehnung</text>
+</g>
+<!-- ik&#45;&gt;result -->
+<g id="chapter-motion_planning_basics--figure-02_forward_inverse_kinematics-edge4" class="edge">
+<title>ik&#45;&gt;result</title>
+<path fill="none" stroke="#526d82" d="M483.71,-99C495.65,-99 508.1,-99 520.38,-99"/>
+<polygon fill="#526d82" stroke="#526d82" points="520.65,-102.5 530.65,-99 520.65,-95.5 520.65,-102.5"/>
+</g>
+</g>
+</svg>
+<figcaption>Vorwärts- und inverse Kinematik</figcaption></figure>
+
+<p><strong>Vorwärtskinematik, kurz FK:</strong> „Wenn alle Achsen so stehen, wo ist dann der TCP?“
+Die Software setzt die geometrischen Transformationen entlang der Kette zusammen.
+Das braucht sie beispielsweise, um die TCP-Bahn einer PTP-Bewegung zu berechnen.</p>
+<p><strong>Inverse Kinematik, kurz IK:</strong> „Welche Achsstellungen bringen den TCP zu dieser
+Pose?“ Dazu können mehrere Lösungen existieren, etwa unterschiedliche
+Ellbogenstellungen. Unsere serielle IK sucht lokal von einer vorgegebenen
+Startschätzung aus. Sie findet eine passende Lösung oder liefert eine Ablehnung.
+Eine abgelehnte lokale Suche beweist nicht, dass überhaupt keine Lösung existiert.</p>
+<p>Bei einer <strong>Singularität</strong> verliert die Kinematik in bestimmten Richtungen
+Bewegungsmöglichkeiten: Für eine kleine gewünschte TCP-Änderung können sehr
+große Achsänderungen nötig werden. Deshalb prüft die Software auch die
+Kondition der Lösung. Einfach länger fahren behebt nicht jede solche Situation.</p>
+<h2 id="chapter-motion_planning_basics--4-ptp-lin-und-circ-geben-unterschiedliche-dinge-vor">4. PTP, LIN und CIRC geben unterschiedliche Dinge vor</h2>
+<table>
+<thead>
+<tr>
+<th>Befehl</th>
+<th>Was der Auftrag vorgibt</th>
+<th>Was du am Roboter erwarten kannst</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>PTP</strong></td>
+<td>Ziel-Gelenkstellung oder Zielpose</td>
+<td>Die Achsen fahren einen glatten Gelenkverlauf. Die TCP-Bahn darf gekrümmt sein.</td>
+</tr>
+<tr>
+<td><strong>LIN</strong></td>
+<td>Zielpose und eine TCP-Gerade ab der aktuellen Pose</td>
+<td>Die Kinematik wird entlang der Geraden gelöst; die Achsen müssen dazu nicht linear laufen.</td>
+</tr>
+<tr>
+<td><strong>CIRC</strong></td>
+<td>Kreismittelpunkt bzw. Versatz, Normale und Drehwinkel</td>
+<td>Der TCP folgt einem Kreisbogen; auch vollständige Kreise sind möglich.</td>
+</tr>
+<tr>
+<td><strong>WAIT</strong></td>
+<td>Eine Wartezeit</td>
+<td>Der Sollzustand bleibt im Stillstand. Es wird keine neue IK-Bahn benötigt.</td>
+</tr>
+</tbody>
+</table>
+<p>Ein gemeinsames Ziel bedeutet also <strong>nicht dieselbe Bewegung</strong>. PTP ist passend,
+wenn vor allem das Erreichen der Zielkonfiguration zählt. LIN ist passend, wenn
+der Werkzeugweg gerade sein soll, beispielsweise beim geraden Einführen.</p>
+<figure><svg width="489pt" height="467pt"
+ viewBox="0.00 0.00 488.80 466.80" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="chapter-motion_planning_basics--figure-03_motion_type_branches-graph0" class="graph" transform="scale(1 1) rotate(0) translate(14.4 452.4)">
+<title>motion</title>
+<polygon fill="white" stroke="transparent" points="-14.4,14.4 -14.4,-452.4 474.4,-452.4 474.4,14.4 -14.4,14.4"/>
+<g id="chapter-motion_planning_basics--figure-03_motion_type_branches-clust1" class="cluster">
+<title>cluster_ptp</title>
+<polygon fill="white" stroke="#8cb5dd" points="8,-136 8,-368 208,-368 208,-136 8,-136"/>
+<text text-anchor="middle" x="108" y="-352.8" font-family="DejaVu Sans" font-size="14.00">PTP · Ziel erreichen</text>
+</g>
+<g id="chapter-motion_planning_basics--figure-03_motion_type_branches-clust2" class="cluster">
+<title>cluster_cart</title>
+<polygon fill="white" stroke="#74b79b" points="216,-64 216,-368 452,-368 452,-64 216,-64"/>
+<text text-anchor="middle" x="334" y="-352.8" font-family="DejaVu Sans" font-size="14.00">LIN / CIRC · TCP&#45;Weg vorgeben</text>
+</g>
+<!-- command -->
+<g id="chapter-motion_planning_basics--figure-03_motion_type_branches-node1" class="node">
+<title>command</title>
+<path fill="#edf6fc" stroke="#739bb8" d="M282,-438C282,-438 152,-438 152,-438 146,-438 140,-432 140,-426 140,-426 140,-414 140,-414 140,-408 146,-402 152,-402 152,-402 282,-402 282,-402 288,-402 294,-408 294,-414 294,-414 294,-426 294,-426 294,-432 288,-438 282,-438"/>
+<text text-anchor="middle" x="217" y="-417.5" font-family="DejaVu Sans" font-size="10.00">Nächster Bewegungsbefehl</text>
+</g>
+<!-- ptp_goal -->
+<g id="chapter-motion_planning_basics--figure-03_motion_type_branches-node2" class="node">
+<title>ptp_goal</title>
+<path fill="#edf6fc" stroke="#739bb8" d="M188.5,-337C188.5,-337 27.5,-337 27.5,-337 21.5,-337 15.5,-331 15.5,-325 15.5,-325 15.5,-309 15.5,-309 15.5,-303 21.5,-297 27.5,-297 27.5,-297 188.5,-297 188.5,-297 194.5,-297 200.5,-303 200.5,-309 200.5,-309 200.5,-325 200.5,-325 200.5,-331 194.5,-337 188.5,-337"/>
+<text text-anchor="middle" x="108" y="-320" font-family="DejaVu Sans" font-size="10.00">Ziel&#45;Gelenkwerte übernehmen</text>
+<text text-anchor="middle" x="108" y="-309" font-family="DejaVu Sans" font-size="10.00">oder Zielpose einmal per IK lösen</text>
+</g>
+<!-- command&#45;&gt;ptp_goal -->
+<g id="chapter-motion_planning_basics--figure-03_motion_type_branches-edge6" class="edge">
+<title>command&#45;&gt;ptp_goal</title>
+<path fill="none" stroke="#526d82" d="M198.51,-401.87C181.46,-386.07 155.89,-362.38 136.28,-344.2"/>
+<polygon fill="#526d82" stroke="#526d82" points="138.53,-341.52 128.82,-337.29 133.77,-346.65 138.53,-341.52"/>
+<text text-anchor="middle" x="190.5" y="-379" font-family="DejaVu Sans" font-size="10.00">PTP</text>
+</g>
+<!-- cart_path -->
+<g id="chapter-motion_planning_basics--figure-03_motion_type_branches-node5" class="node">
+<title>cart_path</title>
+<path fill="#e8f5ef" stroke="#739bb8" d="M410.5,-337C410.5,-337 243.5,-337 243.5,-337 237.5,-337 231.5,-331 231.5,-325 231.5,-325 231.5,-309 231.5,-309 231.5,-303 237.5,-297 243.5,-297 243.5,-297 410.5,-297 410.5,-297 416.5,-297 422.5,-303 422.5,-309 422.5,-309 422.5,-325 422.5,-325 422.5,-331 416.5,-337 410.5,-337"/>
+<text text-anchor="middle" x="327" y="-320" font-family="DejaVu Sans" font-size="10.00">Gerade / Kreisbogen</text>
+<text text-anchor="middle" x="327" y="-309" font-family="DejaVu Sans" font-size="10.00">+ Orientierungsverlauf bestimmen</text>
+</g>
+<!-- command&#45;&gt;cart_path -->
+<g id="chapter-motion_planning_basics--figure-03_motion_type_branches-edge7" class="edge">
+<title>command&#45;&gt;cart_path</title>
+<path fill="none" stroke="#526d82" d="M235.66,-401.87C252.87,-386.07 278.67,-362.38 298.46,-344.2"/>
+<polygon fill="#526d82" stroke="#526d82" points="300.99,-346.63 305.99,-337.29 296.26,-341.47 300.99,-346.63"/>
+<text text-anchor="middle" x="286.5" y="-379" font-family="DejaVu Sans" font-size="10.00">LIN / CIRC</text>
+</g>
+<!-- ptp_path -->
+<g id="chapter-motion_planning_basics--figure-03_motion_type_branches-node3" class="node">
+<title>ptp_path</title>
+<path fill="#edf6fc" stroke="#739bb8" d="M165,-266C165,-266 57,-266 57,-266 51,-266 45,-260 45,-254 45,-254 45,-238 45,-238 45,-232 51,-226 57,-226 57,-226 165,-226 165,-226 171,-226 177,-232 177,-238 177,-238 177,-254 177,-254 177,-260 171,-266 165,-266"/>
+<text text-anchor="middle" x="111" y="-249" font-family="DejaVu Sans" font-size="10.00">Glatter Gelenkverlauf</text>
+<text text-anchor="middle" x="111" y="-238" font-family="DejaVu Sans" font-size="10.00">von Start&#45;q nach Ziel&#45;q</text>
+</g>
+<!-- ptp_goal&#45;&gt;ptp_path -->
+<g id="chapter-motion_planning_basics--figure-03_motion_type_branches-edge1" class="edge">
+<title>ptp_goal&#45;&gt;ptp_path</title>
+<path fill="none" stroke="#526d82" d="M108.84,-296.78C109.11,-290.5 109.42,-283.37 109.72,-276.51"/>
+<polygon fill="#526d82" stroke="#526d82" points="113.23,-276.26 110.17,-266.12 106.24,-275.96 113.23,-276.26"/>
+</g>
+<!-- ptp_caps -->
+<g id="chapter-motion_planning_basics--figure-03_motion_type_branches-node4" class="node">
+<title>ptp_caps</title>
+<path fill="#edf6fc" stroke="#739bb8" d="M186,-195C186,-195 38,-195 38,-195 32,-195 26,-189 26,-183 26,-183 26,-156 26,-156 26,-150 32,-144 38,-144 38,-144 186,-144 186,-144 192,-144 198,-150 198,-156 198,-156 198,-183 198,-183 198,-189 192,-195 186,-195"/>
+<text text-anchor="middle" x="112" y="-178" font-family="DejaVu Sans" font-size="10.00">Gelenk&#45; UND TCP&#45;Grenzen</text>
+<text text-anchor="middle" x="112" y="-167" font-family="DejaVu Sans" font-size="10.00">über die Bewegung prüfen</text>
+<text text-anchor="middle" x="112" y="-156" font-family="DejaVu Sans" font-size="10.00">Dauer ggf. begrenzt verlängern</text>
+</g>
+<!-- ptp_path&#45;&gt;ptp_caps -->
+<g id="chapter-motion_planning_basics--figure-03_motion_type_branches-edge2" class="edge">
+<title>ptp_path&#45;&gt;ptp_caps</title>
+<path fill="none" stroke="#526d82" d="M111.26,-225.81C111.34,-219.56 111.44,-212.4 111.53,-205.36"/>
+<polygon fill="#526d82" stroke="#526d82" points="115.03,-205.3 111.67,-195.25 108.03,-205.2 115.03,-205.3"/>
+</g>
+<!-- admit -->
+<g id="chapter-motion_planning_basics--figure-03_motion_type_branches-node9" class="node">
+<title>admit</title>
+<path fill="#fff6df" stroke="#739bb8" d="M274.5,-40C274.5,-40 63.5,-40 63.5,-40 57.5,-40 51.5,-34 51.5,-28 51.5,-28 51.5,-12 51.5,-12 51.5,-6 57.5,0 63.5,0 63.5,0 274.5,0 274.5,0 280.5,0 286.5,-6 286.5,-12 286.5,-12 286.5,-28 286.5,-28 286.5,-34 280.5,-40 274.5,-40"/>
+<text text-anchor="middle" x="169" y="-23" font-family="DejaVu Sans" font-size="10.00">Nur bei erfolgreicher Gesamtprüfung:</text>
+<text text-anchor="middle" x="169" y="-12" font-family="DejaVu Sans" font-size="10.00">Programm auf ganzzahlige Takte ausrichten</text>
+</g>
+<!-- ptp_caps&#45;&gt;admit -->
+<g id="chapter-motion_planning_basics--figure-03_motion_type_branches-edge8" class="edge">
+<title>ptp_caps&#45;&gt;admit</title>
+<path fill="none" stroke="#526d82" d="M121.54,-143.81C131.59,-117.81 147.39,-76.91 157.97,-49.54"/>
+<polygon fill="#526d82" stroke="#526d82" points="161.27,-50.71 161.61,-40.12 154.74,-48.19 161.27,-50.71"/>
+</g>
+<!-- cart_ik -->
+<g id="chapter-motion_planning_basics--figure-03_motion_type_branches-node6" class="node">
+<title>cart_ik</title>
+<path fill="#e8f5ef" stroke="#739bb8" d="M410.5,-266C410.5,-266 251.5,-266 251.5,-266 245.5,-266 239.5,-260 239.5,-254 239.5,-254 239.5,-238 239.5,-238 239.5,-232 245.5,-226 251.5,-226 251.5,-226 410.5,-226 410.5,-226 416.5,-226 422.5,-232 422.5,-238 422.5,-238 422.5,-254 422.5,-254 422.5,-260 416.5,-266 410.5,-266"/>
+<text text-anchor="middle" x="331" y="-249" font-family="DejaVu Sans" font-size="10.00">Entlang des Weges IK lösen</text>
+<text text-anchor="middle" x="331" y="-238" font-family="DejaVu Sans" font-size="10.00">jeweils vom vorigen Zustand aus</text>
+</g>
+<!-- cart_path&#45;&gt;cart_ik -->
+<g id="chapter-motion_planning_basics--figure-03_motion_type_branches-edge3" class="edge">
+<title>cart_path&#45;&gt;cart_ik</title>
+<path fill="none" stroke="#526d82" d="M328.11,-296.78C328.48,-290.5 328.89,-283.37 329.29,-276.51"/>
+<polygon fill="#526d82" stroke="#526d82" points="332.81,-276.3 329.89,-266.12 325.82,-275.9 332.81,-276.3"/>
+</g>
+<!-- spline -->
+<g id="chapter-motion_planning_basics--figure-03_motion_type_branches-node7" class="node">
+<title>spline</title>
+<path fill="#e8f5ef" stroke="#739bb8" d="M431.5,-189.5C431.5,-189.5 236.5,-189.5 236.5,-189.5 230.5,-189.5 224.5,-183.5 224.5,-177.5 224.5,-177.5 224.5,-161.5 224.5,-161.5 224.5,-155.5 230.5,-149.5 236.5,-149.5 236.5,-149.5 431.5,-149.5 431.5,-149.5 437.5,-149.5 443.5,-155.5 443.5,-161.5 443.5,-161.5 443.5,-177.5 443.5,-177.5 443.5,-183.5 437.5,-189.5 431.5,-189.5"/>
+<text text-anchor="middle" x="334" y="-172.5" font-family="DejaVu Sans" font-size="10.00">Glatte Gelenksplines aufbauen</text>
+<text text-anchor="middle" x="334" y="-161.5" font-family="DejaVu Sans" font-size="10.00">Gelenkgrenzen und Pose&#45;Toleranz prüfen</text>
+</g>
+<!-- cart_ik&#45;&gt;spline -->
+<g id="chapter-motion_planning_basics--figure-03_motion_type_branches-edge4" class="edge">
+<title>cart_ik&#45;&gt;spline</title>
+<path fill="none" stroke="#526d82" d="M331.77,-225.81C332.09,-217.91 332.47,-208.57 332.82,-199.83"/>
+<polygon fill="#526d82" stroke="#526d82" points="336.32,-199.75 333.23,-189.62 329.33,-199.47 336.32,-199.75"/>
+</g>
+<!-- cart_time -->
+<g id="chapter-motion_planning_basics--figure-03_motion_type_branches-node8" class="node">
+<title>cart_time</title>
+<path fill="#e8f5ef" stroke="#739bb8" d="M404.5,-112C404.5,-112 245.5,-112 245.5,-112 239.5,-112 233.5,-106 233.5,-100 233.5,-100 233.5,-84 233.5,-84 233.5,-78 239.5,-72 245.5,-72 245.5,-72 404.5,-72 404.5,-72 410.5,-72 416.5,-78 416.5,-84 416.5,-84 416.5,-100 416.5,-100 416.5,-106 410.5,-112 404.5,-112"/>
+<text text-anchor="middle" x="325" y="-95" font-family="DejaVu Sans" font-size="10.00">Zeitverlauf aus Gelenk&#45; und</text>
+<text text-anchor="middle" x="325" y="-84" font-family="DejaVu Sans" font-size="10.00">TCP&#45;Ableitungshüllen bestimmen</text>
+</g>
+<!-- spline&#45;&gt;cart_time -->
+<g id="chapter-motion_planning_basics--figure-03_motion_type_branches-edge5" class="edge">
+<title>spline&#45;&gt;cart_time</title>
+<path fill="none" stroke="#526d82" d="M331.73,-149.45C330.74,-141.13 329.55,-131.2 328.46,-122"/>
+<polygon fill="#526d82" stroke="#526d82" points="331.93,-121.56 327.27,-112.05 324.98,-122.39 331.93,-121.56"/>
+</g>
+<!-- cart_time&#45;&gt;admit -->
+<g id="chapter-motion_planning_basics--figure-03_motion_type_branches-edge9" class="edge">
+<title>cart_time&#45;&gt;admit</title>
+<path fill="none" stroke="#526d82" d="M282.37,-71.87C263.37,-63.35 240.81,-53.22 220.84,-44.26"/>
+<polygon fill="#526d82" stroke="#526d82" points="222.13,-41.01 211.58,-40.1 219.27,-47.39 222.13,-41.01"/>
+</g>
+</g>
+</svg>
+<figcaption>Unterschiedliche Planungszweige für PTP und LIN/CIRC</figcaption></figure>
+
+<h3 id="chapter-motion_planning_basics--was-macht-unsere-implementierung-dabei">Was macht unsere Implementierung dabei?</h3>
+<p><strong>PTP:</strong> Ist das Ziel schon als Gelenkvektor angegeben, wird es direkt verwendet.
+Bei einer Zielpose wird zunächst IK gelöst. Danach entsteht eine Gelenkquintik,
+also ein glattes Polynom fünften Grades. Zusätzlich zu den Gelenkgrenzen werden
+die daraus entstehenden TCP-Grenzen geprüft. Falls nötig, wird die Dauer innerhalb
+begrenzter Versuche verlängert; ohne erfolgreichen Nachweis wird abgelehnt.</p>
+<p><strong>LIN/CIRC:</strong> Zunächst wird der gewünschte TCP-Weg mit seinem Orientierungsverlauf
+festgelegt. Entlang dieses Wegs löst die Software wiederholt IK, jeweils mit der
+vorigen Gelenkstellung als Startschätzung. Aus den Lösungen entstehen glatte
+Gelenksplines. Diese müssen in einem vorgegebenen <strong>Pose-Toleranzschlauch</strong> bleiben.
+Danach bestimmt die Zeitplanung eine Dauer aus den Gelenk- und TCP-Hüllen.</p>
+<p>Die Abbildung ist numerisch: Eine LIN-Bahn wird innerhalb der zugelassenen
+Toleranz an die ideale Gerade angenähert, nicht als fehlerfreie reale Gerade
+behauptet. Die Orientierung gehört zur Pose und wird ebenfalls berücksichtigt.
+Eine Grenze oder ein begrenztes Rechenbudget kann zur begründeten Ablehnung führen.</p>
+<h2 id="chapter-motion_planning_basics--5-weg-und-zeit-getrennt-denken">5. Weg und Zeit getrennt denken</h2>
+<p>Nehmen wir an, der gewünschte Weg ist schon bekannt. Dann bleibt die Frage:
+Wie schnell soll der Roboter an welcher Stelle sein?</p>
+<figure><svg width="564pt" height="225pt"
+ viewBox="0.00 0.00 563.80 224.80" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="chapter-motion_planning_basics--figure-04_path_and_time-graph0" class="graph" transform="scale(1 1) rotate(0) translate(14.4 210.4)">
+<title>path_time</title>
+<polygon fill="white" stroke="transparent" points="-14.4,14.4 -14.4,-210.4 549.4,-210.4 549.4,14.4 -14.4,14.4"/>
+<!-- path -->
+<g id="chapter-motion_planning_basics--figure-04_path_and_time-node1" class="node">
+<title>path</title>
+<path fill="#edf6fc" stroke="#739bb8" d="M225,-183C225,-183 12,-183 12,-183 6,-183 0,-177 0,-171 0,-171 0,-141 0,-141 0,-135 6,-129 12,-129 12,-129 225,-129 225,-129 231,-129 237,-135 237,-141 237,-141 237,-171 237,-171 237,-177 231,-183 225,-183"/>
+<text text-anchor="middle" x="118.5" y="-165.2" font-family="DejaVu Sans" font-size="11.00">Weg q(s)</text>
+<text text-anchor="middle" x="118.5" y="-153.2" font-family="DejaVu Sans" font-size="11.00">Wo liegen die Achsen</text>
+<text text-anchor="middle" x="118.5" y="-141.2" font-family="DejaVu Sans" font-size="11.00">bei einem bestimmten Wegfortschritt?</text>
+</g>
+<!-- motion -->
+<g id="chapter-motion_planning_basics--figure-04_path_and_time-node3" class="node">
+<title>motion</title>
+<path fill="#ddf3eb" stroke="#739bb8" d="M501,-125C501,-125 325,-125 325,-125 319,-125 313,-119 313,-113 313,-113 313,-95 313,-95 313,-89 319,-83 325,-83 325,-83 501,-83 501,-83 507,-83 513,-89 513,-95 513,-95 513,-113 513,-113 513,-119 507,-125 501,-125"/>
+<text text-anchor="middle" x="413" y="-107.2" font-family="DejaVu Sans" font-size="11.00">Trajektorie q(t)</text>
+<text text-anchor="middle" x="413" y="-95.2" font-family="DejaVu Sans" font-size="11.00">Weg mit passender Zeitplanung</text>
+</g>
+<!-- path&#45;&gt;motion -->
+<g id="chapter-motion_planning_basics--figure-04_path_and_time-edge1" class="edge">
+<title>path&#45;&gt;motion</title>
+<path fill="none" stroke="#526d82" d="M237.21,-135.07C258.86,-131.23 281.38,-127.22 302.77,-123.42"/>
+<polygon fill="#526d82" stroke="#526d82" points="303.61,-126.82 312.84,-121.63 302.38,-119.93 303.61,-126.82"/>
+<text text-anchor="middle" x="264" y="-134" font-family="DejaVu Sans" font-size="10.00">Weg</text>
+</g>
+<!-- posfail -->
+<g id="chapter-motion_planning_basics--figure-04_path_and_time-node4" class="node">
+<title>posfail</title>
+<path fill="#fce8e8" stroke="#b96c6c" d="M514.5,-196C514.5,-196 311.5,-196 311.5,-196 305.5,-196 299.5,-190 299.5,-184 299.5,-184 299.5,-166 299.5,-166 299.5,-160 305.5,-154 311.5,-154 311.5,-154 514.5,-154 514.5,-154 520.5,-154 526.5,-160 526.5,-166 526.5,-166 526.5,-184 526.5,-184 526.5,-190 520.5,-196 514.5,-196"/>
+<text text-anchor="middle" x="413" y="-178.2" font-family="DejaVu Sans" font-size="11.00">Geometrie unzulässig?</text>
+<text text-anchor="middle" x="413" y="-166.2" font-family="DejaVu Sans" font-size="11.00">Ziel, Weg oder Lösungszweig ändern</text>
+</g>
+<!-- path&#45;&gt;posfail -->
+<g id="chapter-motion_planning_basics--figure-04_path_and_time-edge3" class="edge">
+<title>path&#45;&gt;posfail</title>
+<path fill="none" stroke="#526d82" stroke-dasharray="5,2" d="M237.21,-163.65C254.33,-164.76 271.99,-165.91 289.2,-167.02"/>
+<polygon fill="#526d82" stroke="#526d82" points="289.07,-170.52 299.28,-167.68 289.53,-163.54 289.07,-170.52"/>
+</g>
+<!-- time -->
+<g id="chapter-motion_planning_basics--figure-04_path_and_time-node2" class="node">
+<title>time</title>
+<path fill="#fff6df" stroke="#739bb8" d="M178,-86C178,-86 59,-86 59,-86 53,-86 47,-80 47,-74 47,-74 47,-44 47,-44 47,-38 53,-32 59,-32 59,-32 178,-32 178,-32 184,-32 190,-38 190,-44 190,-44 190,-74 190,-74 190,-80 184,-86 178,-86"/>
+<text text-anchor="middle" x="118.5" y="-68.2" font-family="DejaVu Sans" font-size="11.00">Zeitgesetz s(t)</text>
+<text text-anchor="middle" x="118.5" y="-56.2" font-family="DejaVu Sans" font-size="11.00">Wie schnell schreitet</text>
+<text text-anchor="middle" x="118.5" y="-44.2" font-family="DejaVu Sans" font-size="11.00">die Bewegung voran?</text>
+</g>
+<!-- time&#45;&gt;motion -->
+<g id="chapter-motion_planning_basics--figure-04_path_and_time-edge2" class="edge">
+<title>time&#45;&gt;motion</title>
+<path fill="none" stroke="#526d82" d="M190.31,-69.89C224.06,-75.09 265.2,-81.42 302.84,-87.21"/>
+<polygon fill="#526d82" stroke="#526d82" points="302.42,-90.68 312.84,-88.74 303.48,-83.76 302.42,-90.68"/>
+<text text-anchor="middle" x="264" y="-85" font-family="DejaVu Sans" font-size="10.00">Zeit</text>
+</g>
+<!-- speedfail -->
+<g id="chapter-motion_planning_basics--figure-04_path_and_time-node5" class="node">
+<title>speedfail</title>
+<path fill="#edf6fc" stroke="#739bb8" d="M523,-54C523,-54 303,-54 303,-54 297,-54 291,-48 291,-42 291,-42 291,-12 291,-12 291,-6 297,0 303,0 303,0 523,0 523,0 529,0 535,-6 535,-12 535,-12 535,-42 535,-42 535,-48 529,-54 523,-54"/>
+<text text-anchor="middle" x="413" y="-36.2" font-family="DejaVu Sans" font-size="11.00">Nur v/a/Ruck zu hoch?</text>
+<text text-anchor="middle" x="413" y="-24.2" font-family="DejaVu Sans" font-size="11.00">Mehr Zeit kann helfen</text>
+<text text-anchor="middle" x="413" y="-12.2" font-family="DejaVu Sans" font-size="11.00">innerhalb des vorgesehenen Verfahrens</text>
+</g>
+<!-- time&#45;&gt;speedfail -->
+<g id="chapter-motion_planning_basics--figure-04_path_and_time-edge4" class="edge">
+<title>time&#45;&gt;speedfail</title>
+<path fill="none" stroke="#526d82" stroke-dasharray="5,2" d="M190.31,-51.25C217.54,-48.27 249.58,-44.77 280.7,-41.36"/>
+<polygon fill="#526d82" stroke="#526d82" points="281.21,-44.83 290.77,-40.26 280.45,-37.87 281.21,-44.83"/>
+</g>
+</g>
+</svg>
+<figcaption>Weg und Zeitgesetz werden zur Trajektorie</figcaption></figure>
+
+<p>Der Buchstabe <strong>s</strong> bezeichnet den Wegfortschritt: 0 am Anfang, 1 am Ende.
+<code>q(s)</code> sagt, welche Achsstellungen zu diesem Fortschritt gehören. <code>s(t)</code> sagt,
+wie sich der Fortschritt über der Zeit entwickelt. Zusammen ergibt das <code>q(t)</code>.</p>
+<p>Diese Trennung hilft bei Grenzprüfungen:</p>
+<ul>
+<li><strong>Ein zu schneller Verlauf</strong> kann häufig durch mehr Zeit zulässig werden.</li>
+<li><strong>Eine unzulässige Gelenkstellung</strong> bleibt auch bei langsamer Fahrt unzulässig.</li>
+<li><strong>Eine nicht gelöste IK oder ein unpassender Weg</strong> braucht eine andere zulässige
+  Lösung bzw. eine erfolgreiche Abbildung; bloßes Verlangsamen genügt nicht.</li>
+</ul>
+<p>Die Zeitplanung ist im aktuellen Stand konservativ. Eine zugelassene Bewegung
+ist deshalb nicht automatisch die weltweit schnellstmögliche Bewegung.</p>
+<h2 id="chapter-motion_planning_basics--6-warum-geschwindigkeit-allein-nicht-ausreicht">6. Warum Geschwindigkeit allein nicht ausreicht</h2>
+<p>Die Bibliothek prüft mehrere Größen gleichzeitig, für die Gelenke und den TCP:</p>
+<table>
+<thead>
+<tr>
+<th>Größe</th>
+<th>Frage</th>
+<th>Wie heißt sie in den Gelenkdaten?</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Position</td>
+<td>Bleiben die Achsen in ihrem erlaubten Bereich?</td>
+<td><code>q</code></td>
+</tr>
+<tr>
+<td>Geschwindigkeit</td>
+<td>Wie schnell ändert sich die Position?</td>
+<td><code>dq</code></td>
+</tr>
+<tr>
+<td>Beschleunigung</td>
+<td>Wie schnell ändert sich die Geschwindigkeit?</td>
+<td><code>ddq</code></td>
+</tr>
+<tr>
+<td>Ruck</td>
+<td>Wie schnell ändert sich die Beschleunigung?</td>
+<td>Separater Ruckvektor / <code>jerk</code> im Export</td>
+</tr>
+</tbody>
+</table>
+<p>Ein plötzlicher Sprung der Geschwindigkeit würde eine sehr große Beschleunigung
+verlangen. Sehr abrupte Änderungen der Beschleunigung führen zu hohem Ruck.
+Die glatte Zeitplanung begrenzt diese Größen; die konkreten Grenzen kommen aus
+dem Modellprofil und dem Geschwindigkeitsfaktor des Programms.</p>
+<p>Nicht nur ein paar sichtbare Punkte werden geprüft. Der Planer benutzt auch
+<strong>numerische Hüllen</strong>, also obere/untere Abschätzungen über ganze Abschnitte.
+Denn zwischen zwei unauffälligen Punkten kann trotzdem ein Grenzmaximum liegen.
+Diese Engineering-Prüfungen sind keine formal zertifizierte Intervallarithmetik.
+Die Kurven im Viewer sind zusätzliche anschauliche Samples.</p>
+<h2 id="chapter-motion_planning_basics--7-ein-kleines-zahlenbeispiel">7. Ein kleines Zahlenbeispiel</h2>
+<p>Wir wählen <strong>für dieses Lehrbeispiel</strong> eine Drehachse:</p>
+<ul>
+<li>Start 0 rad, Ziel 1 rad, erlaubter Positionsbereich −2 bis +2 rad.</li>
+<li>Geschwindigkeit höchstens 0,5 rad/s, Beschleunigung höchstens 1 rad/s²,
+  Ruck höchstens 5 rad/s³.</li>
+<li>Start und Ziel im Stillstand. Zur Veranschaulichung setzen wir die Dauer auf <strong>4 s</strong>.</li>
+</ul>
+<p>Die Tabellenwerte wurden gegen <code>plan_boundary_quintic()</code> abgeglichen.
+Das ist ein gewähltes Einachsbeispiel, keine Messung und nicht die Behauptung,
+dass der automatische Sechsachsplaner genau diese Dauer auswählt. Die verwendete
+ruhende Quintik ergibt gerundet:</p>
+<table>
+<thead>
+<tr>
+<th>Zeit</th>
+<th>Position q</th>
+<th>Geschwindigkeit dq</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0 s</td>
+<td>0,0000 rad</td>
+<td>0,0000 rad/s</td>
+</tr>
+<tr>
+<td>1 s</td>
+<td>0,1035 rad</td>
+<td>0,2637 rad/s</td>
+</tr>
+<tr>
+<td>2 s</td>
+<td>0,5000 rad</td>
+<td>0,4688 rad/s</td>
+</tr>
+<tr>
+<td>3 s</td>
+<td>0,8965 rad</td>
+<td>0,2637 rad/s</td>
+</tr>
+<tr>
+<td>4 s</td>
+<td>1,0000 rad</td>
+<td>0,0000 rad/s</td>
+</tr>
+</tbody>
+</table>
+<figure><svg xmlns:xlink="http://www.w3.org/1999/xlink" width="590.4pt" height="345.6pt" viewBox="0 0 590.4 345.6" xmlns="http://www.w3.org/2000/svg" version="1.1">
+ <metadata>
+  <rdf:RDF xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+   <cc:Work>
+    <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+    <dc:format>image/svg+xml</dc:format>
+    <dc:creator>
+     <cc:Agent>
+      <dc:title>Robot Motion tutorial</dc:title>
+     </cc:Agent>
+    </dc:creator>
+   </cc:Work>
+  </rdf:RDF>
+ </metadata>
+ <defs>
+  <style type="text/css">*{stroke-linejoin: round; stroke-linecap: butt}</style>
+ </defs>
+ <g id="chapter-motion_planning_basics--figure-06_quintic_timing-figure_1">
+  <g id="chapter-motion_planning_basics--figure-06_quintic_timing-patch_1">
+   <path d="M 0 345.6
+L 590.4 345.6
+L 590.4 0
+L 0 0
+z
+" style="fill: #ffffff"/>
+  </g>
+  <g id="chapter-motion_planning_basics--figure-06_quintic_timing-axes_1">
+   <g id="chapter-motion_planning_basics--figure-06_quintic_timing-patch_2">
+    <path d="M 39.904146 161.550078
+L 584.21851 161.550078
+L 584.21851 21.001658
+L 39.904146 21.001658
+z
+" style="fill: #ffffff"/>
+   </g>
+   <g id="chapter-motion_planning_basics--figure-06_quintic_timing-matplotlib.axis_1">
+    <g id="chapter-motion_planning_basics--figure-06_quintic_timing-xtick_1">
+     <g id="chapter-motion_planning_basics--figure-06_quintic_timing-line2d_1">
+      <path d="M 39.904146 161.550078
+L 39.904146 21.001658
+" clip-path="url(#chapter-motion_planning_basics--figure-06_quintic_timing-p93a6b337c6)" style="fill: none; stroke: #b0b0b0; stroke-opacity: 0.2; stroke-width: 0.8; stroke-linecap: square"/>
+     </g>
+     <g id="chapter-motion_planning_basics--figure-06_quintic_timing-line2d_2">
+      <defs>
+       <path id="chapter-motion_planning_basics--figure-06_quintic_timing-mc95bbdd4ff" d="M 0 0
+L 0 3.5
+" style="stroke: #000000; stroke-width: 0.8"/>
+      </defs>
+      <g>
+       <use xlink:href="#chapter-motion_planning_basics--figure-06_quintic_timing-mc95bbdd4ff" x="39.904146" y="161.550078" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+    </g>
+    <g id="chapter-motion_planning_basics--figure-06_quintic_timing-xtick_2">
+     <g id="chapter-motion_planning_basics--figure-06_quintic_timing-line2d_3">
+      <path d="M 175.982737 161.550078
+L 175.982737 21.001658
+" clip-path="url(#chapter-motion_planning_basics--figure-06_quintic_timing-p93a6b337c6)" style="fill: none; stroke: #b0b0b0; stroke-opacity: 0.2; stroke-width: 0.8; stroke-linecap: square"/>
+     </g>
+     <g id="chapter-motion_planning_basics--figure-06_quintic_timing-line2d_4">
+      <g>
+       <use xlink:href="#chapter-motion_planning_basics--figure-06_quintic_timing-mc95bbdd4ff" x="175.982737" y="161.550078" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+    </g>
+    <g id="chapter-motion_planning_basics--figure-06_quintic_timing-xtick_3">
+     <g id="chapter-motion_planning_basics--figure-06_quintic_timing-line2d_5">
+      <path d="M 312.061328 161.550078
+L 312.061328 21.001658
+" clip-path="url(#chapter-motion_planning_basics--figure-06_quintic_timing-p93a6b337c6)" style="fill: none; stroke: #b0b0b0; stroke-opacity: 0.2; stroke-width: 0.8; stroke-linecap: square"/>
+     </g>
+     <g id="chapter-motion_planning_basics--figure-06_quintic_timing-line2d_6">
+      <g>
+       <use xlink:href="#chapter-motion_planning_basics--figure-06_quintic_timing-mc95bbdd4ff" x="312.061328" y="161.550078" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+    </g>
+    <g id="chapter-motion_planning_basics--figure-06_quintic_timing-xtick_4">
+     <g id="chapter-motion_planning_basics--figure-06_quintic_timing-line2d_7">
+      <path d="M 448.139919 161.550078
+L 448.139919 21.001658
+" clip-path="url(#chapter-motion_planning_basics--figure-06_quintic_timing-p93a6b337c6)" style="fill: none; stroke: #b0b0b0; stroke-opacity: 0.2; stroke-width: 0.8; stroke-linecap: square"/>
+     </g>
+     <g id="chapter-motion_planning_basics--figure-06_quintic_timing-line2d_8">
+      <g>
+       <use xlink:href="#chapter-motion_planning_basics--figure-06_quintic_timing-mc95bbdd4ff" x="448.139919" y="161.550078" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+    </g>
+    <g id="chapter-motion_planning_basics--figure-06_quintic_timing-xtick_5">
+     <g id="chapter-motion_planning_basics--figure-06_quintic_timing-line2d_9">
+      <path d="M 584.21851 161.550078
+L 584.21851 21.001658
+" clip-path="url(#chapter-motion_planning_basics--figure-06_quintic_timing-p93a6b337c6)" style="fill: none; stroke: #b0b0b0; stroke-opacity: 0.2; stroke-width: 0.8; stroke-linecap: square"/>
+     </g>
+     <g id="chapter-motion_planning_basics--figure-06_quintic_timing-line2d_10">
+      <g>
+       <use xlink:href="#chapter-motion_planning_basics--figure-06_quintic_timing-mc95bbdd4ff" x="584.21851" y="161.550078" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+    </g>
+   </g>
+   <g id="chapter-motion_planning_basics--figure-06_quintic_timing-matplotlib.axis_2">
+    <g id="chapter-motion_planning_basics--figure-06_quintic_timing-ytick_1">
+     <g id="chapter-motion_planning_basics--figure-06_quintic_timing-line2d_11">
+      <path d="M 39.904146 155.161514
+L 584.21851 155.161514
+" clip-path="url(#chapter-motion_planning_basics--figure-06_quintic_timing-p93a6b337c6)" style="fill: none; stroke: #b0b0b0; stroke-opacity: 0.2; stroke-width: 0.8; stroke-linecap: square"/>
+     </g>
+     <g id="chapter-motion_planning_basics--figure-06_quintic_timing-line2d_12">
+      <defs>
+       <path id="chapter-motion_planning_basics--figure-06_quintic_timing-mf1b7e4fea0" d="M 0 0
+L -3.5 0
+" style="stroke: #000000; stroke-width: 0.8"/>
+      </defs>
+      <g>
+       <use xlink:href="#chapter-motion_planning_basics--figure-06_quintic_timing-mf1b7e4fea0" x="39.904146" y="155.161514" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="chapter-motion_planning_basics--figure-06_quintic_timing-text_1">
+      <text style="font-size: 10px; font-family: 'DejaVu Sans', 'Bitstream Vera Sans', 'Computer Modern Sans Serif', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Arial', 'Helvetica', 'Avant Garde', sans-serif; text-anchor: end" x="32.904146" y="158.960342" transform="rotate(-0 32.904146 158.960342)">0.0</text>
+     </g>
+    </g>
+    <g id="chapter-motion_planning_basics--figure-06_quintic_timing-ytick_2">
+     <g id="chapter-motion_planning_basics--figure-06_quintic_timing-line2d_13">
+      <path d="M 39.904146 91.275868
+L 584.21851 91.275868
+" clip-path="url(#chapter-motion_planning_basics--figure-06_quintic_timing-p93a6b337c6)" style="fill: none; stroke: #b0b0b0; stroke-opacity: 0.2; stroke-width: 0.8; stroke-linecap: square"/>
+     </g>
+     <g id="chapter-motion_planning_basics--figure-06_quintic_timing-line2d_14">
+      <g>
+       <use xlink:href="#chapter-motion_planning_basics--figure-06_quintic_timing-mf1b7e4fea0" x="39.904146" y="91.275868" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="chapter-motion_planning_basics--figure-06_quintic_timing-text_2">
+      <text style="font-size: 10px; font-family: 'DejaVu Sans', 'Bitstream Vera Sans', 'Computer Modern Sans Serif', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Arial', 'Helvetica', 'Avant Garde', sans-serif; text-anchor: end" x="32.904146" y="95.074696" transform="rotate(-0 32.904146 95.074696)">0.5</text>
+     </g>
+    </g>
+    <g id="chapter-motion_planning_basics--figure-06_quintic_timing-ytick_3">
+     <g id="chapter-motion_planning_basics--figure-06_quintic_timing-line2d_15">
+      <path d="M 39.904146 27.390222
+L 584.21851 27.390222
+" clip-path="url(#chapter-motion_planning_basics--figure-06_quintic_timing-p93a6b337c6)" style="fill: none; stroke: #b0b0b0; stroke-opacity: 0.2; stroke-width: 0.8; stroke-linecap: square"/>
+     </g>
+     <g id="chapter-motion_planning_basics--figure-06_quintic_timing-line2d_16">
+      <g>
+       <use xlink:href="#chapter-motion_planning_basics--figure-06_quintic_timing-mf1b7e4fea0" x="39.904146" y="27.390222" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="chapter-motion_planning_basics--figure-06_quintic_timing-text_3">
+      <text style="font-size: 10px; font-family: 'DejaVu Sans', 'Bitstream Vera Sans', 'Computer Modern Sans Serif', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Arial', 'Helvetica', 'Avant Garde', sans-serif; text-anchor: end" x="32.904146" y="31.18905" transform="rotate(-0 32.904146 31.18905)">1.0</text>
+     </g>
+    </g>
+    <g id="chapter-motion_planning_basics--figure-06_quintic_timing-text_4">
+     <text style="font-size: 10px; font-family: 'DejaVu Sans', 'Bitstream Vera Sans', 'Computer Modern Sans Serif', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Arial', 'Helvetica', 'Avant Garde', sans-serif; text-anchor: middle" x="10.598678" y="91.275868" transform="rotate(-90 10.598678 91.275868)">Position q [rad]</text>
+    </g>
+   </g>
+   <g id="chapter-motion_planning_basics--figure-06_quintic_timing-line2d_17">
+    <path d="M 39.904146 155.161514
+L 64.398293 155.0528
+L 78.006152 154.767986
+L 90.253225 154.285383
+L 101.139512 153.635452
+L 112.025799 152.748714
+L 121.551301 151.76128
+L 131.076802 150.564557
+L 140.602304 149.150361
+L 150.127805 147.513379
+L 159.653306 145.651013
+L 169.178808 143.563235
+L 178.704309 141.252431
+L 188.22981 138.723252
+L 197.755312 135.982463
+L 208.641599 132.602299
+L 219.527886 128.973115
+L 230.414174 125.113619
+L 242.661247 120.522883
+L 254.90832 115.701069
+L 268.516179 110.116979
+L 284.84561 103.174809
+L 307.97897 93.072382
+L 343.359404 77.621496
+L 359.688835 70.737442
+L 373.296694 65.219918
+L 385.543767 60.47121
+L 397.79084 55.965111
+L 408.677128 52.189624
+L 419.563415 48.651775
+L 430.449702 45.369254
+L 439.975204 42.718197
+L 449.500705 40.281899
+L 459.026206 38.066236
+L 468.551708 36.074909
+L 478.077209 34.309286
+L 487.60271 32.768257
+L 497.128212 31.448078
+L 506.653713 30.342225
+L 516.179215 29.441238
+L 527.065502 28.646159
+L 537.951789 28.078253
+L 550.198862 27.67365
+L 563.806721 27.453868
+L 582.857724 27.390242
+L 584.21851 27.390222
+L 584.21851 27.390222
+" clip-path="url(#chapter-motion_planning_basics--figure-06_quintic_timing-p93a6b337c6)" style="fill: none; stroke: #2065a7; stroke-width: 2.4; stroke-linecap: square"/>
+   </g>
+   <g id="chapter-motion_planning_basics--figure-06_quintic_timing-patch_3">
+    <path d="M 39.904146 161.550078
+L 39.904146 21.001658
+" style="fill: none; stroke: #000000; stroke-width: 0.8; stroke-linejoin: miter; stroke-linecap: square"/>
+   </g>
+   <g id="chapter-motion_planning_basics--figure-06_quintic_timing-patch_4">
+    <path d="M 584.21851 161.550078
+L 584.21851 21.001658
+" style="fill: none; stroke: #000000; stroke-width: 0.8; stroke-linejoin: miter; stroke-linecap: square"/>
+   </g>
+   <g id="chapter-motion_planning_basics--figure-06_quintic_timing-patch_5">
+    <path d="M 39.904146 161.550078
+L 584.21851 161.550078
+" style="fill: none; stroke: #000000; stroke-width: 0.8; stroke-linejoin: miter; stroke-linecap: square"/>
+   </g>
+   <g id="chapter-motion_planning_basics--figure-06_quintic_timing-patch_6">
+    <path d="M 39.904146 21.001658
+L 584.21851 21.001658
+" style="fill: none; stroke: #000000; stroke-width: 0.8; stroke-linejoin: miter; stroke-linecap: square"/>
+   </g>
+  </g>
+  <g id="chapter-motion_planning_basics--figure-06_quintic_timing-axes_2">
+   <g id="chapter-motion_planning_basics--figure-06_quintic_timing-patch_7">
+    <path d="M 39.904146 311.598979
+L 584.21851 311.598979
+L 584.21851 171.050558
+L 39.904146 171.050558
+z
+" style="fill: #ffffff"/>
+   </g>
+   <g id="chapter-motion_planning_basics--figure-06_quintic_timing-matplotlib.axis_3">
+    <g id="chapter-motion_planning_basics--figure-06_quintic_timing-xtick_6">
+     <g id="chapter-motion_planning_basics--figure-06_quintic_timing-line2d_18">
+      <path d="M 39.904146 311.598979
+L 39.904146 171.050558
+" clip-path="url(#chapter-motion_planning_basics--figure-06_quintic_timing-pc84c763460)" style="fill: none; stroke: #b0b0b0; stroke-opacity: 0.2; stroke-width: 0.8; stroke-linecap: square"/>
+     </g>
+     <g id="chapter-motion_planning_basics--figure-06_quintic_timing-line2d_19">
+      <g>
+       <use xlink:href="#chapter-motion_planning_basics--figure-06_quintic_timing-mc95bbdd4ff" x="39.904146" y="311.598979" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="chapter-motion_planning_basics--figure-06_quintic_timing-text_5">
+      <text style="font-size: 10px; font-family: 'DejaVu Sans', 'Bitstream Vera Sans', 'Computer Modern Sans Serif', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Arial', 'Helvetica', 'Avant Garde', sans-serif; text-anchor: middle" x="39.904146" y="326.196635" transform="rotate(-0 39.904146 326.196635)">0</text>
+     </g>
+    </g>
+    <g id="chapter-motion_planning_basics--figure-06_quintic_timing-xtick_7">
+     <g id="chapter-motion_planning_basics--figure-06_quintic_timing-line2d_20">
+      <path d="M 175.982737 311.598979
+L 175.982737 171.050558
+" clip-path="url(#chapter-motion_planning_basics--figure-06_quintic_timing-pc84c763460)" style="fill: none; stroke: #b0b0b0; stroke-opacity: 0.2; stroke-width: 0.8; stroke-linecap: square"/>
+     </g>
+     <g id="chapter-motion_planning_basics--figure-06_quintic_timing-line2d_21">
+      <g>
+       <use xlink:href="#chapter-motion_planning_basics--figure-06_quintic_timing-mc95bbdd4ff" x="175.982737" y="311.598979" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="chapter-motion_planning_basics--figure-06_quintic_timing-text_6">
+      <text style="font-size: 10px; font-family: 'DejaVu Sans', 'Bitstream Vera Sans', 'Computer Modern Sans Serif', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Arial', 'Helvetica', 'Avant Garde', sans-serif; text-anchor: middle" x="175.982737" y="326.196635" transform="rotate(-0 175.982737 326.196635)">1</text>
+     </g>
+    </g>
+    <g id="chapter-motion_planning_basics--figure-06_quintic_timing-xtick_8">
+     <g id="chapter-motion_planning_basics--figure-06_quintic_timing-line2d_22">
+      <path d="M 312.061328 311.598979
+L 312.061328 171.050558
+" clip-path="url(#chapter-motion_planning_basics--figure-06_quintic_timing-pc84c763460)" style="fill: none; stroke: #b0b0b0; stroke-opacity: 0.2; stroke-width: 0.8; stroke-linecap: square"/>
+     </g>
+     <g id="chapter-motion_planning_basics--figure-06_quintic_timing-line2d_23">
+      <g>
+       <use xlink:href="#chapter-motion_planning_basics--figure-06_quintic_timing-mc95bbdd4ff" x="312.061328" y="311.598979" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="chapter-motion_planning_basics--figure-06_quintic_timing-text_7">
+      <text style="font-size: 10px; font-family: 'DejaVu Sans', 'Bitstream Vera Sans', 'Computer Modern Sans Serif', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Arial', 'Helvetica', 'Avant Garde', sans-serif; text-anchor: middle" x="312.061328" y="326.196635" transform="rotate(-0 312.061328 326.196635)">2</text>
+     </g>
+    </g>
+    <g id="chapter-motion_planning_basics--figure-06_quintic_timing-xtick_9">
+     <g id="chapter-motion_planning_basics--figure-06_quintic_timing-line2d_24">
+      <path d="M 448.139919 311.598979
+L 448.139919 171.050558
+" clip-path="url(#chapter-motion_planning_basics--figure-06_quintic_timing-pc84c763460)" style="fill: none; stroke: #b0b0b0; stroke-opacity: 0.2; stroke-width: 0.8; stroke-linecap: square"/>
+     </g>
+     <g id="chapter-motion_planning_basics--figure-06_quintic_timing-line2d_25">
+      <g>
+       <use xlink:href="#chapter-motion_planning_basics--figure-06_quintic_timing-mc95bbdd4ff" x="448.139919" y="311.598979" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="chapter-motion_planning_basics--figure-06_quintic_timing-text_8">
+      <text style="font-size: 10px; font-family: 'DejaVu Sans', 'Bitstream Vera Sans', 'Computer Modern Sans Serif', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Arial', 'Helvetica', 'Avant Garde', sans-serif; text-anchor: middle" x="448.139919" y="326.196635" transform="rotate(-0 448.139919 326.196635)">3</text>
+     </g>
+    </g>
+    <g id="chapter-motion_planning_basics--figure-06_quintic_timing-xtick_10">
+     <g id="chapter-motion_planning_basics--figure-06_quintic_timing-line2d_26">
+      <path d="M 584.21851 311.598979
+L 584.21851 171.050558
+" clip-path="url(#chapter-motion_planning_basics--figure-06_quintic_timing-pc84c763460)" style="fill: none; stroke: #b0b0b0; stroke-opacity: 0.2; stroke-width: 0.8; stroke-linecap: square"/>
+     </g>
+     <g id="chapter-motion_planning_basics--figure-06_quintic_timing-line2d_27">
+      <g>
+       <use xlink:href="#chapter-motion_planning_basics--figure-06_quintic_timing-mc95bbdd4ff" x="584.21851" y="311.598979" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="chapter-motion_planning_basics--figure-06_quintic_timing-text_9">
+      <text style="font-size: 10px; font-family: 'DejaVu Sans', 'Bitstream Vera Sans', 'Computer Modern Sans Serif', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Arial', 'Helvetica', 'Avant Garde', sans-serif; text-anchor: middle" x="584.21851" y="326.196635" transform="rotate(-0 584.21851 326.196635)">4</text>
+     </g>
+    </g>
+    <g id="chapter-motion_planning_basics--figure-06_quintic_timing-text_10">
+     <text style="font-size: 10px; font-family: 'DejaVu Sans', 'Bitstream Vera Sans', 'Computer Modern Sans Serif', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Arial', 'Helvetica', 'Avant Garde', sans-serif; text-anchor: middle" x="312.061328" y="340.197416" transform="rotate(-0 312.061328 340.197416)">Zeit t [s]</text>
+    </g>
+   </g>
+   <g id="chapter-motion_planning_basics--figure-06_quintic_timing-matplotlib.axis_4">
+    <g id="chapter-motion_planning_basics--figure-06_quintic_timing-ytick_4">
+     <g id="chapter-motion_planning_basics--figure-06_quintic_timing-line2d_28">
+      <path d="M 39.904146 304.452449
+L 584.21851 304.452449
+" clip-path="url(#chapter-motion_planning_basics--figure-06_quintic_timing-pc84c763460)" style="fill: none; stroke: #b0b0b0; stroke-opacity: 0.2; stroke-width: 0.8; stroke-linecap: square"/>
+     </g>
+     <g id="chapter-motion_planning_basics--figure-06_quintic_timing-line2d_29">
+      <g>
+       <use xlink:href="#chapter-motion_planning_basics--figure-06_quintic_timing-mf1b7e4fea0" x="39.904146" y="304.452449" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="chapter-motion_planning_basics--figure-06_quintic_timing-text_11">
+      <text style="font-size: 10px; font-family: 'DejaVu Sans', 'Bitstream Vera Sans', 'Computer Modern Sans Serif', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Arial', 'Helvetica', 'Avant Garde', sans-serif; text-anchor: end" x="32.904146" y="308.251277" transform="rotate(-0 32.904146 308.251277)">0.0</text>
+     </g>
+    </g>
+    <g id="chapter-motion_planning_basics--figure-06_quintic_timing-ytick_5">
+     <g id="chapter-motion_planning_basics--figure-06_quintic_timing-line2d_30">
+      <path d="M 39.904146 280.630683
+L 584.21851 280.630683
+" clip-path="url(#chapter-motion_planning_basics--figure-06_quintic_timing-pc84c763460)" style="fill: none; stroke: #b0b0b0; stroke-opacity: 0.2; stroke-width: 0.8; stroke-linecap: square"/>
+     </g>
+     <g id="chapter-motion_planning_basics--figure-06_quintic_timing-line2d_31">
+      <g>
+       <use xlink:href="#chapter-motion_planning_basics--figure-06_quintic_timing-mf1b7e4fea0" x="39.904146" y="280.630683" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="chapter-motion_planning_basics--figure-06_quintic_timing-text_12">
+      <text style="font-size: 10px; font-family: 'DejaVu Sans', 'Bitstream Vera Sans', 'Computer Modern Sans Serif', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Arial', 'Helvetica', 'Avant Garde', sans-serif; text-anchor: end" x="32.904146" y="284.429511" transform="rotate(-0 32.904146 284.429511)">0.1</text>
+     </g>
+    </g>
+    <g id="chapter-motion_planning_basics--figure-06_quintic_timing-ytick_6">
+     <g id="chapter-motion_planning_basics--figure-06_quintic_timing-line2d_32">
+      <path d="M 39.904146 256.808916
+L 584.21851 256.808916
+" clip-path="url(#chapter-motion_planning_basics--figure-06_quintic_timing-pc84c763460)" style="fill: none; stroke: #b0b0b0; stroke-opacity: 0.2; stroke-width: 0.8; stroke-linecap: square"/>
+     </g>
+     <g id="chapter-motion_planning_basics--figure-06_quintic_timing-line2d_33">
+      <g>
+       <use xlink:href="#chapter-motion_planning_basics--figure-06_quintic_timing-mf1b7e4fea0" x="39.904146" y="256.808916" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="chapter-motion_planning_basics--figure-06_quintic_timing-text_13">
+      <text style="font-size: 10px; font-family: 'DejaVu Sans', 'Bitstream Vera Sans', 'Computer Modern Sans Serif', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Arial', 'Helvetica', 'Avant Garde', sans-serif; text-anchor: end" x="32.904146" y="260.607745" transform="rotate(-0 32.904146 260.607745)">0.2</text>
+     </g>
+    </g>
+    <g id="chapter-motion_planning_basics--figure-06_quintic_timing-ytick_7">
+     <g id="chapter-motion_planning_basics--figure-06_quintic_timing-line2d_34">
+      <path d="M 39.904146 232.98715
+L 584.21851 232.98715
+" clip-path="url(#chapter-motion_planning_basics--figure-06_quintic_timing-pc84c763460)" style="fill: none; stroke: #b0b0b0; stroke-opacity: 0.2; stroke-width: 0.8; stroke-linecap: square"/>
+     </g>
+     <g id="chapter-motion_planning_basics--figure-06_quintic_timing-line2d_35">
+      <g>
+       <use xlink:href="#chapter-motion_planning_basics--figure-06_quintic_timing-mf1b7e4fea0" x="39.904146" y="232.98715" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="chapter-motion_planning_basics--figure-06_quintic_timing-text_14">
+      <text style="font-size: 10px; font-family: 'DejaVu Sans', 'Bitstream Vera Sans', 'Computer Modern Sans Serif', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Arial', 'Helvetica', 'Avant Garde', sans-serif; text-anchor: end" x="32.904146" y="236.785978" transform="rotate(-0 32.904146 236.785978)">0.3</text>
+     </g>
+    </g>
+    <g id="chapter-motion_planning_basics--figure-06_quintic_timing-ytick_8">
+     <g id="chapter-motion_planning_basics--figure-06_quintic_timing-line2d_36">
+      <path d="M 39.904146 209.165384
+L 584.21851 209.165384
+" clip-path="url(#chapter-motion_planning_basics--figure-06_quintic_timing-pc84c763460)" style="fill: none; stroke: #b0b0b0; stroke-opacity: 0.2; stroke-width: 0.8; stroke-linecap: square"/>
+     </g>
+     <g id="chapter-motion_planning_basics--figure-06_quintic_timing-line2d_37">
+      <g>
+       <use xlink:href="#chapter-motion_planning_basics--figure-06_quintic_timing-mf1b7e4fea0" x="39.904146" y="209.165384" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="chapter-motion_planning_basics--figure-06_quintic_timing-text_15">
+      <text style="font-size: 10px; font-family: 'DejaVu Sans', 'Bitstream Vera Sans', 'Computer Modern Sans Serif', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Arial', 'Helvetica', 'Avant Garde', sans-serif; text-anchor: end" x="32.904146" y="212.964212" transform="rotate(-0 32.904146 212.964212)">0.4</text>
+     </g>
+    </g>
+    <g id="chapter-motion_planning_basics--figure-06_quintic_timing-ytick_9">
+     <g id="chapter-motion_planning_basics--figure-06_quintic_timing-line2d_38">
+      <path d="M 39.904146 185.343618
+L 584.21851 185.343618
+" clip-path="url(#chapter-motion_planning_basics--figure-06_quintic_timing-pc84c763460)" style="fill: none; stroke: #b0b0b0; stroke-opacity: 0.2; stroke-width: 0.8; stroke-linecap: square"/>
+     </g>
+     <g id="chapter-motion_planning_basics--figure-06_quintic_timing-line2d_39">
+      <g>
+       <use xlink:href="#chapter-motion_planning_basics--figure-06_quintic_timing-mf1b7e4fea0" x="39.904146" y="185.343618" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="chapter-motion_planning_basics--figure-06_quintic_timing-text_16">
+      <text style="font-size: 10px; font-family: 'DejaVu Sans', 'Bitstream Vera Sans', 'Computer Modern Sans Serif', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Arial', 'Helvetica', 'Avant Garde', sans-serif; text-anchor: end" x="32.904146" y="189.142446" transform="rotate(-0 32.904146 189.142446)">0.5</text>
+     </g>
+    </g>
+    <g id="chapter-motion_planning_basics--figure-06_quintic_timing-text_17">
+     <text style="font-size: 10px; font-family: 'DejaVu Sans', 'Bitstream Vera Sans', 'Computer Modern Sans Serif', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Arial', 'Helvetica', 'Avant Garde', sans-serif; text-anchor: middle" x="10.598678" y="241.324768" transform="rotate(-90 10.598678 241.324768)">Geschwindigkeit [rad/s]</text>
+    </g>
+   </g>
+   <g id="chapter-motion_planning_basics--figure-06_quintic_timing-line2d_40">
+    <path d="M 39.904146 304.452449
+L 43.986504 304.353453
+L 48.068862 304.062426
+L 52.151219 303.58821
+L 56.233577 302.939511
+L 61.676721 301.817952
+L 67.119864 300.421359
+L 72.563008 298.769242
+L 78.006152 296.880683
+L 83.449295 294.774332
+L 90.253225 291.862848
+L 97.057154 288.67416
+L 103.861084 285.241873
+L 112.025799 280.847343
+L 120.190515 276.203126
+L 129.716016 270.53868
+L 141.963089 262.987178
+L 185.508239 235.856566
+L 196.394526 229.483632
+L 205.920027 224.172977
+L 214.084743 219.85583
+L 222.249458 215.784201
+L 230.414174 211.983052
+L 237.218103 209.038555
+L 244.022033 206.309796
+L 250.825962 203.807769
+L 257.629892 201.542419
+L 264.433821 199.522643
+L 271.237751 197.756293
+L 278.04168 196.250174
+L 284.84561 195.010044
+L 291.649539 194.040613
+L 298.453469 193.345545
+L 305.257399 192.927457
+L 310.700542 192.793503
+L 316.143686 192.838163
+L 321.586829 193.06133
+L 328.390759 193.590457
+L 335.194689 194.395643
+L 341.998618 195.473853
+L 348.802548 196.821002
+L 355.606477 198.431963
+L 362.410407 200.300558
+L 369.214336 202.419565
+L 376.018266 204.780712
+L 382.822195 207.374684
+L 389.626125 210.191116
+L 396.430055 213.218597
+L 404.59477 217.112546
+L 412.759485 221.268895
+L 420.924201 225.661957
+L 430.449702 231.049089
+L 441.33599 237.492072
+L 453.583063 245.011616
+L 475.355637 258.714658
+L 491.685068 268.882008
+L 502.571355 275.408505
+L 512.096857 280.847343
+L 520.261572 285.241873
+L 527.065502 288.67416
+L 533.869431 291.862848
+L 540.673361 294.774332
+L 546.116505 296.880683
+L 551.559648 298.769242
+L 557.002792 300.421359
+L 562.445935 301.817952
+L 567.889079 302.939511
+L 571.971437 303.58821
+L 576.053795 304.062426
+L 580.136152 304.353453
+L 584.21851 304.452449
+L 584.21851 304.452449
+" clip-path="url(#chapter-motion_planning_basics--figure-06_quintic_timing-pc84c763460)" style="fill: none; stroke: #087e8b; stroke-width: 2.4; stroke-linecap: square"/>
+   </g>
+   <g id="chapter-motion_planning_basics--figure-06_quintic_timing-line2d_41">
+    <path d="M 39.904146 185.343618
+L 584.21851 185.343618
+" clip-path="url(#chapter-motion_planning_basics--figure-06_quintic_timing-pc84c763460)" style="fill: none; stroke-dasharray: 5.55,2.4; stroke-dashoffset: 0; stroke: #b45555; stroke-width: 1.5"/>
+   </g>
+   <g id="chapter-motion_planning_basics--figure-06_quintic_timing-patch_8">
+    <path d="M 39.904146 311.598979
+L 39.904146 171.050558
+" style="fill: none; stroke: #000000; stroke-width: 0.8; stroke-linejoin: miter; stroke-linecap: square"/>
+   </g>
+   <g id="chapter-motion_planning_basics--figure-06_quintic_timing-patch_9">
+    <path d="M 584.21851 311.598979
+L 584.21851 171.050558
+" style="fill: none; stroke: #000000; stroke-width: 0.8; stroke-linejoin: miter; stroke-linecap: square"/>
+   </g>
+   <g id="chapter-motion_planning_basics--figure-06_quintic_timing-patch_10">
+    <path d="M 39.904146 311.598979
+L 584.21851 311.598979
+" style="fill: none; stroke: #000000; stroke-width: 0.8; stroke-linejoin: miter; stroke-linecap: square"/>
+   </g>
+   <g id="chapter-motion_planning_basics--figure-06_quintic_timing-patch_11">
+    <path d="M 39.904146 171.050558
+L 584.21851 171.050558
+" style="fill: none; stroke: #000000; stroke-width: 0.8; stroke-linejoin: miter; stroke-linecap: square"/>
+   </g>
+   <g id="chapter-motion_planning_basics--figure-06_quintic_timing-legend_1">
+    <g id="chapter-motion_planning_basics--figure-06_quintic_timing-patch_12">
+     <path d="M 418.00476 201.451808
+L 578.61851 201.451808
+Q 580.21851 201.451808 580.21851 199.851808
+L 580.21851 176.650558
+Q 580.21851 175.050558 578.61851 175.050558
+L 418.00476 175.050558
+Q 416.40476 175.050558 416.40476 176.650558
+L 416.40476 199.851808
+Q 416.40476 201.451808 418.00476 201.451808
+z
+" style="fill: #ffffff; opacity: 0.8; stroke: #cccccc; stroke-linejoin: miter"/>
+    </g>
+    <g id="chapter-motion_planning_basics--figure-06_quintic_timing-line2d_42">
+     <path d="M 419.60476 181.529308
+L 427.60476 181.529308
+L 435.60476 181.529308
+" style="fill: none; stroke: #087e8b; stroke-width: 2.4; stroke-linecap: square"/>
+    </g>
+    <g id="chapter-motion_planning_basics--figure-06_quintic_timing-text_18">
+     <text style="font-size: 8px; font-family: 'DejaVu Sans', 'Bitstream Vera Sans', 'Computer Modern Sans Serif', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Arial', 'Helvetica', 'Avant Garde', sans-serif; text-anchor: start" x="442.00476" y="184.329308" transform="rotate(-0 442.00476 184.329308)">Geplanter Verlauf</text>
+    </g>
+    <g id="chapter-motion_planning_basics--figure-06_quintic_timing-line2d_43">
+     <path d="M 419.60476 193.529933
+L 427.60476 193.529933
+L 435.60476 193.529933
+" style="fill: none; stroke-dasharray: 5.55,2.4; stroke-dashoffset: 0; stroke: #b45555; stroke-width: 1.5"/>
+    </g>
+    <g id="chapter-motion_planning_basics--figure-06_quintic_timing-text_19">
+     <text style="font-size: 8px; font-family: 'DejaVu Sans', 'Bitstream Vera Sans', 'Computer Modern Sans Serif', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Arial', 'Helvetica', 'Avant Garde', sans-serif; text-anchor: start" x="442.00476" y="196.329933" transform="rotate(-0 442.00476 196.329933)">Geschwindigkeitsgrenze 0,5 rad/s</text>
+    </g>
+   </g>
+  </g>
+  <g id="chapter-motion_planning_basics--figure-06_quintic_timing-text_20">
+   <text style="font-size: 12px; font-family: 'DejaVu Sans', 'Bitstream Vera Sans', 'Computer Modern Sans Serif', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Arial', 'Helvetica', 'Avant Garde', sans-serif; text-anchor: middle" x="295.2" y="12.118365" transform="rotate(-0 295.2 12.118365)">Lehrbeispiel: eine Achse von 0 auf 1 rad in 4 s</text>
+  </g>
+ </g>
+ <defs>
+  <clipPath id="chapter-motion_planning_basics--figure-06_quintic_timing-p93a6b337c6">
+   <rect x="39.904146" y="21.001658" width="544.314364" height="140.548421"/>
+  </clipPath>
+  <clipPath id="chapter-motion_planning_basics--figure-06_quintic_timing-pc84c763460">
+   <rect x="39.904146" y="171.050558" width="544.314364" height="140.548421"/>
+  </clipPath>
+ </defs>
+</svg>
+<figcaption>Glatte Position und Geschwindigkeit im Einachsbeispiel</figcaption></figure>
+
+<p>Die Achse bewegt sich am Anfang und Ende langsam und dazwischen schneller.
+Die maximale Geschwindigkeit beträgt 0,46875 rad/s; die Beschleunigung erreicht
+etwa 0,36085 rad/s², der Betrag des Rucks höchstens 0,9375 rad/s³. Damit bleiben
+alle gewählten Grenzen eingehalten.</p>
+<p><strong>Stillstand heißt hier:</strong> Geschwindigkeit und Beschleunigung sind am Rand null.
+Der Ruck muss bei dieser Quintik am Rand nicht null sein. Begrenzter Ruck ist
+auch nicht gleichbedeutend mit überall stetigem Ruck.</p>
+<h3 id="chapter-motion_planning_basics--daraus-werden-steuerungstakte">Daraus werden Steuerungstakte</h3>
+<p>Bei <strong>10 ms</strong> Zykluszeit liegen die Befehle auf diesem Raster:</p>
+<pre><code class="language-text">Tick       0       1       2      ...      399      400
+Zeit     0,00 s  0,01 s  0,02 s   ...    3,99 s   4,00 s
+q        Start   ...     ...      ...     ...     Ziel
+</code></pre>
+<p>Das sind <strong>400 Zeitintervalle und 401 Befehle</strong>, weil Start und Ende dazugehören.
+Hätte eine andere geplante Bewegung beispielsweise 4,003 s Dauer, würde die
+Ausrichtung auf 10 ms sie auf 4,010 s verlängern. Sie wird nicht durch
+Abschneiden verkürzt. Das Raster ist die zeitliche Ausgabeplanung, nicht die
+Bildwiederholrate des Browsers.</p>
+<h2 id="chapter-motion_planning_basics--8-planung-und-zyklische-ausgabe-erfüllen-verschiedene-aufgaben">8. Planung und zyklische Ausgabe erfüllen verschiedene Aufgaben</h2>
+<p>Die Vorbereitung darf rechnen, Speicher anfordern und ein ungültiges Programm
+zurückweisen. Die zyklische Ausgabe arbeitet mit bereits vorbereiteten festen
+Befehlen. Dafür gibt es den vollständigen Cache oder einen von außen gefüllten
+SPSC-Puffer; SPSC heißt ein Producer und ein Consumer.</p>
+<figure><svg width="634pt" height="655pt"
+ viewBox="0.00 0.00 633.80 654.80" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="chapter-motion_planning_basics--figure-05_cyclic_dispatch-graph0" class="graph" transform="scale(1 1) rotate(0) translate(14.4 640.4)">
+<title>dispatch</title>
+<polygon fill="white" stroke="transparent" points="-14.4,14.4 -14.4,-640.4 619.4,-640.4 619.4,14.4 -14.4,14.4"/>
+<!-- prep -->
+<g id="chapter-motion_planning_basics--figure-05_cyclic_dispatch-node1" class="node">
+<title>prep</title>
+<path fill="#edf6fc" stroke="#739bb8" d="M466.5,-626C466.5,-626 291.5,-626 291.5,-626 285.5,-626 279.5,-620 279.5,-614 279.5,-614 279.5,-598 279.5,-598 279.5,-592 285.5,-586 291.5,-586 291.5,-586 466.5,-586 466.5,-586 472.5,-586 478.5,-592 478.5,-598 478.5,-598 478.5,-614 478.5,-614 478.5,-620 472.5,-626 466.5,-626"/>
+<text text-anchor="middle" x="379" y="-609" font-family="DejaVu Sans" font-size="10.00">Vorbereitung außerhalb des Zyklus</text>
+<text text-anchor="middle" x="379" y="-598" font-family="DejaVu Sans" font-size="10.00">Plan prüfen · Sollwerte bereitstellen</text>
+</g>
+<!-- tick -->
+<g id="chapter-motion_planning_basics--figure-05_cyclic_dispatch-node2" class="node">
+<title>tick</title>
+<path fill="#edf6fc" stroke="#739bb8" d="M452,-555C452,-555 306,-555 306,-555 300,-555 294,-549 294,-543 294,-543 294,-527 294,-527 294,-521 300,-515 306,-515 306,-515 452,-515 452,-515 458,-515 464,-521 464,-527 464,-527 464,-543 464,-543 464,-549 458,-555 452,-555"/>
+<text text-anchor="middle" x="379" y="-538" font-family="DejaVu Sans" font-size="10.00">Aufruf im Steuerungszyklus</text>
+<text text-anchor="middle" x="379" y="-527" font-family="DejaVu Sans" font-size="10.00">Zeit und nächsten Tick prüfen</text>
+</g>
+<!-- prep&#45;&gt;tick -->
+<g id="chapter-motion_planning_basics--figure-05_cyclic_dispatch-edge1" class="edge">
+<title>prep&#45;&gt;tick</title>
+<path fill="none" stroke="#526d82" d="M379,-585.78C379,-579.5 379,-572.37 379,-565.51"/>
+<polygon fill="#526d82" stroke="#526d82" points="382.5,-565.12 379,-555.12 375.5,-565.12 382.5,-565.12"/>
+</g>
+<!-- valid -->
+<g id="chapter-motion_planning_basics--figure-05_cyclic_dispatch-node3" class="node">
+<title>valid</title>
+<path fill="#fff6df" stroke="#739bb8" d="M192.01,-479.17C192.01,-479.17 122.99,-448.83 122.99,-448.83 117.49,-446.41 117.49,-441.59 122.99,-439.17 122.99,-439.17 192.01,-408.83 192.01,-408.83 197.51,-406.41 208.49,-406.41 213.99,-408.83 213.99,-408.83 283.01,-439.17 283.01,-439.17 288.51,-441.59 288.51,-446.41 283.01,-448.83 283.01,-448.83 213.99,-479.17 213.99,-479.17 208.49,-481.59 197.51,-481.59 192.01,-479.17"/>
+<text text-anchor="middle" x="203" y="-447" font-family="DejaVu Sans" font-size="10.00">Ausgabe jetzt</text>
+<text text-anchor="middle" x="203" y="-436" font-family="DejaVu Sans" font-size="10.00">zulässig?</text>
+</g>
+<!-- tick&#45;&gt;valid -->
+<g id="chapter-motion_planning_basics--figure-05_cyclic_dispatch-edge2" class="edge">
+<title>tick&#45;&gt;valid</title>
+<path fill="none" stroke="#526d82" d="M341.24,-514.91C315.65,-501.97 281.54,-484.71 253.6,-470.59"/>
+<polygon fill="#526d82" stroke="#526d82" points="254.89,-467.32 244.38,-465.93 251.73,-473.56 254.89,-467.32"/>
+</g>
+<!-- early -->
+<g id="chapter-motion_planning_basics--figure-05_cyclic_dispatch-node4" class="node">
+<title>early</title>
+<path fill="#edf6fc" stroke="#739bb8" d="M448.5,-363C448.5,-363 309.5,-363 309.5,-363 303.5,-363 297.5,-357 297.5,-351 297.5,-351 297.5,-335 297.5,-335 297.5,-329 303.5,-323 309.5,-323 309.5,-323 448.5,-323 448.5,-323 454.5,-323 460.5,-329 460.5,-335 460.5,-335 460.5,-351 460.5,-351 460.5,-357 454.5,-363 448.5,-363"/>
+<text text-anchor="middle" x="379" y="-346" font-family="DejaVu Sans" font-size="10.00">Inactive: noch zu früh</text>
+<text text-anchor="middle" x="379" y="-335" font-family="DejaVu Sans" font-size="10.00">Keinen neuen Befehl senden</text>
+</g>
+<!-- valid&#45;&gt;early -->
+<g id="chapter-motion_planning_basics--figure-05_cyclic_dispatch-edge3" class="edge">
+<title>valid&#45;&gt;early</title>
+<path fill="none" stroke="#526d82" d="M238.87,-419.46C258.9,-406.66 284.49,-390.86 308,-378 314.43,-374.48 321.28,-370.95 328.1,-367.56"/>
+<polygon fill="#526d82" stroke="#526d82" points="329.88,-370.58 337.32,-363.04 326.8,-364.29 329.88,-370.58"/>
+<text text-anchor="middle" x="334" y="-381" font-family="DejaVu Sans" font-size="10.00">Noch nicht</text>
+</g>
+<!-- fault -->
+<g id="chapter-motion_planning_basics--figure-05_cyclic_dispatch-node5" class="node">
+<title>fault</title>
+<path fill="#fce8e8" stroke="#b96c6c" d="M160,-146.5C160,-146.5 12,-146.5 12,-146.5 6,-146.5 0,-140.5 0,-134.5 0,-134.5 0,-107.5 0,-107.5 0,-101.5 6,-95.5 12,-95.5 12,-95.5 160,-95.5 160,-95.5 166,-95.5 172,-101.5 172,-107.5 172,-107.5 172,-134.5 172,-134.5 172,-140.5 166,-146.5 160,-146.5"/>
+<text text-anchor="middle" x="86" y="-129.5" font-family="DejaVu Sans" font-size="10.00">Zeit&#45;/Daten&#45;/Annahmefehler</text>
+<text text-anchor="middle" x="86" y="-118.5" font-family="DejaVu Sans" font-size="10.00">Anwendungsfehler verriegeln</text>
+<text text-anchor="middle" x="86" y="-107.5" font-family="DejaVu Sans" font-size="10.00">Host&#45;Fehlerreaktion anfordern</text>
+</g>
+<!-- valid&#45;&gt;fault -->
+<g id="chapter-motion_planning_basics--figure-05_cyclic_dispatch-edge5" class="edge">
+<title>valid&#45;&gt;fault</title>
+<path fill="none" stroke="#b96c6c" d="M146.03,-428.99C112.03,-417.37 71.58,-397.08 51,-363 11.67,-297.85 44.95,-205.17 68.18,-155.88"/>
+<polygon fill="#b96c6c" stroke="#b96c6c" points="71.45,-157.15 72.66,-146.63 65.15,-154.1 71.45,-157.15"/>
+<text text-anchor="middle" x="77" y="-300" font-family="DejaVu Sans" font-size="10.00">Ungültig / zu spät</text>
+</g>
+<!-- output -->
+<g id="chapter-motion_planning_basics--figure-05_cyclic_dispatch-node6" class="node">
+<title>output</title>
+<path fill="#ddf3eb" stroke="#65a48a" d="M260,-363C260,-363 76,-363 76,-363 70,-363 64,-357 64,-351 64,-351 64,-335 64,-335 64,-329 70,-323 76,-323 76,-323 260,-323 260,-323 266,-323 272,-329 272,-335 272,-335 272,-351 272,-351 272,-357 266,-363 260,-363"/>
+<text text-anchor="middle" x="168" y="-346" font-family="DejaVu Sans" font-size="10.00">Running / Finished</text>
+<text text-anchor="middle" x="168" y="-335" font-family="DejaVu Sans" font-size="10.00">Genau einen neuen Befehl übergeben</text>
+</g>
+<!-- valid&#45;&gt;output -->
+<g id="chapter-motion_planning_basics--figure-05_cyclic_dispatch-edge6" class="edge">
+<title>valid&#45;&gt;output</title>
+<path fill="none" stroke="#526d82" d="M191.05,-409.21C186.86,-397.34 182.18,-384.12 178.15,-372.71"/>
+<polygon fill="#526d82" stroke="#526d82" points="181.43,-371.48 174.8,-363.22 174.83,-373.82 181.43,-371.48"/>
+<text text-anchor="middle" x="189" y="-381" font-family="DejaVu Sans" font-size="10.00">Ja</text>
+</g>
+<!-- early&#45;&gt;tick -->
+<g id="chapter-motion_planning_basics--figure-05_cyclic_dispatch-edge4" class="edge">
+<title>early&#45;&gt;tick</title>
+<path fill="none" stroke="#526d82" d="M379,-363.03C379,-396.31 379,-465.28 379,-504.69"/>
+<polygon fill="#526d82" stroke="#526d82" points="375.5,-504.74 379,-514.74 382.5,-504.74 375.5,-504.74"/>
+<text text-anchor="middle" x="416" y="-441.5" font-family="DejaVu Sans" font-size="10.00">späterer Aufruf</text>
+</g>
+<!-- accepted -->
+<g id="chapter-motion_planning_basics--figure-05_cyclic_dispatch-node7" class="node">
+<title>accepted</title>
+<path fill="#fff6df" stroke="#739bb8" d="M157.21,-276.74C157.21,-276.74 96.79,-247.26 96.79,-247.26 91.39,-244.63 91.39,-239.37 96.79,-236.74 96.79,-236.74 157.21,-207.26 157.21,-207.26 162.61,-204.63 173.39,-204.63 178.79,-207.26 178.79,-207.26 239.21,-236.74 239.21,-236.74 244.61,-239.37 244.61,-244.63 239.21,-247.26 239.21,-247.26 178.79,-276.74 178.79,-276.74 173.39,-279.37 162.61,-279.37 157.21,-276.74"/>
+<text text-anchor="middle" x="168" y="-245" font-family="DejaVu Sans" font-size="10.00">Host nimmt</text>
+<text text-anchor="middle" x="168" y="-234" font-family="DejaVu Sans" font-size="10.00">Befehl an?</text>
+</g>
+<!-- output&#45;&gt;accepted -->
+<g id="chapter-motion_planning_basics--figure-05_cyclic_dispatch-edge7" class="edge">
+<title>output&#45;&gt;accepted</title>
+<path fill="none" stroke="#526d82" d="M168,-322.91C168,-314.14 168,-303.29 168,-292.44"/>
+<polygon fill="#526d82" stroke="#526d82" points="171.5,-292.11 168,-282.11 164.5,-292.11 171.5,-292.11"/>
+</g>
+<!-- accepted&#45;&gt;fault -->
+<g id="chapter-motion_planning_basics--figure-05_cyclic_dispatch-edge8" class="edge">
+<title>accepted&#45;&gt;fault</title>
+<path fill="none" stroke="#b96c6c" d="M147.73,-211.58C135.91,-194.43 120.97,-172.75 108.75,-155.02"/>
+<polygon fill="#b96c6c" stroke="#b96c6c" points="111.55,-152.91 103,-146.66 105.79,-156.88 111.55,-152.91"/>
+<text text-anchor="middle" x="141.5" y="-179" font-family="DejaVu Sans" font-size="10.00">Nein</text>
+</g>
+<!-- terminal -->
+<g id="chapter-motion_planning_basics--figure-05_cyclic_dispatch-node8" class="node">
+<title>terminal</title>
+<path fill="#fff6df" stroke="#739bb8" d="M381.38,-155.41C381.38,-155.41 326.62,-126.59 326.62,-126.59 321.31,-123.79 321.31,-118.21 326.62,-115.41 326.62,-115.41 381.38,-86.59 381.38,-86.59 386.69,-83.79 397.31,-83.79 402.62,-86.59 402.62,-86.59 457.38,-115.41 457.38,-115.41 462.69,-118.21 462.69,-123.79 457.38,-126.59 457.38,-126.59 402.62,-155.41 402.62,-155.41 397.31,-158.21 386.69,-158.21 381.38,-155.41"/>
+<text text-anchor="middle" x="392" y="-124" font-family="DejaVu Sans" font-size="10.00">Terminaler</text>
+<text text-anchor="middle" x="392" y="-113" font-family="DejaVu Sans" font-size="10.00">Befehl?</text>
+</g>
+<!-- accepted&#45;&gt;terminal -->
+<g id="chapter-motion_planning_basics--figure-05_cyclic_dispatch-edge9" class="edge">
+<title>accepted&#45;&gt;terminal</title>
+<path fill="none" stroke="#526d82" d="M206.51,-220.54C245.23,-199.97 304.95,-168.25 346.11,-146.38"/>
+<polygon fill="#526d82" stroke="#526d82" points="347.92,-149.38 355.11,-141.6 344.64,-143.2 347.92,-149.38"/>
+<text text-anchor="middle" x="291" y="-179" font-family="DejaVu Sans" font-size="10.00">Ja</text>
+</g>
+<!-- terminal&#45;&gt;tick -->
+<g id="chapter-motion_planning_basics--figure-05_cyclic_dispatch-edge10" class="edge">
+<title>terminal&#45;&gt;tick</title>
+<path fill="none" stroke="#526d82" d="M430.97,-140.67C465.67,-160.33 511,-194.84 511,-241 511,-445 511,-445 511,-445 511,-476.05 485.58,-496.99 457.05,-510.71"/>
+<polygon fill="#526d82" stroke="#526d82" points="455.39,-507.62 447.71,-514.91 458.26,-514 455.39,-507.62"/>
+<text text-anchor="middle" x="558" y="-340.5" font-family="DejaVu Sans" font-size="10.00">Nein, nächster Tick</text>
+</g>
+<!-- end -->
+<g id="chapter-motion_planning_basics--figure-05_cyclic_dispatch-node9" class="node">
+<title>end</title>
+<path fill="#ddf3eb" stroke="#65a48a" d="M470.5,-40C470.5,-40 313.5,-40 313.5,-40 307.5,-40 301.5,-34 301.5,-28 301.5,-28 301.5,-12 301.5,-12 301.5,-6 307.5,0 313.5,0 313.5,0 470.5,0 470.5,0 476.5,0 482.5,-6 482.5,-12 482.5,-12 482.5,-28 482.5,-28 482.5,-34 476.5,-40 470.5,-40"/>
+<text text-anchor="middle" x="392" y="-23" font-family="DejaVu Sans" font-size="10.00">Sollprogramm beendet</text>
+<text text-anchor="middle" x="392" y="-12" font-family="DejaVu Sans" font-size="10.00">Ist&#45;Stillstand separat bestätigen</text>
+</g>
+<!-- terminal&#45;&gt;end -->
+<g id="chapter-motion_planning_basics--figure-05_cyclic_dispatch-edge11" class="edge">
+<title>terminal&#45;&gt;end</title>
+<path fill="none" stroke="#526d82" d="M392,-80.87C392,-70.66 392,-59.84 392,-50.24"/>
+<polygon fill="#526d82" stroke="#526d82" points="395.5,-50.02 392,-40.02 388.5,-50.02 395.5,-50.02"/>
+<text text-anchor="middle" x="468" y="-58" font-family="DejaVu Sans" font-size="10.00">Ja: letzter Befehl angenommen</text>
+</g>
+</g>
+</svg>
+<figcaption>Was bei einem Ausführungstakt passiert</figcaption></figure>
+
+<p>Im laufenden Zyklus wird insbesondere geprüft: Passt die Uhrdomäne? Ist die
+Zeit ausreichend genau und nicht zurückgesprungen? Ist der nächste Befehl
+vollständig und im zulässigen Zeitfenster?</p>
+<ul>
+<li><code>Running</code>: einen neuen Befehl übergeben.</li>
+<li><code>Finished</code>: auch diesen <strong>letzten</strong> Stillstandsbefehl einmal übergeben.</li>
+<li><code>Inactive</code>: keinen neuen Befehl senden; der Aufruf kann zu früh sein oder das
+  Programm bereits beendet. Der alte Ausgabewert darf nicht erneut gesendet werden.</li>
+<li><code>Error</code>: Fehler verriegeln und die vereinbarte Host-Fehlerreaktion anfordern.
+  Es gibt kein automatisches Aufholen oder Weiterlaufen nach dem Fehler.</li>
+</ul>
+<p>Nimmt die Host-Achsschnittstelle einen Befehl nicht an, muss die Anwendung
+zusätzlich die weitere Übergabe sperren. Eine Stopanforderung und ein bestätigter
+physischer Stillstand sind unterschiedliche Ereignisse.</p>
+<h2 id="chapter-motion_planning_basics--9-ein-programm-besteht-aus-mehreren-solchen-bewegungen">9. Ein Programm besteht aus mehreren solchen Bewegungen</h2>
+<p>Unser YAML-Programmimport plant die normalen PTP-/LIN-/CIRC-Schritte mit
+<strong>Stillstand an den Segmentgrenzen</strong>. Eine Folge von LIN-Befehlen bedeutet daher
+nicht automatisch eine durchgehende Bewegung ohne Abbremsen. Blending, also das
+gezielte Verschleifen von Übergängen, ist eine gesonderte Planungsfunktion.</p>
+<p><code>CALL</code> löst ein benanntes Unterprogramm bereits vor der Ausführung auf. Es startet
+keinen fremden Skriptprozess. <code>WAIT</code> hält den Sollzustand für die geplante Zeit.
+Das ganze expandierte Programm muss zugelassen sein, bevor es veröffentlicht wird.</p>
+<p>Der Planer ist außerdem <strong>kein Antriebsregler</strong>: Eine reale Steuerung muss die
+Sollwerte korrekt zuordnen, Antriebe bedienen und Istwerte/Fehler überwachen.
+Zulässige Gelenk-/TCP-Grenzen sind auch keine automatische Prüfung jeder
+möglichen Kollision des gesamten Roboters.</p>
+<h2 id="chapter-motion_planning_basics--10-im-viewer-selbst-nachvollziehen">10. Im Viewer selbst nachvollziehen</h2>
+<p>Öffne die fertige Datei
+<code>tools/motion_viewer/demo/ur5e_motion.html</code> im Browser. Die Anleitung und eine
+Vorschau stehen beim <a href="../tools/motion_viewer/README.md">separaten Viewer-Werkzeug</a>.
+Nach dem Herunterladen lässt sich auch die
+<a href="../tools/motion_viewer/demo/ur5e_motion.html">fertige Viewer-Demo</a> lokal öffnen.</p>
+<ol>
+<li>Spiele den ersten <strong>PTP</strong> ab. Sieh, wie sich mehrere Achsen gleichzeitig ändern;
+   der TCP muss dabei keine Gerade beschreiben.</li>
+<li>Springe zu <strong>LIN</strong>. Betrachte die Werkzeugbahn und die dazu nötigen Gelenkverläufe.</li>
+<li>Wähle <strong>CIRC</strong>: Die Demo enthält einen vollständigen Kreis.</li>
+<li>Wähle <strong>WAIT</strong>: Die Gelenkpositionen bleiben stehen, dq/ddq sind null.</li>
+<li>Schalte unten zwischen Position, Geschwindigkeit, Beschleunigung und Ruck um.
+   Mit „Profilfenster“ kannst du die Gelenkkurve gegen die ganzen Profilgrenzen sehen.</li>
+<li>Gehe zum letzten Sample: Der terminale Sollwert ist im Stillstand. Das ist eine
+   Simulation und noch keine Istwertbestätigung einer Maschine.</li>
+</ol>
+<h2 id="chapter-motion_planning_basics--11-wo-geht-es-fachlich-und-im-code-weiter">11. Wo geht es fachlich und im Code weiter?</h2>
+<table>
+<thead>
+<tr>
+<th>Frage</th>
+<th>Einstieg</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Wie importiere ich mein Programm?</td>
+<td><a href="#chapter-robot_program_yaml">Programmformat</a></td>
+</tr>
+<tr>
+<td>Wie beschreibe ich den Roboter?</td>
+<td><a href="#chapter-robot_model_yaml">URDF und SI-Profil</a></td>
+</tr>
+<tr>
+<td>Welche Klasse hat welche Aufgabe?</td>
+<td><a href="#chapter-module_catalog">Modulkatalog</a> und <a href="#chapter-class_diagrams">Klassendiagramme</a></td>
+</tr>
+<tr>
+<td>Wie bindet unsere Steuerung das ein?</td>
+<td><a href="#chapter-controller_integration">Integrationshandbuch</a></td>
+</tr>
+<tr>
+<td>Wie funktionieren Threads und Live-Wechsel?</td>
+<td><a href="#chapter-runtime_flows">Technische Laufzeitabläufe</a></td>
+</tr>
+<tr>
+<td>Welche Nachweise gibt es?</td>
+<td><a href="#chapter-validation">Prüfbericht</a></td>
+</tr>
+</tbody>
+</table>
+<p>Für den ersten Quellcodeblick: <code>compile_robot_program()</code> wählt den Planungszweig,
+<code>map_cartesian_spline()</code> bildet kartesische Wege ab, <code>PathTimeParameterizer</code>
+bestimmt deren Zeitverlauf und <code>align_program_cycles()</code> legt das Raster fest.
+Erst <code>DeadlineMotionExecutor</code> bzw. <code>LiveMotionExecutor</code> übernehmen die zeitlich
+geprüfte Ausgabe. Du musst diese Klassen nicht alle verstehen, um die oben
+beschriebenen Schritte im Viewer wiederzuerkennen.</p></section><section id="chapter-controller_integration"><h1 id="chapter-controller_integration--integrationshandbuch-für-die-eigene-steuerung">Integrationshandbuch für die eigene Steuerung</h1>
 <h2 id="chapter-controller_integration--zweck-und-geltungsbereich">Zweck und Geltungsbereich</h2>
 <p>Dieses Handbuch beschreibt <strong>Robot Motion C++ 0.12.3</strong> als einbettbare C++20-
 Bibliothek. Eure Steuerung ist selbst entwickelt; konkrete Adapter, Prozesse,
@@ -1788,6 +3268,9 @@ Uhr mit <code>ClockTime now() noexcept</code> bereitstellen.
 <p>Weitere Abläufe: <a href="#chapter-runtime_flows">Sequenzen und Zustände</a>.
 Die Quellen können mit <a href="../tools/architecture/render_diagrams.py">render_diagrams.py</a>
 erneut als SVG oder PDF erzeugt werden. Alle SVGs sind ohne Renderer lesbar.</p></section><section id="chapter-runtime_flows"><h1 id="chapter-runtime_flows--laufzeitabläufe-und-zustände">Laufzeitabläufe und Zustände</h1>
+<p>Für den Einstieg ohne Robotik-Vorkenntnisse:
+<a href="#chapter-motion_planning_basics">Bewegungsplanung verstehen</a> erklärt
+FK/IK, PTP/LIN/CIRC, Weg und Zeit sowie die Sollwertausgabe mit Ablaufdiagrammen.</p>
 <p>Die Sequenzen zeigen Rollen der späteren Host-Anwendung und vorhandene
 Bibliotheksobjekte. Rollen wie „Achsschnittstelle“ oder „Freigabe“ sind noch
 keine implementierten Hardwareadapter. Die sieben strukturellen UML-Sichten
@@ -2323,6 +3806,9 @@ python3 tools/architecture/render_diagrams.py
 # Optional druckbare einzelne Diagramme:
 python3 tools/architecture/render_diagrams.py --format pdf
 
+# Einsteiger-Abläufe und Lehrkurve (Graphviz + optionales matplotlib):
+python3 tools/documentation/render_tutorial.py
+
 # Zusammenhängendes Offline-Handbuch mit eingebetteten SVGs (optional):
 python3 -m pip install -r tools/requirements-docs.txt
 python3 tools/documentation/build_handbook.py
@@ -2331,7 +3817,7 @@ python3 tools/documentation/build_handbook.py --check
 <p>Die fertige Datei <a href="handbook.html">docs/handbook.html</a> ist eingecheckt und
 lädt keine externen Ressourcen. Sie lässt sich lokal im Browser lesen oder mit
 der Browser-Druckfunktion als PDF speichern. Die Mermaid-Abläufe bleiben darin
-als Quelltexte erhalten; die UML-Klassendiagramme sind direkt eingebettete SVGs.
+als Quelltexte erhalten; die UML-Klassendiagramme, Tutorial-Abläufe und Lehrkurve sind direkt eingebettete SVGs.
 Zum Einzelheader-Check optionaler Ruckig-Header zusätzlich
 <code>--ruckig-include build-all/_deps/ruckig-src/include</code> angeben.</p>
 <p>Der Diagrammrenderer prüft Namen von Klassen und angezeigten Methoden gegen die

@@ -92,6 +92,9 @@ python3 tools/architecture/render_diagrams.py
 # Optional druckbare einzelne Diagramme:
 python3 tools/architecture/render_diagrams.py --format pdf
 
+# Einsteiger-Abläufe und Lehrkurve (Graphviz + optionales matplotlib):
+python3 tools/documentation/render_tutorial.py
+
 # Zusammenhängendes Offline-Handbuch mit eingebetteten SVGs (optional):
 python3 -m pip install -r tools/requirements-docs.txt
 python3 tools/documentation/build_handbook.py
@@ -101,7 +104,7 @@ python3 tools/documentation/build_handbook.py --check
 Die fertige Datei [docs/handbook.html](../handbook.html) ist eingecheckt und
 lädt keine externen Ressourcen. Sie lässt sich lokal im Browser lesen oder mit
 der Browser-Druckfunktion als PDF speichern. Die Mermaid-Abläufe bleiben darin
-als Quelltexte erhalten; die UML-Klassendiagramme sind direkt eingebettete SVGs.
+als Quelltexte erhalten; die UML-Klassendiagramme, Tutorial-Abläufe und Lehrkurve sind direkt eingebettete SVGs.
 Zum Einzelheader-Check optionaler Ruckig-Header zusätzlich
 `--ruckig-include build-all/_deps/ruckig-src/include` angeben.
 

@@ -1,0 +1,21 @@
+digraph dispatch {
+ graph [rankdir=TB,bgcolor="white",pad="0.2",nodesep="0.35",ranksep="0.4"];
+ node [shape=box,style="rounded,filled",fillcolor="#edf6fc",color="#739bb8",fontname="DejaVu Sans",fontsize=10,margin="0.16,0.12"];
+ edge [color="#526d82",fontname="DejaVu Sans",fontsize=10];
+ prep [label="Vorbereitung außerhalb des Zyklus\nPlan prüfen · Sollwerte bereitstellen"];
+ tick [label="Aufruf im Steuerungszyklus\nZeit und nächsten Tick prüfen"];
+ valid [shape=diamond,label="Ausgabe jetzt\nzulässig?",fillcolor="#fff6df"];
+ early [label="Inactive: noch zu früh\nKeinen neuen Befehl senden"];
+ fault [label="Zeit-/Daten-/Annahmefehler\nAnwendungsfehler verriegeln\nHost-Fehlerreaktion anfordern",fillcolor="#fce8e8",color="#b96c6c"];
+ output [label="Running / Finished\nGenau einen neuen Befehl übergeben",fillcolor="#ddf3eb",color="#65a48a"];
+ accepted [shape=diamond,label="Host nimmt\nBefehl an?",fillcolor="#fff6df"];
+ terminal [shape=diamond,label="Terminaler\nBefehl?",fillcolor="#fff6df"];
+ end [label="Sollprogramm beendet\nIst-Stillstand separat bestätigen",fillcolor="#ddf3eb",color="#65a48a"];
+ prep->tick->valid;
+ valid->early [label="Noch nicht"];early->tick [label="späterer Aufruf"];
+ valid->fault [label="Ungültig / zu spät",color="#b96c6c"];
+ valid->output [label="Ja"];output->accepted;
+ accepted->fault [label="Nein",color="#b96c6c"];
+ accepted->terminal [label="Ja"];terminal->tick [label="Nein, nächster Tick"];
+ terminal->end [label="Ja: letzter Befehl angenommen"];
+}

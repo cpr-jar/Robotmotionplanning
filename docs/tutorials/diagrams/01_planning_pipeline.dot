@@ -1,0 +1,18 @@
+digraph pipeline {
+ graph [rankdir=TB,bgcolor="white",pad="0.2",nodesep="0.3",ranksep="0.4"];
+ node [shape=box,style="rounded,filled",fillcolor="#edf6fc",color="#739bb8",fontname="DejaVu Sans",fontsize=11,margin="0.18,0.12"];
+ edge [color="#526d82",fontname="DejaVu Sans",fontsize=10];
+ input [label="1 · Auftrag verstehen\nProgramm + Robotergeometrie + Grenzen"];
+ geometry [label="2 · Bewegungsweg bestimmen\nPTP: Gelenkweg · LIN/CIRC: TCP-Weg"];
+ timing [label="3 · Zeitverlauf und Grenzen prüfen\nPosition, Geschwindigkeit, Beschleunigung, Ruck"];
+ admit [shape=diamond,label="Ganzes Programm\nzulässig?",fillcolor="#fff6df"];
+ grid [label="4 · Auf Steuerungstakte ausrichten\nz. B. alle 10 ms"];
+ values [label="5 · Feste Sollwerte vorbereiten\nvollständiger Cache oder Producer/Puffer"];
+ dispatch [label="6 · Zur richtigen Zeit ausgeben\nTick und Zeitfenster prüfen",fillcolor="#ddf3eb",color="#65a48a"];
+ host [label="Eigene Steuerung / Antriebe\nAnnahme, Regelung und Istwerte",fillcolor="#f2f3f5",color="#919daa"];
+ reject [label="Keine neue Programmfreigabe\nDiagnose mit Quelle und Schritt",fillcolor="#fce8e8",color="#b96c6c"];
+ input->geometry->timing->admit;
+ admit->grid [label="Ja"];
+ admit->reject [label="Nein",color="#b96c6c"];
+ grid->values->dispatch->host;
+}
