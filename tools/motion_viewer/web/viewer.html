@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Robot Motion · Bewegungsviewer</title>
+    <style>
+      /*__VIEWER_STYLE__*/
+    </style>
+  </head>
+  <body data-viewer-state="loading">
+    <header>
+      <div>
+        <p class="eyebrow">ROBOT MOTION · TOOLS / MOTION VIEWER</p>
+        <h1>Bewegungen verstehen</h1>
+        <p id="subtitle">Modell und Simulationsdaten werden geprüft …</p>
+      </div>
+      <span class="badge">SIMULATION · SOLLDATEN</span>
+    </header>
+    <div id="error" role="alert" hidden></div>
+    <section class="transport card" aria-label="Wiedergabe">
+      <button id="play" class="primary" type="button">▶ Abspielen</button
+      ><button id="previous" type="button" aria-label="Vorheriges Sample">◀ Schritt</button
+      ><button id="next" type="button" aria-label="Nächstes Sample">Schritt ▶</button>
+      <label
+        >Tempo
+        <select id="rate">
+          <option value="0.25">0,25×</option>
+          <option value="0.5">0,5×</option>
+          <option value="1" selected>1×</option>
+          <option value="2">2×</option>
+          <option value="4">4×</option>
+        </select></label
+      >
+      <strong id="time-label">0,000 s</strong><span id="tick-label"></span>
+      <input
+        id="scrubber"
+        type="range"
+        min="0"
+        max="1"
+        value="0"
+        step="1"
+        aria-label="Zeitpunkt der Bewegung"
+      />
+    </section>
+    <div class="main-grid">
+      <section class="card scene-panel">
+        <div class="panel-head">
+          <h2>Roboter &amp; TCP-Bahn</h2>
+          <button id="reset-camera" type="button">Ansicht zurücksetzen</button>
+        </div>
+        <div class="scene-wrap">
+          <canvas id="scene" aria-label="Drehbare dreidimensionale Kinematikansicht"></canvas>
+          <div class="scene-caption"><span id="step-label"></span><span id="pose-label"></span></div>
+        </div>
+        <div class="scene-options">
+          <label><input id="show-path" type="checkbox" checked /> TCP-Bahn</label
+          ><label><input id="show-axes" type="checkbox" /> Gelenkachsen</label
+          ><span>Ziehen: drehen · Mausrad: zoomen · Linienmodell ohne CAD-Hüllen</span>
+        </div>
+      </section>
+      <section class="card axis-panel">
+        <div class="panel-head">
+          <h2>Gelenkzustände</h2>
+          <label><input id="degrees" type="checkbox" /> Winkel in °</label>
+        </div>
+        <p class="small">Achse auswählen, um ihren Verlauf unten zu sehen.</p>
+        <div class="table-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th>Achse</th>
+                <th>q</th>
+                <th>dq</th>
+                <th>ddq</th>
+                <th>Ruck</th>
+              </tr>
+            </thead>
+            <tbody id="joint-table"></tbody>
+          </table>
+        </div>
+        <div class="readouts">
+          <div><span>Ausführung</span><strong id="operation-label"></strong></div>
+          <div><span>Programmstelle</span><strong id="source-label"></strong></div>
+          <div><span>Profilgrenzen (Samples)</span><strong id="limit-label"></strong></div>
+          <div><span>Renderer ↔ Simulation</span><strong id="fk-label"></strong></div>
+        </div>
+      </section>
+    </div>
+    <section class="card program-panel">
+      <div class="panel-head">
+        <h2>Programmablauf</h2>
+        <span id="program-summary" class="small"></span>
+      </div>
+      <div id="segments" class="segments"></div>
+    </section>
+    <div class="chart-grid">
+      <section class="card">
+        <div class="panel-head">
+          <h2 id="joint-chart-title">Gelenkverlauf</h2>
+          <label><input id="fit-limits" type="checkbox" /> Profilfenster</label
+          ><label
+            >Größe
+            <select id="joint-metric">
+              <option value="q">Position q</option>
+              <option value="dq">Geschwindigkeit dq</option>
+              <option value="ddq">Beschleunigung ddq</option>
+              <option value="jerk">Ruck</option>
+            </select></label
+          >
+        </div>
+        <canvas id="joint-chart" class="chart" aria-label="Zeitverlauf der ausgewählten Achse"></canvas>
+      </section>
+      <section class="card">
+        <div class="panel-head">
+          <h2>TCP-Verlauf</h2>
+          <div>
+            <select id="tcp-group" aria-label="TCP-Gruppe">
+              <option value="linear">Linear</option>
+              <option value="angular">Angular</option>
+            </select>
+            <select id="tcp-order" aria-label="TCP-Ableitung">
+              <option value="0">Geschwindigkeit</option>
+              <option value="1">Beschleunigung</option>
+              <option value="2">Ruck</option>
+            </select>
+          </div>
+        </div>
+        <canvas id="tcp-chart" class="chart" aria-label="TCP-Norm über der Zeit"></canvas>
+      </section>
+    </div>
+    <footer>
+      <p id="sample-note"></p>
+      <p>
+        Die vollständige Referenz wurde vom vorhandenen C++-Planer zugelassen und mit virtueller Uhr
+        ausgeführt. Diagramme zeigen Samples und Profilgrenzen; sie ersetzen keine kontinuierliche
+        Zulassungsprüfung. Das 3D-Linienmodell enthält keine Kollisionsgeometrie. Keine Hardwareverbindung und
+        kein Echtzeitnachweis.
+      </p>
+    </footer>
+    <script>
+      /*__KINEMATICS__*/
+    </script>
+    <script id="motion-data" type="application/json">
+      __VIEWER_DATA__
+    </script>
+    <script>
+      /*__VIEWER_APP__*/
+    </script>
+  </body>
+</html>
