@@ -46,12 +46,17 @@ LivePlanResult<N> prepare_live_plan(std::shared_ptr<const IExecutionSchedule> sc
   try {
     if (!schedule || !stamp.clock || !stamp.generation || stamp.generation <= stamp.parent_generation ||
         schedule->initial_state().q.size() != N || schedule->total_ticks() >= capacity ||
+        schedule->total_ticks() > schedule_detail::max_ticks ||
         stamp.start_tick > schedule_detail::max_ticks - schedule->total_ticks() ||
         !schedule_detail::valid_clock(epoch, schedule->cycle_s(), stamp.start_tick + schedule->total_ticks()))
       return {{}, "Invalid live schedule/stamp/capacity"};
     if (schedule->initial_state().timestamp_s !=
         epoch + schedule_detail::tick_time(stamp.start_tick, schedule->cycle_s()))
       return {{}, "Live activation timestamp mismatch"};
+    const auto &boundaries = schedule->boundary_ticks();
+    if (!std::is_sorted(boundaries.begin(), boundaries.end()) ||
+        (!boundaries.empty() && boundaries.back() > schedule->total_ticks()))
+      return {{}, "Invalid live rest markers"};
     auto p = std::shared_ptr<PreparedLivePlan<N>>(new PreparedLivePlan<N>);
     p->stamp_ = stamp;
     p->epoch_ = epoch;
@@ -59,7 +64,9 @@ LivePlanResult<N> prepare_live_plan(std::shared_ptr<const IExecutionSchedule> sc
     p->limits_ = schedule->joint_limits();
     for (std::uint64_t tick = 0; tick <= schedule->total_ticks(); ++tick) {
       const auto state = schedule->sample_tick(tick);
-      if (!within_joint_limits(state, p->limits_) || !std::isfinite(state.timestamp_s))
+      if (!within_joint_limits(state, p->limits_) || !std::isfinite(state.timestamp_s) ||
+          state.timestamp_s != schedule->initial_state().timestamp_s + schedule->tick_time(tick) ||
+          (std::binary_search(boundaries.begin(), boundaries.end(), tick) && !is_rest(state, 0)))
         return {{}, "Invalid live reference state"};
       FixedJointCommand<N> c;
       std::copy(state.q.begin(), state.q.end(), c.q.begin());

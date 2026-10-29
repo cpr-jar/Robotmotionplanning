@@ -1,0 +1,41 @@
+name: Reconstructed project verification
+on: [push, pull_request]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - serial: 'ON'
+            ruckig: 'ON'
+            type: Release
+            sanitize: 'OFF'
+          - serial: 'ON'
+            ruckig: 'OFF'
+            type: Release
+            sanitize: 'OFF'
+          - serial: 'OFF'
+            ruckig: 'OFF'
+            type: Release
+            sanitize: 'OFF'
+          - serial: 'OFF'
+            ruckig: 'ON'
+            type: Release
+            sanitize: 'OFF'
+          - serial: 'ON'
+            ruckig: 'ON'
+            type: Debug
+            sanitize: 'ON'
+    env:
+      UBSAN_OPTIONS: halt_on_error=1
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configure from bundled sources
+        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=${{ matrix.type }} -DMOTION_WITH_SERIAL=${{ matrix.serial }} -DMOTION_WITH_RUCKIG=${{ matrix.ruckig }} -DMOTION_SANITIZE=${{ matrix.sanitize }}
+      - run: cmake --build build --parallel 2
+      - run: ctest --test-dir build --output-on-failure
+      - if: matrix.serial == 'ON'
+        name: Import, check and export user program
+        run: |
+          ./build/program_simulator programs/ur5e_demo.yaml --check
+          ./build/program_simulator programs/ur5e_demo.yaml --csv build/trace.csv

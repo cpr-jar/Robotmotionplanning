@@ -107,6 +107,24 @@ void inspect(const char *name) {
 int main() {
   for (const auto *name : {"ur5e", "abb_irb120", "fanuc_lrmate200id"})
     inspect(name);
+
+  const std::string profile =
+      "schema_version: 1\nunits: SI\nrobot_name: fixture\nbase_link: base\ntip_link: tool\njoints: {j: "
+      "{max_acceleration: 1, max_jerk: 5}}\ntcp_limits: {max_linear_velocity: 1, max_linear_acceleration: 1, "
+      "max_linear_jerk: 1, max_angular_velocity: 1, max_angular_acceleration: 1, max_angular_jerk: 1}\n";
+  assert(parse_serial_profile_yaml(profile).joints.size() == 1);
+  reject([&] { parse_serial_profile_yaml(profile + "units: SI\n"); });
+  reject([&] { parse_serial_profile_yaml(profile + "unknown: 1\n"); });
+  auto tagged = profile;
+  tagged.replace(tagged.find("max_acceleration: 1"), 19, "max_acceleration: !degrees 90");
+  reject([&] { parse_serial_profile_yaml(tagged); });
+  const std::string xml = "<robot name='fixture'><link name='base'/><link name='tool'/><joint name='j' "
+                          "type='revolute'><parent link='base'/><child link='tool'/><axis xyz='0 0 "
+                          "1'/><limit lower='-2' upper='2' velocity='1'/></joint></robot>";
+  assert(import_serial_urdf(xml, parse_serial_profile_yaml(profile)).kinematics->dof() == 1);
+  auto mimic = xml;
+  mimic.insert(mimic.find("<limit"), "<mimic joint='j'/>");
+  reject([&] { import_serial_urdf(mimic, parse_serial_profile_yaml(profile)); });
   const auto type = SerialJointType::Revolute;
   SerialChainKinematics pendulum({{"j", "base", "tool", type, {}, {0, 0, 1}, -3, 3, 1}}, {},
                                  {{1, 0, 0}, {1, 0, 0, 0}});

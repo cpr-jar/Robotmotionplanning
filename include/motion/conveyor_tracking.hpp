@@ -61,6 +61,7 @@ public:
       if (!std::isfinite(x) || x < 0)
         throw std::invalid_argument("Invalid tracking policy");
   }
+  double absolute_scale() const noexcept { return std::abs(model_.scale); }
   PredictionResult predict(const ObjectObservation &o, const EncoderObservation &e,
                            const TrackingFrameSnapshot &frames, TrackingTime now, TrackingTime at) const {
     const auto fail = [](PredictionStatus s, const char *d) { return PredictionResult{s, {}, d}; };

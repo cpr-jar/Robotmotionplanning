@@ -1,47 +1,62 @@
-# Robot motion software architecture (v0.2.0)
+# Architektur des rekonstruierten Stands 0.12.1
 
-```
-Program → Motion Queue / Look-Ahead [planned]
-              ↓
-Geometric Path (PTP/LIN/CIRC/blending) [only basic straight XYZ implemented]
-              ↓
-Kinematics (FK/IK/J and derivatives) [XYZ implemented; Delta/serial plugins planned]
-              ↓
-Constraint Evaluation (joint + Cartesian + future dynamic limits)
-              ↓
-Time Parameterization (jerk constrained) [analytic quintic restricted case]
-              ↓
-Immutable validated trajectory → Real-time sampling [reference implementation]
-              ↓
-Joint setpoints (q, dq, ddq) → drive interface [outside current scope]
+Die hochgeladene v0.2.0 ist als eigener Git-Commit erhalten. Darauf wurden die
+im Gespräch beschriebenen Schnittstellen und Algorithmen neu implementiert.
+ABI-/Quelltextidentität mit v0.12.0 wird nicht behauptet. Aktuelle Vertragsgrenzen:
 
-Tracked object + belt encoder timestamps → target predictor [simple prototype]
-                                      ↘ online replanning [planned]
-```
+1. **Daten und Modelle:** C++20, SI-Zustände q/dq/ddq und explizite Grenzen.
+   Serielle Kinematik besitzt Basis-/Werkzeugtransformation, feste und bewegliche
+   Gelenke; FK, geometrisches J und Matrixjets bis zum Ruck. IK ist lokales,
+   begrenztes SVD-Verfahren mit Linien-Suche und Rang-/Restfehlerprüfung.
+2. **Import:** URDF-Teilmenge plus SI-YAML-Profil v1 mit obligatorischen v/a/Ruck-
+   Vorgaben. Profilgrenzen dürfen URDF-Grenzen nur einschränken. Keine Xacro-
+   Ausführung, Mimic-/Kalibrier-/Safety-Tag-Interpretation oder Mesh-/Netzwerkauflösung.
+   Serielle Rohmodelle und Motion-Limits bleiben getrennt.
+3. **Referenzen:** Rest-to-rest-Quintiken und allgemeine q/v/a-Hermite-Quintiken.
+   Bernstein-Hüllen und begrenzte Unterteilung prüfen q/v/a/Ruck. Numerische
+   Intervalljets propagieren diese durch serielle, SCARA- und Delta-Kinematik.
+   Transzendenten verwenden gepaddete libm-Werte; keine formale Zertifizierung.
+4. **Kartesische Bahnen:** LIN/CIRC-Geometrie und Quaternion-Sweep sind von der
+   Kinematikabbildung getrennt. Sequenzieller IK und C2-Gelenksplines werden in
+   einem Pose-Schlauch über Intervall-Ableitungen und Lipschitz-Abschätzungen
+   zugelassen. Konservative globale Quintik-Zeitplanung prüft vollständige
+   Gelenk-/TCP-lineare und angulare Kettenregelterme bis zum Ruck.
+5. **Programme:** Striktes SI-YAML, begrenzte CALL-Expansion, PTP/LIN/CIRC/WAIT;
+   gesamter gemischter Plan wird vorab zugelassen. PTP prüft auch nichtlineare
+   TCP-Grenzen. Exakte Stillstandsgrenzen werden auf ganzzahlige Ticks gelegt,
+   indem nur verlängert wird. Kein verstecktes Blending.
+6. **Ausführung:** Producer sampelt außerhalb des zyklischen Threads. SPSC-Ring
+   und feste Befehle trennen ihn vom Dispatcher. Der Dispatcher prüft Tick,
+   Epoch, Zustand, Stillstand, Uhrdomäne/-Unsicherheit/-Regression und Zeitfenster.
+   Ein zweiter Zeitwert kann Verzögerung während der Prüfung erkennen.
+   Fehler verriegeln; kein Wiederholen, Aufholen oder erfundener Not-Haltebefehl.
+7. **Live-Austausch:** Immutable Caches mit globalen Ticks, Generation/Vorgänger,
+   exaktem q/v/a-Zustand und Epoche. Ein SPSC-Postfach erlaubt eine offene Anfrage.
+   Der Planner hält rohe Zeigerziele am Leben bis Ablehnung oder expliziter
+   Retirement-Bestätigung. Keine Refcount-Freigabe, IK, Kurvensampling oder
+   C++-Heap-Allokation im zyklischen Pfad. Direkte Getter gehören dem Ausführungsthread;
+   parallele Planer verwenden bounded-attempt atomare Snapshots. 64-bit-Atomics
+   müssen lock-free sein. Übergabegrenzen verhindern Rücknahme bereits
+   irreversibel übergebener Befehle.
+8. **Stopps und Following:** Optionaler lokaler Ruckig-Kandidat wird unabhängig
+   in konstante Ruckphasen integriert und auf innere q/v-Extrema geprüft.
+   Originale Zeitgesetze bleiben unverändert; lediglich terminaler Stillstand
+   wird auf Ticks gepolstert. Following publiziert bewegte Horizonte inklusive
+   vorab geprüftem Stillstands-Fallback. Generisches Following löst q/dq/ddq
+   mit räumlichem SVD einschließlich Jdot*dq und prüft TCP-Hüllen separat für
+   Horizont und Halt. Ausfall von Updates benötigt keinen Solver im RT-Pfad.
+9. **Messdaten:** Kalibrierte statische Frame-Snapshots, explizite Objektzuordnung,
+   Zeit-/Latenz-/Horizont-/Unsicherheitsgrenzen und begrenzte Historie. Conveyor-
+   Modell: gerader Transport, konstante Orientierung, kein Schlupf. Eine vom
+   Anwender vorgegebene Beschleunigungsänderungsgrenze erweitert die Prognosefehler.
+   Mess- und Empfangszeiten müssen nominal kausal sein; Unsicherheit fließt
+   in Alters-/Horizont-/Fehlergrenzen ein. Kein allgemeiner Sensorfusionssolver.
+10. **Plattform:** Linux-Monotonic-Uhr und absolute Wartefunktion melden Fehler
+    einschließlich EINTR zurück. FIFO/Affinität/mlock sind explizite Setup-Anfragen
+    außerhalb der Ausführung. Der Timing-Probe misst den aktuellen Host, nicht
+    den Raspberry Pi. Die Simulation verwendet eine ideale virtuelle Uhr.
 
-## API boundaries
-- `motion/core.hpp`: robot states, poses, kinematics and limits.
-- `motion/trajectory.hpp`: planned-trajectory types, planners, currently supported rest-to-rest joint and XYZ-LIN implementations.
-- `motion/online.hpp`: online-generator interface and conservative rest-only example.
-- `motion/online_joint.hpp`: optional legacy Ruckig Community prototype (separate implementation, needs validation and adapter alignment).
-- `motion/tracking.hpp`: simplified belt prediction; not a conveyor tracking solver.
-
-`QuinticRestTrajectory::sample(t)` produces position, velocity and acceleration for a continuous polynomial. The third derivative (jerk) is bounded analytically by its construction, rather than by sampling the points. Sampling returns vectors and thus allocates; a later hard real-time implementation must use preallocated output buffers.
-
-## Timing and coordinate frames
-All internal values use SI units. A `JointState` carries an absolute timestamp in seconds, while trajectory `sample(t)` uses **relative trajectory seconds**. Future tracking must add explicitly identified monotonic-clock epoch, uncertainty, transform snapshots and encoder measurement age.
-
-## Limits and proof obligations
-For `q_i(t)=q_i(0)+D_i s(t)` with `s(u)=10u³−15u⁴+6u⁵`, `u=t/T`:
-- `max |ds/dt| = 15/(8T)`
-- `max |d²s/dt²| = 10/(sqrt(3) T²)`
-- `max |d³s/dt³| = 60/T³`
-- s is monotone on [0,1], thus endpoints imply position bounds over whole segment.
-For XYZ gantry linear TCP motion with fixed orientation, `||v_TCP|| = ||D|| |ds/dt|`; similarly for acceleration and jerk. The actual Cartesian norm is compared with the linear limits to choose T. No angular movement supported. For nonlinear robot kinematics these arguments do NOT apply.
-
-## Next implementation increments
-1. Integrate a Ruckig adapter under a unified online API, validate full continuous trajectory bounds and failure behaviour.
-2. Implement branch-aware serial and Delta kinematics, derivative/limit interfaces and reference tests.
-3. Separate immutable geometric path representation and jerk-aware global path time-parameterization with conservative or certified interval bounds.
-4. Implement time-varying targets, look-ahead, online replanning from moving initial conditions, feasibility-aware stop.
-5. Conveyor-following benchmark with encoder latency, workpiece uncertainty and dynamic target pose, including tests at all relevant boundaries.
+Zusätzliche TCP-Boxhindernisse sind explizite Constraints. Vollständige
+Payload-/Drehmoment- und Link-/Selbstkollisionsmodule sind noch nicht
+wiederhergestellt. CANopen ist bewusst ausgeklammert. Keine dieser Lücken wird
+mit Sample- oder Simulationswerten als physisch geprüft dargestellt.

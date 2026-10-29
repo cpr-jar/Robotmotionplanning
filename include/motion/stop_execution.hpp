@@ -69,6 +69,17 @@ public:
   PolynomialStopSchedule(std::shared_ptr<const BoundaryQuinticTrajectory> prefix,
                          std::shared_ptr<const JointStopTrajectory> stop, double cycle)
       : prefix_(std::move(prefix)), stop_(std::move(stop)), cycle_(cycle) {
+    if (!prefix_ || !stop_)
+      throw std::invalid_argument("Missing polynomial/stop");
+    const auto &x = prefix_->terminal_state();
+    const auto &y = stop_->initial_state();
+    const auto &l = prefix_->joint_limits();
+    const auto &r = stop_->joint_limits();
+    if (x.q != y.q || x.dq != y.dq || x.ddq != y.ddq || x.timestamp_s != y.timestamp_s ||
+        l.min_position != r.min_position || l.max_position != r.max_position ||
+        l.max_velocity != r.max_velocity || l.max_acceleration != r.max_acceleration ||
+        l.max_jerk != r.max_jerk)
+      throw std::invalid_argument("Polynomial/fallback mismatch");
     const long double count =
         std::ceil((static_cast<long double>(prefix_->duration()) + stop_->duration()) / cycle);
     if (!std::isfinite(cycle) || cycle <= 0 || count > schedule_detail::max_ticks || count < 1)
@@ -137,6 +148,17 @@ public:
   PreparedStopTransition(std::shared_ptr<const IExecutionSchedule> source, std::uint64_t activation,
                          std::shared_ptr<const JointStopTrajectory> stop)
       : source_(std::move(source)), activation_(activation), stop_(std::move(stop)) {
+    if (!source_ || !stop_ || activation_ > source_->total_ticks())
+      throw std::invalid_argument("Invalid transition input");
+    const auto x = source_->sample_tick(activation_);
+    const auto &y = stop_->initial_state();
+    const auto &l = source_->joint_limits();
+    const auto &r = stop_->joint_limits();
+    if (x.q != y.q || x.dq != y.dq || x.ddq != y.ddq || x.timestamp_s != y.timestamp_s ||
+        l.min_position != r.min_position || l.max_position != r.max_position ||
+        l.max_velocity != r.max_velocity || l.max_acceleration != r.max_acceleration ||
+        l.max_jerk != r.max_jerk)
+      throw std::invalid_argument("Transition state/time/limits mismatch");
     const long double count = std::ceil(static_cast<long double>(stop_->duration()) / cycle_s());
     if (count > schedule_detail::max_ticks - activation_)
       throw std::invalid_argument("Transition tick budget");

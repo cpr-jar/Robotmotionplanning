@@ -9,6 +9,7 @@ namespace {
 TrackingTime stamp(double t) {
   return {t, 7, 0};
 }
+#ifdef MOTION_WITH_SERIAL
 double displacement(double t) {
   return .002 * t + .0001 * (1 - std::cos(t));
 }
@@ -22,7 +23,6 @@ template <std::size_t N> JointState state(const FixedJointCommand<N> &c) {
   return {Vector(c.q.begin(), c.q.end()), Vector(c.dq.begin(), c.dq.end()),
           Vector(c.ddq.begin(), c.ddq.end()), c.timestamp_s};
 }
-#ifdef MOTION_WITH_SERIAL
 void serial_follow(const char *name) {
   const auto directory = std::string(MOTION_SOURCE_DIR) + "/models/" + name;
   const auto robot = load_serial_robot_files(directory + "/robot.urdf", directory + "/profile.yaml");
@@ -135,6 +135,15 @@ int main() {
   next.received_at = stamp(10.05);
   assert(history.ingest(outlier, next, frames, stamp(10.05)).status == ObservationUpdateStatus::Outlier);
   assert(history.size() == 1);
+  ConveyorObservationHistory scaled_history("part", 1, {"world", {1, 0, 0}, 2});
+  ConveyorObservationHistory plain_history("part", 1, {"world"});
+  assert(scaled_history.ingest(object, encoder, frames, stamp(10)));
+  assert(plain_history.ingest(object, encoder, frames, stamp(10)));
+  const auto scaled_prediction = scaled_history.predict(frames, stamp(10), stamp(10.4));
+  const auto plain_prediction = plain_history.predict(frames, stamp(10), stamp(10.4));
+  assert(scaled_prediction && plain_prediction);
+  assert(scaled_prediction.target->velocity_error_m_s >= 1.99 * plain_prediction.target->velocity_error_m_s);
+
   const JointLimits limits{Vector(3, -2), Vector(3, 2), Vector(3, 1), Vector(3, 3), Vector(3, 30)};
   GantryConveyorFollower follower(limits, {.8, 2, 20, 1, 1, 1});
   const auto plan = follower.plan({{.1, 0, 0}, {.04, 0, 0}, Vector(3), 10}, 10, .01, {1, 0, 0, 7}, 40,

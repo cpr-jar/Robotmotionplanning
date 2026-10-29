@@ -10,13 +10,20 @@ namespace {
 [[noreturn]] void fail(const std::string &s) {
   throw ModelImportError(s);
 }
+void yaml_tag(const YAML::Node &n) {
+  const auto t = n.Tag();
+  if (!t.empty() && t != "?" && t != "!")
+    fail("Explicit YAML tags unsupported; convert to SI");
+}
 void keys(const YAML::Node &n, std::initializer_list<const char *> allowed) {
+  yaml_tag(n);
   if (!n.IsMap())
     fail("Expected YAML mapping");
   std::set<std::string> seen;
   for (const auto &p : n) {
     if (!p.first.IsScalar())
       fail("Invalid YAML key");
+    yaml_tag(p.first);
     const auto s = p.first.as<std::string>();
     if (!seen.insert(s).second)
       fail("Duplicate key: " + s);
@@ -25,6 +32,7 @@ void keys(const YAML::Node &n, std::initializer_list<const char *> allowed) {
   }
 }
 double number(const YAML::Node &n, bool positive = false) {
+  yaml_tag(n);
   if (!n.IsScalar())
     fail("Expected finite YAML number");
   const double x = n.as<double>();
@@ -33,11 +41,13 @@ double number(const YAML::Node &n, bool positive = false) {
   return x;
 }
 std::string text(const YAML::Node &n) {
+  yaml_tag(n);
   if (!n.IsScalar() || n.as<std::string>().empty())
     fail("Expected YAML text");
   return n.as<std::string>();
 }
 kinematic_detail::V3 xyz(const YAML::Node &n) {
+  yaml_tag(n);
   if (!n.IsSequence() || n.size() != 3)
     fail("Expected three SI numbers");
   return {number(n[0]), number(n[1]), number(n[2])};

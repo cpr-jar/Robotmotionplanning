@@ -85,9 +85,9 @@ public:
           const double age = now.seconds - old.encoder.measured_at.seconds;
           const double residual = kinematic_detail::norm(
               kinematic_detail::sub(past.target->pose.position, fresh.target->pose.position));
-          if (residual > policy_.object_innovation_m + past.target->position_error_m +
-                             fresh.target->position_error_m +
-                             policy_.max_encoder_jerk_m_s3 * age * age * age / 6)
+          if (residual >
+              policy_.object_innovation_m + past.target->position_error_m + fresh.target->position_error_m +
+                  policy_.max_encoder_jerk_m_s3 * predictor_.absolute_scale() * age * age * age / 6)
             return {ObservationUpdateStatus::Outlier, "Object position innovation"};
           if (rotation_distance(past.target->pose.orientation, fresh.target->pose.orientation) >
               policy_.orientation_innovation_rad + past.target->orientation_error_rad +
@@ -117,7 +117,7 @@ public:
                       d0 = std::abs(static_cast<long double>(last.object.measured_at.seconds) -
                                     last.encoder.measured_at.seconds) +
                            last.object.measured_at.uncertainty_s + last.encoder.measured_at.uncertainty_s,
-                      j = policy_.max_encoder_jerk_m_s3;
+                      j = policy_.max_encoder_jerk_m_s3 * predictor_.absolute_scale();
     r.target->position_error_m += double(j * (df * df * df + d0 * d0 * d0) / 6);
     r.target->velocity_error_m_s += double(j * df * df / 2);
     r.target->acceleration_error_m_s2 += double(j * df);
