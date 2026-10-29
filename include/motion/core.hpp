@@ -77,22 +77,29 @@ class CartesianGantry final : public IKinematics {
 public:
   std::size_t dof() const override { return 3; }
   Pose fk(const Vector &q) const override {
-    if (q.size() != 3)
-      throw std::invalid_argument("Gantry requires 3 joints");
+    if (!finite_joints(q))
+      throw std::invalid_argument("Gantry requires 3 finite joints");
     return {{q[0], q[1], q[2]}, {1, 0, 0, 0}};
   }
   std::optional<Vector> ik(const Pose &p, const Vector &seed) const override {
-    if (seed.size() != 3)
+    if (!finite_joints(seed) ||
+        !std::all_of(p.position.begin(), p.position.end(), [](double x) { return std::isfinite(x); }) ||
+        !std::all_of(p.orientation.begin(), p.orientation.end(), [](double x) { return std::isfinite(x); }))
       return std::nullopt;
-    if (std::abs(p.orientation[0] - 1) > 1e-9 || std::abs(p.orientation[1]) > 1e-9 ||
+    if (std::abs(std::abs(p.orientation[0]) - 1) > 1e-9 || std::abs(p.orientation[1]) > 1e-9 ||
         std::abs(p.orientation[2]) > 1e-9 || std::abs(p.orientation[3]) > 1e-9)
       return std::nullopt;
     return Vector{p.position[0], p.position[1], p.position[2]};
   }
   std::vector<Vector> jacobian(const Vector &q) const override {
-    if (q.size() != 3)
-      throw std::invalid_argument("Gantry requires 3 joints");
+    if (!finite_joints(q))
+      throw std::invalid_argument("Gantry requires 3 finite joints");
     return {{1, 0, 0}, {0, 1, 0}, {0, 0, 1}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}};
+  }
+
+private:
+  static bool finite_joints(const Vector &q) {
+    return q.size() == 3 && std::all_of(q.begin(), q.end(), [](double x) { return std::isfinite(x); });
   }
 };
 // Generic adapter for a serial or Delta kinematic solver supplied by the robot plugin.

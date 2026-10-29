@@ -16,6 +16,12 @@
 
 ## Noch nicht wiederhergestellt oder weiterhin offen
 
+Die vier zusätzlich beauftragten Software-Prüfpakete sind mit 0.12.2 umgesetzt:
+kinematische Grenzfälle, unabhängiger KDL-FK/J-Vergleich, Ausführungsfehler und
+reproduzierbare Zufallsprogramme/Parser-Fuzzing. Umfang, Seeds und Grenzen:
+[ROBUSTNESS.md](ROBUSTNESS.md). Diese Tests laufen künftig bei Änderungen in CI;
+längere Fuzz-Kampagnen können mit demselben Harness fortgesetzt werden.
+
 1. Frühere zusätzliche Payload-/Drehmoment- und vollständige Link-/Selbstkollisions-
    Module sowie einzelne ältere Komfort-/Benchmark-APIs. Aktuelle Programme
    behaupten diese Prüfungen nicht. Die zugrundeliegenden inertialen/Geometriedaten

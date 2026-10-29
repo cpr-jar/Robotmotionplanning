@@ -1,0 +1,5 @@
+schema_version: 1
+units: SI
+robot_profile: profile.yaml
+start: {joints: [0.1,0,0]}
+steps: [{type: CIRC, center_offset: [-0.01,0,0], normal: [0,0,1], sweep_rad: 6.283185307179586}]

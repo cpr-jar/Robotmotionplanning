@@ -1,3 +1,52 @@
+# Robustheitsprüfung — 0.12.2, 29.10.2026
+
+Alle vier beauftragten Software-Prüfpakete sind umgesetzt. Details und Replay:
+[ROBUSTNESS.md](ROBUSTNESS.md). Linux, GCC 14.2.0, CMake 4.4.4, C++20;
+`-Wall -Wextra -Wpedantic -Werror`, aktive Assertions auch in Release.
+Die Abhängigkeiten einschließlich der testweisen KDL-Referenz wurden aus
+lokalen, hashgebundenen Quellarchiven gebaut.
+
+| Serial | Ruckig | Konfiguration | Ergebnis |
+| --- | --- | --- | --- |
+| ON | ON | Release, KDL-Referenz ON | **21/21** |
+| ON | ON | Debug, ASan/UBSan, -O1 -g1 | **21/21** |
+| ON | OFF | Standard-Release, KDL-Referenz ON | **19/19** |
+| OFF | OFF | Minimal-Release | **9/9** |
+| OFF | ON | Ruckig ohne Serial | **11/11** |
+
+- 360 lokale IK-Grenzfallziele: 137 zugelassen, 223 mit Diagnose abgelehnt;
+  zusätzliche kurze/Null-Linien, volle Kreise, Quaternion-Vorzeichen und Grenzverletzungen.
+- Unabhängiges Orocos KDL 1.5.1: **1.866 FK/J-Vergleiche**, größte absolute
+  Abweichungen 3,56·10⁻¹⁵ / 3,11·10⁻¹⁵.
+- Fehler während der Ausführung, verspätete/fenced Wechsel, belegte Übergaben,
+  doppelte/ungültige Befehle, 100 zufällige Pufferabläufe;
+  stale-/Kalibrierungswechsel mit Auslauf in den vorgeprüften Halt.
+- **120 Zufallsprogramme**, 59.506 ausgegebene Befehle, 240 transaktional
+  abgelehnte Übernahmen; **12.000 Parser-Mutationen** (132 akzeptiert,
+  11.868 abgelehnt), explizite Ressourcenbudgets und Replay.
+- Clang **19.1.7**, libFuzzer plus ASan/UBSan: **50.000 + 100.000** Eingaben,
+  zweiter Lauf auf fortgesetztem/ergänztem Korpus; keine Crashes, Timeouts oder
+  Sanitizer-Befunde. Zweiter Lauf: 71 s, 5.338 Coverage-Punkte (`cov`) laut libFuzzer,
+  912 Korpuseinträge / 267 KiB, RSS 459 MiB. Diese Coverage-Zahl ist kein Prozentwert.
+- Zusätzliche CLI-Prüfung: bereits vorhandene CSV bleibt sowohl bei überschrittenem
+  Tick-Budget als auch bei einem ungültigen späten Programmschritt byteidentisch;
+  keine übrig gebliebenen temporären Dateien.
+- Gefundene und behobene Fehler: XYZ-Gantry muss beide Identitätsquaternion-
+  Vorzeichen akzeptieren und nichtendliche Posen/Gelenke/Seeds ablehnen.
+
+Lokal: `ASAN_OPTIONS=detect_leaks=0`, `UBSAN_OPTIONS=halt_on_error=1`.
+LeakSanitizer ist wegen der Prozess-Trace-Umgebung nicht als geprüft angegeben.
+Die CI-Konfiguration enthält die fünf Build-Varianten und zusätzlich einen
+50.000er-libFuzzer-Job; diese Tabelle berichtet die tatsächlich lokal ausgeführten
+Cloud-Prüfungen, keinen noch unbestätigten GitHub-Actions-Lauf.
+
+Die nominalen Robotermodelle, gemeinsame Modellparameter beim KDL-Vergleich,
+Engineering-Intervallhüllen und lokale IK behalten ihre dokumentierten Grenzen.
+Hardware, Raspberry-Pi-Echtzeit und CANopen wurden nicht geprüft; CANopen bleibt
+wie beauftragt ausgeklammert. Die folgenden Ergebnisse sind historisch.
+
+---
+
 # Erneute Prüfung der Rekonstruktion — 29.10.2026
 
 Linux, GCC 14.2.0, CMake 4.4.4, C++20; eigene Targets mit

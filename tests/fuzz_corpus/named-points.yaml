@@ -1,0 +1,69 @@
+schema_version: 1
+units: SI
+robot_profile: profile.yaml
+start: {joints: [0.1,0,0]}
+speed: 0.8
+epoch_s: -10
+cycle_s: 0.001
+points:
+  p0: {joints: [0.1,0.01,0.02]}
+  p1: {joints: [0.1,0.01,0.02]}
+  p2: {joints: [0.1,0.01,0.02]}
+  p3: {joints: [0.1,0.01,0.02]}
+  p4: {joints: [0.1,0.01,0.02]}
+  p5: {joints: [0.1,0.01,0.02]}
+  p6: {joints: [0.1,0.01,0.02]}
+  p7: {joints: [0.1,0.01,0.02]}
+  p8: {joints: [0.1,0.01,0.02]}
+  p9: {joints: [0.1,0.01,0.02]}
+  p10: {joints: [0.1,0.01,0.02]}
+  p11: {joints: [0.1,0.01,0.02]}
+  p12: {joints: [0.1,0.01,0.02]}
+  p13: {joints: [0.1,0.01,0.02]}
+  p14: {joints: [0.1,0.01,0.02]}
+  p15: {joints: [0.1,0.01,0.02]}
+  p16: {joints: [0.1,0.01,0.02]}
+  p17: {joints: [0.1,0.01,0.02]}
+  p18: {joints: [0.1,0.01,0.02]}
+  p19: {joints: [0.1,0.01,0.02]}
+  p20: {joints: [0.1,0.01,0.02]}
+  p21: {joints: [0.1,0.01,0.02]}
+  p22: {joints: [0.1,0.01,0.02]}
+  p23: {joints: [0.1,0.01,0.02]}
+  p24: {joints: [0.1,0.01,0.02]}
+  p25: {joints: [0.1,0.01,0.02]}
+  p26: {joints: [0.1,0.01,0.02]}
+  p27: {joints: [0.1,0.01,0.02]}
+  p28: {joints: [0.1,0.01,0.02]}
+  p29: {joints: [0.1,0.01,0.02]}
+steps:
+  - {type: PTP, target: p0, speed: 0.5}
+  - {type: PTP, target: p1, speed: 0.5}
+  - {type: PTP, target: p2, speed: 0.5}
+  - {type: PTP, target: p3, speed: 0.5}
+  - {type: PTP, target: p4, speed: 0.5}
+  - {type: PTP, target: p5, speed: 0.5}
+  - {type: PTP, target: p6, speed: 0.5}
+  - {type: PTP, target: p7, speed: 0.5}
+  - {type: PTP, target: p8, speed: 0.5}
+  - {type: PTP, target: p9, speed: 0.5}
+  - {type: PTP, target: p10, speed: 0.5}
+  - {type: PTP, target: p11, speed: 0.5}
+  - {type: PTP, target: p12, speed: 0.5}
+  - {type: PTP, target: p13, speed: 0.5}
+  - {type: PTP, target: p14, speed: 0.5}
+  - {type: PTP, target: p15, speed: 0.5}
+  - {type: PTP, target: p16, speed: 0.5}
+  - {type: PTP, target: p17, speed: 0.5}
+  - {type: PTP, target: p18, speed: 0.5}
+  - {type: PTP, target: p19, speed: 0.5}
+  - {type: PTP, target: p20, speed: 0.5}
+  - {type: PTP, target: p21, speed: 0.5}
+  - {type: PTP, target: p22, speed: 0.5}
+  - {type: PTP, target: p23, speed: 0.5}
+  - {type: PTP, target: p24, speed: 0.5}
+  - {type: PTP, target: p25, speed: 0.5}
+  - {type: PTP, target: p26, speed: 0.5}
+  - {type: PTP, target: p27, speed: 0.5}
+  - {type: PTP, target: p28, speed: 0.5}
+  - {type: PTP, target: p29, speed: 0.5}

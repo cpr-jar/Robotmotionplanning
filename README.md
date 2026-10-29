@@ -1,10 +1,11 @@
-# Robot Motion C++ — 0.12.1, rekonstruierter Stand
+# Robot Motion C++ — 0.12.2
 
 Dieses Projekt wurde am 29.10.2026 aus der erneut hochgeladenen ZIP **v0.2.0** und
 dem Gespräch rekonstruiert. Es ist eine neu geprüfte Implementierung, keine
 byteidentische Wiederherstellung der verlorenen v0.12.0.
 [Wiederherstellungsbericht](docs/RECOVERY_STATUS.md) · [Programmformat](docs/ROBOT_PROGRAMS.md)
 · [Architektur](docs/ARCHITECTURE.md) · [Prüfbericht](docs/VALIDATION.md).
+Die anschließenden vier Robustheitspakete sind in [Robustheitstests](docs/ROBUSTNESS.md) beschrieben.
 
 ## Starten
 
@@ -67,13 +68,16 @@ ctest --test-dir build-all --output-on-failure
 cmake -S . -B build-minimal -DMOTION_WITH_SERIAL=OFF
 
 # Sanitizer:
-cmake -S . -B build-asan -DCMAKE_BUILD_TYPE=Debug -DMOTION_WITH_RUCKIG=ON -DMOTION_SANITIZE=ON
+cmake -S . -B build-asan -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS_DEBUG="-O1 -g1" -DMOTION_WITH_RUCKIG=ON -DMOTION_SANITIZE=ON
 ```
 
 `MOTION_WITH_SERIAL=ON` ist der Standard und aktiviert den Programmimport. Ruckig
 ist für die normalen PTP/LIN/CIRC-Programme nicht erforderlich. Nur Stopps,
 Online-Retargeting und Conveyor-Following benötigen `MOTION_WITH_RUCKIG=ON`.
 Linux bietet zusätzlich `platform_timing_probe [Anzahl]` für Host-Zeitdiagnostik.
+Der standardmäßig gebaute KDL-FK/J-Vergleich benötigt ebenfalls kein Netzwerk und
+verlinkt KDL nur in den Test. `MOTION_WITH_KDL_REFERENCE=OFF` lässt ihn aus.
+Parser-Fuzzing mit Clang, Replay und Seeds: [Anleitung](docs/ROBUSTNESS.md).
 
 ## Grenzen der Wiederherstellung
 
@@ -94,6 +98,7 @@ Dispatch-Test sind kein Nachweis physischer Ausführung oder harter Echtzeit.
 
 Zielrepository: https://github.com/cpr-jar/Robotmotionplanning
 
-Der rekonstruierte Quellstand liegt auf `recovery/reconstructed-v0.12.1`.
-Ein Quell-ZIP und eine vollständige Git-Bundle-Sicherung werden zusätzlich
-bereitgestellt. Nur bestätigte Pushes/Deployments werden als erfolgreich angegeben.
+Der fortgeführte Quellstand liegt auf `recovery/reconstructed-v0.12.1`.
+[Quell-ZIP v0.12.2](https://github.com/cpr-jar/Robotmotionplanning/archive/refs/tags/v0.12.2.zip).
+Die frühere Rekonstruktionssicherung v0.12.1 bleibt zusätzlich als Git-Bundle in
+`backups/` erhalten; sie wird durch neue Versionen nicht überschrieben.

@@ -152,13 +152,40 @@ int main() {
   LivePlanMailbox<3> box;
   LiveMotionExecutor<3> executor(*plan.plan, box, {0, .001, 0, 0});
   LiveJointCommand<3> output;
+  TrackingFrameSnapshot recalibrated("world", {}, 2, stamp(0), stamp(100));
   for (std::uint64_t tick = 0; tick <= plan.plan->end_tick(); ++tick) {
+    if (tick == 16 || tick == 25) {
+      const auto now = stamp(10 + schedule_detail::tick_time(tick, .01));
+      const auto &snapshot = tick == 25 ? recalibrated : frames;
+      const auto prediction = history.predict(snapshot, now, {now.seconds + .1, 7, 0});
+      assert(prediction.status ==
+             (tick == 25 ? PredictionStatus::CalibrationUnavailable : PredictionStatus::StaleObservation));
+      const auto at = tick + 3;
+      const auto c = plan.plan->command(at);
+      const auto replacement =
+          follower.plan({Vector(c.q.begin(), c.q.end()), Vector(c.dq.begin(), c.dq.end()),
+                         Vector(c.ddq.begin(), c.ddq.end()), c.timestamp_s},
+                        10, .01, {2, 1, at, 7}, 40, history, snapshot, now);
+      assert(!replacement && !replacement.plan && !replacement.diagnostic.empty());
+      if (tick == 25)
+        assert(history.ingest(object, encoder, recalibrated, now).status ==
+               ObservationUpdateStatus::CalibrationChanged);
+      assert(history.size() == 1 && executor.generation() == 1);
+    }
     const auto status = executor.poll(stamp(10 + schedule_detail::tick_time(tick, .01)), output);
     assert(status == (tick == plan.plan->end_tick() ? ExecutionStatus::Finished : ExecutionStatus::Running));
+    assert(output.joints.tick == tick && output.generation == 1);
     if (tick <= 40)
       assert(std::abs(output.joints.q[0] - (.1 + .04 * tick * .01)) < 1e-10);
   }
   assert(buffer_detail::rest(output.joints));
+  const auto saved = output;
+  assert(executor.poll(stamp(20), output) == ExecutionStatus::Inactive);
+  assert(output.joints == saved.joints && output.generation == saved.generation);
+  history.reset("part", 2);
+  assert(history.size() == 0 && !history.predict(recalibrated, stamp(10), stamp(10.1)));
+  assert(history.ingest(object, encoder, recalibrated, stamp(10)));
+  assert(history.predict(recalibrated, stamp(10), stamp(10.1)));
   assert(!history.predict(frames, stamp(11), stamp(11.4)));
 #ifdef MOTION_WITH_SERIAL
   for (const auto *name : {"ur5e", "abb_irb120", "fanuc_lrmate200id"})

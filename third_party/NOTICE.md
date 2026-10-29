@@ -7,6 +7,13 @@ those archives and copied into licenses/. Ruckig provenance includes the exact
 upstream commit in ruckig-provenance.json; its archive is a normalized tar of that
 unmodified tagged checkout, excluding .git.
 
+The independent FK/J tests additionally build a subset of **Orocos KDL 1.5.1**
+(LGPL 2.1 or later). Its complete, unmodified upstream source archive is bundled;
+the exact tag commit and SHA256 are in kdl-provenance.json and
+test_support/kdl/CMakeLists.txt. COPYING is retained in the archive and copied
+into licenses/orocos-kdl-1.5.1-COPYING. KDL links only into the reference test,
+not the motion libraries or simulator. MOTION_WITH_KDL_REFERENCE=OFF omits it.
+
 The nominal UR5e / ABB IRB120 / FANUC LR Mate 200iD descriptions are modified
 kinematics-only derivations of the pinned upstream ROS descriptions in
 ../models/upstream. Original copyright/license notices and package metadata are

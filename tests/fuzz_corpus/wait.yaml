@@ -1,0 +1,5 @@
+schema_version: 1
+units: SI
+robot_profile: profile.yaml
+start: {joints: [0.1,0,0]}
+steps: [{type: WAIT, seconds: 0.01}]

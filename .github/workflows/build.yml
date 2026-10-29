@@ -1,4 +1,4 @@
-name: Reconstructed project verification
+name: Motion verification
 on: [push, pull_request]
 jobs:
   build:
@@ -31,7 +31,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Configure from bundled sources
-        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=${{ matrix.type }} -DMOTION_WITH_SERIAL=${{ matrix.serial }} -DMOTION_WITH_RUCKIG=${{ matrix.ruckig }} -DMOTION_SANITIZE=${{ matrix.sanitize }}
+        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=${{ matrix.type }} -DCMAKE_CXX_FLAGS_DEBUG="-O1 -g1" -DMOTION_WITH_SERIAL=${{ matrix.serial }} -DMOTION_WITH_RUCKIG=${{ matrix.ruckig }} -DMOTION_SANITIZE=${{ matrix.sanitize }}
       - run: cmake --build build --parallel 2
       - run: ctest --test-dir build --output-on-failure
       - if: matrix.serial == 'ON'
@@ -39,3 +39,23 @@ jobs:
         run: |
           ./build/program_simulator programs/ur5e_demo.yaml --check
           ./build/program_simulator programs/ur5e_demo.yaml --csv build/trace.csv
+  parser-fuzz:
+    runs-on: ubuntu-latest
+    env:
+      UBSAN_OPTIONS: halt_on_error=1
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build instrumented parser and dependencies
+        run: |
+          cmake -S . -B build-fuzz -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS_DEBUG="-O1 -g1" -DMOTION_SANITIZE=ON -DMOTION_BUILD_FUZZER=ON -DMOTION_WITH_KDL_REFERENCE=OFF
+          cmake --build build-fuzz --target program_parser_fuzzer --parallel 2
+      - name: Bounded coverage-guided fuzz run
+        run: |
+          mkdir -p build-fuzz/corpus build-fuzz/findings
+          cp tests/fuzz_corpus/*.yaml build-fuzz/corpus/
+          ./build-fuzz/program_parser_fuzzer build-fuzz/corpus -runs=50000 -max_len=8192 -timeout=5 -rss_limit_mb=1024 -seed=4028751910 -artifact_prefix=build-fuzz/findings/
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: parser-fuzz-findings
+          path: build-fuzz/findings/

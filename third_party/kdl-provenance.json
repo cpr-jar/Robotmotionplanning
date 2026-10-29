@@ -1,0 +1,6 @@
+{
+  "repository": "https://api.github.com/repos/orocos/orocos_kinematics_dynamics",
+  "tag": "v1.5.1",
+  "commit": "db25b7e480e068df068232064f2443b8d52a83c7",
+  "sha256": "07b8884ba711dd745e018ccd27e96d716257457fa2787b7412bae5c2509e4188"
+}

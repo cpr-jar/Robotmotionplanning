@@ -1,0 +1,6 @@
+schema_version: 1
+units: SI
+robot_profile: profile.yaml
+start: {joints: [0.1,0,0]}
+points: {a: {joints: [0.2,0,0]}}
+steps: [{type: PTP, target: a}]
