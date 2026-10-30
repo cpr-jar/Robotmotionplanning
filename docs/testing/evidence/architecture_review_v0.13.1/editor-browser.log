@@ -1,0 +1,1 @@
+{"state": "ready", "browser_errors": [], "external_requests": [], "checks": ["native simulation", "complete UR model", "viewer playback", "YAML/HTML downloads", "late error preserves viewer", "error line", "local draft restore", "YAML import", "edit during simulation", "second robot", "20 ms grid", "mobile layout"]}

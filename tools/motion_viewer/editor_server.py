@@ -8,6 +8,7 @@ from collections import OrderedDict
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 import json
+import logging
 import re
 import secrets
 import shutil
@@ -117,6 +118,20 @@ class SimulationService:
         self._simulation_lock = threading.Lock()
         self._results_lock = threading.Lock()
         self._results = OrderedDict()
+        self._expired_results = set()
+
+    def _cleanup_expired_results(self):
+        # Called with the simulation lock held, after the publication commit.
+        # IO cleanup must never turn an already visible result into an error.
+        for expired in tuple(self._expired_results):
+            try:
+                shutil.rmtree(expired)
+            except FileNotFoundError:
+                pass
+            except OSError:
+                logging.getLogger(__name__).warning("Expired simulation cleanup deferred until next run.")
+                continue
+            self._expired_results.remove(expired)
 
     def close(self):
         # A running subprocess has a bounded timeout. Do not remove its input.
@@ -225,7 +240,8 @@ class SimulationService:
                 published = True
                 while len(self._results) > RESULT_LIMIT:
                     _, (expired, _) = self._results.popitem(last=False)
-                    shutil.rmtree(expired)
+                    self._expired_results.add(expired)
+            self._cleanup_expired_results()
             return summary
         except EditorError:
             raise
@@ -264,7 +280,7 @@ class EditorServer(ThreadingHTTPServer):
 
 
 class EditorHandler(BaseHTTPRequestHandler):
-    server_version = "MotionEditor/0.4.0"
+    server_version = "MotionEditor/0.4.1"
 
     def setup(self):
         super().setup()

@@ -138,6 +138,39 @@ class ProgramEditorTests(unittest.TestCase):
         self.assertEqual(caught.exception.status, 404)
         self.assertTrue(self.service.result_file(results[-1]["id"])[0])
 
+    def test_retention_cleanup_failure_does_not_reject_a_committed_result(self):
+        results = [self.service.simulate(request_for()) for _ in range(RESULT_LIMIT)]
+        expired_folder = self.service.folder / results[0]["id"]
+        with (
+            patch("editor_server.shutil.rmtree", side_effect=OSError("injected cleanup failure")),
+            self.assertLogs("editor_server", level="WARNING"),
+        ):
+            committed = self.service.simulate(request_for())
+        self.assertTrue(self.service.result_file(committed["id"])[0])
+        self.assertEqual(len(self.service._results), RESULT_LIMIT)
+        with self.assertRaises(EditorError) as caught:
+            self.service.result_file(results[0]["id"])
+        self.assertEqual(caught.exception.status, 404)
+        for result in results[1:]:
+            self.assertTrue(self.service.result_file(result["id"])[0])
+        self.assertTrue(expired_folder.exists())
+        # Retry deferred cleanup on the next successful job.
+        next_result = self.service.simulate(request_for())
+        self.assertTrue(self.service.result_file(next_result["id"])[0])
+        self.assertFalse(expired_folder.exists())
+        self.assertEqual(len(list(self.service.folder.iterdir())), RESULT_LIMIT)
+
+    def test_write_failure_before_commit_preserves_all_previous_results(self):
+        prior = self.service.simulate(request_for())
+        original = self.service.result_file(prior["id"])[0]
+        with patch("editor_server.atomic_write", side_effect=OSError("injected write failure")):
+            with self.assertRaisesRegex(EditorError, "Keine Simulation veröffentlicht"):
+                self.service.simulate(request_for())
+        self.assertEqual(self.service.result_file(prior["id"])[0], original)
+        self.assertEqual(list(self.service._results), [prior["id"]])
+        self.assertEqual(len(list(self.service.folder.iterdir())), 1)
+        self.assertTrue(self.service.simulate(request_for())["commands"] > 0)
+
     def test_examples_have_portable_paths_and_work_with_existing_native_parser(self):
         for name in ("ur5e", "abb_irb120", "fanuc_lrmate200id"):
             example = self.service.example(name)

@@ -1,4 +1,14 @@
-# Aktuelle Ergänzung — DXF-Befehl 0.13.0, 29.10.2026
+# Aktuelle Ergänzung — Architekturkorrekturen 0.13.1, 30.10.2026
+
+F01/F02/F06/F09 des Architektur-Reviews sind mit Regressionen bearbeitet.
+Die Vollkonfiguration besteht **30/30** CTests in Release und ASan/UBSan;
+der getrennte Viewer/Editor besteht **32/32** Python-Tests in beiden nativen
+Konfigurationen. Minimal ohne Serial/Ruckig: **11/11**. Editor-/DXF-Browserabläufe,
+externer Consumer und 37 einzeln kompilierte öffentliche Header sind geprüft.
+Sechs vollständige Beispielspuren sind gegenüber dem vorherigen Exporter bytegleich.
+Verträge, Einschränkungen und Nachweise: [Korrekturpaket](architecture_review_fixes.md).
+
+## DXF-Befehl 0.13.0, 29.10.2026
 
 Die Vollkonfiguration mit Serial/Ruckig/KDL besteht **29/29** CTests im Release-
 und ASan/UBSan-Build. Die getrennte Werkzeugprüfung umfasst zusätzlich **30**

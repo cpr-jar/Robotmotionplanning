@@ -12,6 +12,8 @@ struct CycleGridResult {
 CycleGridResult align_program_cycles(std::shared_ptr<const IJointProgram>, double);
 class CycleAlignedProgram final : public IJointProgram, public IExecutionSchedule {
 public:
+  /// Object identity of the immutable reference used to construct this grid.
+  bool references(const IJointProgram &program) const noexcept { return source_.get() == &program; }
   double duration() const noexcept override { return ends_.back(); }
   double cycle_s() const noexcept override { return cycle_; }
   std::uint64_t total_ticks() const noexcept override { return ticks_.back(); }

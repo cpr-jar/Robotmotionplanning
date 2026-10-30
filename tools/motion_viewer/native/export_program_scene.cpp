@@ -285,12 +285,8 @@ int main(int argc, char **argv) {
         throw std::invalid_argument("Integer argument outside permitted range");
       return result;
     };
-    if (argc >= 4) {
-      const auto aligned = motion::align_program_cycles(prepared.reference, integer(argv[3], 1, 20) * .001);
-      if (!aligned)
-        throw std::invalid_argument(aligned.diagnostic);
-      prepared.schedule = aligned.program;
-    }
+    if (argc >= 4)
+      prepared = motion::retime_robot_program(prepared, integer(argv[3], 1, 20) * .001);
     const unsigned max_ticks = argc >= 5 ? integer(argv[4], 1, 99999) : 99999;
     BudgetedTraceBuffer trace_buffer;
     std::ostream trace_stream(&trace_buffer);

@@ -41,12 +41,10 @@ int run_contract(const std::string &filename, unsigned cycle_ms, std::string_vie
   if (prepared_program.reference->initial_state().q.size() != axis_count)
     throw std::invalid_argument("This demonstration requires a six-axis program");
   const double cycle_period_s = cycle_ms * .001;
-  const auto aligned = align_program_cycles(prepared_program.reference, cycle_period_s);
-  if (!aligned)
-    throw std::invalid_argument(aligned.diagnostic);
-  const double execution_epoch_s = aligned.program->initial_state().timestamp_s;
+  const auto aligned = retime_robot_program(prepared_program, cycle_period_s);
+  const double execution_epoch_s = aligned.schedule->initial_state().timestamp_s;
   const auto prepared_cache =
-      prepare_live_plan<axis_count>(aligned.program, execution_epoch_s, {1, 0, 0, controller_clock_id});
+      prepare_live_plan<axis_count>(aligned.schedule, execution_epoch_s, {1, 0, 0, controller_clock_id});
   if (!prepared_cache)
     throw std::invalid_argument(prepared_cache.diagnostic);
 
@@ -88,7 +86,7 @@ int run_contract(const std::string &filename, unsigned cycle_ms, std::string_vie
     return 1;
   bool observed_expected_fault = false;
   for (std::uint64_t tick = 0; tick <= prepared_cache.plan->end_tick(); ++tick) {
-    clock.observation = {execution_epoch_s + aligned.program->tick_time(tick), controller_clock_id, 0};
+    clock.observation = {execution_epoch_s + aligned.schedule->tick_time(tick), controller_clock_id, 0};
     if (scenario == "late-clock" && tick == fault_tick)
       clock.observation.seconds += cycle_period_s * .5;
     const auto execution_status = dispatch_cycle();
@@ -117,7 +115,7 @@ int run_contract(const std::string &filename, unsigned cycle_ms, std::string_vie
     clock.observation.seconds += cycle_period_s;
     if (dispatch_cycle() != ExecutionStatus::Inactive || axes.accepted_commands != delivered_before_retry ||
         axes.stop_requests || !axes.last_command.terminal || !buffer_detail::rest(axes.last_command) ||
-        axes.accepted_commands != aligned.program->total_ticks() + 1)
+        axes.accepted_commands != aligned.schedule->total_ticks() + 1)
       return 1;
   } else if (!observed_expected_fault)
     return 1;

@@ -24,7 +24,8 @@ public:
                  a = 60 * u * one * (1 - 2 * u) / (duration_ * duration_),
                  j = (60 - 360 * u + 360 * u * u) / (duration_ * duration_ * duration_);
     const auto p = path_->evaluate(s);
-    const auto n = p.q.size();
+    const auto n = bounds_.lower.size();
+    check_point(p, n);
     TimedPathSample out;
     out.joints = {p.q, Vector(n), Vector(n), epoch_ + t};
     out.joint_jerk.resize(n);
@@ -48,11 +49,24 @@ public:
                                              p.tcp.angular_derivatives[0][i] * j;
     }
     kinematic_detail::require_finite(out.tcp_derivatives);
+    if (!kinematic_detail::finite(out.joints.dq, n) || !kinematic_detail::finite(out.joints.ddq, n) ||
+        !kinematic_detail::finite(out.joint_jerk, n))
+      throw std::invalid_argument("Nonfinite timed path derivatives");
     return out;
   }
 
 private:
   friend class PathTimeParameterizer;
+  static void check_point(const JointPathPoint &p, std::size_t n) {
+    if (!kinematic_detail::finite(p.q, n) || !kinematic_detail::finite(p.q_s, n) ||
+        !kinematic_detail::finite(p.q_ss, n) || !kinematic_detail::finite(p.q_sss, n) ||
+        !kinematic_detail::finite_pose(p.tcp.pose))
+      throw std::invalid_argument("Invalid path point dimension/value");
+    for (const auto &derivative : p.tcp.derivatives)
+      path_detail::finite3(derivative);
+    for (const auto &derivative : p.tcp.angular_derivatives)
+      path_detail::finite3(derivative);
+  }
   std::shared_ptr<const IBoundedJointPath> path_;
   JointPathBounds bounds_;
   double duration_{}, epoch_{};
@@ -64,8 +78,9 @@ public:
   }
   PlanResult plan(std::shared_ptr<const IBoundedJointPath> path, const JointState &start,
                   const CartesianLimits &caps) const {
-    if (!path || !kinematic_detail::finite(start.q, limits_.min_position.size()) || !is_rest(start, 0) ||
-        !std::isfinite(start.timestamp_s))
+    const auto n = limits_.min_position.size();
+    if (!path || !kinematic_detail::finite(start.q, n) || !kinematic_detail::finite(start.dq, n) ||
+        !kinematic_detail::finite(start.ddq, n) || !is_rest(start, 0) || !std::isfinite(start.timestamp_s))
       return {PlanStatus::InvalidInput, {}, "Invalid path initial state"};
     for (double x : {caps.max_linear_velocity, caps.max_linear_acceleration, caps.max_linear_jerk,
                      caps.max_angular_velocity, caps.max_angular_acceleration, caps.max_angular_jerk})
@@ -73,12 +88,19 @@ public:
         return {PlanStatus::InvalidInput, {}, "Invalid TCP caps"};
     try {
       auto b = path->bounds();
-      if (b.lower.size() != start.q.size() || b.upper.size() != start.q.size())
-        throw std::invalid_argument("Path bounds dimension");
+      if (!kinematic_detail::finite(b.lower, n) || !kinematic_detail::finite(b.upper, n))
+        throw std::invalid_argument("Invalid path bounds dimension/value");
+      for (const auto &derivative : b.joint_abs)
+        if (!kinematic_detail::finite(derivative, n))
+          throw std::invalid_argument("Invalid path derivative bounds dimension/value");
+      for (std::size_t i = 0; i < start.q.size(); ++i)
+        if (b.lower[i] > b.upper[i])
+          throw std::invalid_argument("Reversed path bounds");
       for (std::size_t i = 0; i < start.q.size(); ++i)
         if (b.lower[i] < limits_.min_position[i] || b.upper[i] > limits_.max_position[i])
           return {PlanStatus::Infeasible, {}, "Path joint range exceeds profile"};
       const auto initial = path->evaluate(0);
+      TimedPathTrajectory::check_point(initial, n);
       for (std::size_t i = 0; i < start.q.size(); ++i)
         if (std::abs(initial.q[i] - start.q[i]) > 1e-9)
           throw std::invalid_argument("Path state mismatch");
@@ -110,6 +132,8 @@ public:
       r->sample(0);
       r->sample(duration);
       return {PlanStatus::Ready, std::move(r), "Full-path derivative envelopes; conservative quintic timing"};
+    } catch (const std::invalid_argument &e) {
+      return {PlanStatus::InvalidInput, {}, e.what()};
     } catch (const std::exception &e) {
       return {PlanStatus::Infeasible, {}, e.what()};
     }

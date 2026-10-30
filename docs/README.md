@@ -1,6 +1,6 @@
 # Dokumentation für Entwicklung und Steuerungseinbindung
 
-Stand: **0.12.3**. Die Zielsteuerung ist eine Eigenentwicklung; die konkrete
+Stand: **0.13.1**. Die Zielsteuerung ist eine Eigenentwicklung; die konkrete
 Adapterplanung folgt später. Der betrachtete Zyklusbereich beträgt **1–20 ms**.
 Die Dokumente beschreiben die vorhandene Bibliothek und benennen noch offene
 Integrationsaufgaben ausdrücklich.
@@ -18,6 +18,7 @@ Integrationsaufgaben ausdrücklich.
 | 9 | [Modellformat](formats/robot_model_yaml.md) / [Programmformat](formats/robot_program_yaml.md) | URDF/SI-Profil, Modellreferenzen, PTP/LIN/CIRC, WAIT/CALL und Quellorte |
 | 10 | [Prüfbericht](testing/validation.md) / [Robustheitstests](testing/robustness.md) | Tatsächlich ausgeführte Prüfungen und reproduzierbare Seeds |
 | 11 | [Roadmap](planning/roadmap.md) | Noch offene Funktionspakete und Hardwaregrenzen |
+| 12 | [Architektur-Review](architecture/architecture_review_v0.13.0.md) / [Korrekturpaket](testing/architecture_review_fixes.md) | Historische Befunde, erledigte Maßnahmen und verbleibende Schritte |
 
 Neu ab 0.13.0: [DXF als Programmbefehl](formats/dxf_program_command.md),
 einschließlich Layern, Einheiten, Platzierung, Genauigkeit, Ablauf und Klassensicht.

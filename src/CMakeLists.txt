@@ -5,6 +5,7 @@ add_library(robot_motion_serial STATIC
   io/robot_model_import.cpp
   io/dxf_path_import.cpp
   program/program_import.cpp
+  program/prepared_robot_program.cpp
   program/program_planning.cpp
   program/program_dxf.cpp
   program/program_simulation.cpp)

@@ -151,9 +151,48 @@ steps:
       compile_robot_program(parse(prefix + "cycle_s: 0.0001\nsteps: [{type: WAIT, seconds: 0.001}]"), xyz());
   assert(simulate_robot_program(small).commands >= 11);
 }
+void prepared_identity() {
+  const auto wait = compile_robot_program(parse(prefix + "steps: [{type: WAIT, seconds: 0.02}]"), xyz());
+  const auto move = compile_robot_program(parse(prefix + "steps: [{type: PTP, joints: [0.2,0,0]}]"), xyz());
+  // Same robot, initial state and segment count: comparing shapes is insufficient.
+  std::ostringstream trace;
+  rejected([&] { simulate_robot_program({wait.reference, move.schedule}, &trace); }, "reference");
+  assert(trace.str().empty());
+  rejected([&] { simulate_robot_program({move.reference, wait.schedule}); }, "reference");
+  rejected([&] { simulate_robot_program({nullptr, wait.schedule}); }, "Invalid");
+  rejected([&] { simulate_robot_program({wait.reference, nullptr}); }, "Invalid");
+  assert(simulate_robot_program(wait).final_state.q == wait.reference->initial_state().q);
+  assert(std::abs(simulate_robot_program(move).final_state.q[0] - .2) < 1e-12);
+  wait.validate();
+  move.validate();
+  const auto identical_wait =
+      compile_robot_program(parse(prefix + "steps: [{type: WAIT, seconds: 0.02}]"), xyz());
+  rejected([&] { simulate_robot_program({wait.reference, identical_wait.schedule}); }, "reference");
+  rejected([&] { retime_robot_program({wait.reference, move.schedule}, .01); }, "reference");
+  rejected([&] { prepare_robot_program(nullptr, .01); }, "Invalid");
+  for (double cycle : {0., -1., double(NAN), double(INFINITY)})
+    rejected([&] { retime_robot_program(move, cycle); }, "cycle");
+  for (double cycle : {.001, .01, .02}) {
+    const auto retimed = retime_robot_program(move, cycle);
+    retimed.validate();
+    assert(retimed.reference == move.reference && retimed.schedule->cycle_s() == cycle);
+    const auto report = simulate_robot_program(retimed);
+    assert(report.commands == retimed.schedule->total_ticks() + 1);
+    assert(report.final_state.q == simulate_robot_program(move).final_state.q);
+    assert(report.peak_joint_jerk[0] > 0);
+    // Legacy aggregate construction remains supported when identity is correct.
+    const auto grid = align_program_cycles(move.reference, cycle);
+    assert(grid);
+    assert(simulate_robot_program({move.reference, grid.program}).commands == report.commands);
+  }
+  const auto previous_schedule = move.schedule;
+  rejected([&] { retime_robot_program(move, 0); }, "cycle");
+  assert(move.schedule == previous_schedule);
+}
 } // namespace
 int main() {
   syntax();
+  prepared_identity();
   motions();
   for (auto name : {"ur5e", "abb_irb120", "fanuc_lrmate200id"}) {
     const auto p =

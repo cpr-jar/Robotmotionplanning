@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.13.1 — Architecture review corrections, 2026-10-30
+
+- Reject malformed schedule/path dimensions and nonfinite provider values before
+  fixed-array copies or indexing, including IK spline outputs and position limits.
+- Bind simulation metadata to the actual cycle-grid source identity; add checked
+  preparation/retiming factories and validate legacy reference/schedule pairs.
+  The editor exporter and controller example use the checked retiming operation.
+- Reject nonfinite inputs and overflowing predictions in the legacy ConveyorPredictor.
+- Separate the editor's successful publication commit from expired-result cleanup;
+  failed cleanup is logged and retried after a later successful run. Tool: 0.4.1.
+- Add regression coverage and retain the original architecture review with a
+  separate implementation status and validation record.
+
 ## 0.13.0 — DXF program command and test-tool import, 2026-10-29
 
 - Added a bounded preparation-time text DXF importer for POINT, LINE,

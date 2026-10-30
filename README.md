@@ -1,4 +1,4 @@
-# Robot Motion C++ — 0.13.0
+# Robot Motion C++ — 0.13.1
 
 C++20-Bibliothek für Roboterkinematik, Bewegungsplanung, Anwenderprogramme und
 zeitlich geprüfte Sollwertausgabe. Der Quellcode ist nach Aufgaben gegliedert;
@@ -16,6 +16,9 @@ rekonstruiert; sie ist keine byteidentische Wiederherstellung der verlorenen v0.
 [Wiederherstellungsbericht](docs/history/recovery_status.md) · [Programmformat](docs/formats/robot_program_yaml.md)
 · [Architektur](docs/architecture/overview.md) · [Prüfbericht](docs/testing/validation.md).
 Die anschließenden vier Robustheitspakete sind in [Robustheitstests](docs/testing/robustness.md) beschrieben.
+
+**Architektur-Review:** [Befunde für 0.13.0](docs/architecture/architecture_review_v0.13.0.md)
+und [Umsetzung des ersten Korrekturpakets in 0.13.1](docs/testing/architecture_review_fixes.md).
 
 ## Starten
 

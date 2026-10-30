@@ -71,6 +71,7 @@ in den zyklischen Thread.
 | `io/robot_model_import.hpp` | `ImportedSerialRobot`, `load_serial_robot_files()` | URDF/SI-YAML; Datei- und Parserarbeit außerhalb RT |
 | `io/dxf_path_import.hpp` | `DxfDrawing`, `DxfImportOptions`, `parse_dxf_path()`, `load_dxf_path_file()` | Begrenzter Text-DXF-Geometrieimport; ausschließlich Vorbereitung |
 | `program/robot_program.hpp` | `RobotProgramSource`, `RobotProgram`, `PreparedRobotProgram` | Strikter Programmimport, Gesamtplanung und Simulation |
+| `src/program/prepared_robot_program.cpp` | Geprüfte Vorbereitung, Retiming und Paarvalidierung | Bindet Referenzidentität und Zyklusraster; Vorbereitung außerhalb RT |
 | `program/joint_program.hpp` | `IJointProgram` | Segmentierte unveränderliche Referenz; Sampling außerhalb RT |
 | `execution/execution_types.hpp` | `ExecutionStatus`, `ExecutionFault`, `ExecutionTimingPolicy` | Werttypen und Timingvertrag |
 | `execution/execution_schedule.hpp` | `IExecutionSchedule` | Zeit-/Tickvertrag; Sampling außerhalb RT |

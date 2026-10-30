@@ -1,0 +1,27 @@
+Test project /workspace/robot-motion-cpp/build-minimal
+      Start  1: core_tests
+ 1/11 Test  #1: core_tests .......................   Passed    0.00 sec
+      Start  2: trajectory_tests
+ 2/11 Test  #2: trajectory_tests .................   Passed    0.00 sec
+      Start  3: envelopes_tests
+ 3/11 Test  #3: envelopes_tests ..................   Passed    0.04 sec
+      Start  4: execution_tests
+ 4/11 Test  #4: execution_tests ..................   Passed    7.21 sec
+      Start  5: provider_contracts_tests
+ 5/11 Test  #5: provider_contracts_tests .........   Passed    0.00 sec
+      Start  6: execution_faults_tests
+ 6/11 Test  #6: execution_faults_tests ...........   Passed    0.02 sec
+      Start  7: allocations_tests
+ 7/11 Test  #7: allocations_tests ................   Passed    0.00 sec
+      Start  8: tracking_tests
+ 8/11 Test  #8: tracking_tests ...................   Passed    0.00 sec
+      Start  9: reference_kinematics_tests
+ 9/11 Test  #9: reference_kinematics_tests .......   Passed    0.03 sec
+      Start 10: header_compatibility_tests
+10/11 Test #10: header_compatibility_tests .......   Passed    0.04 sec
+      Start 11: linux_platform_tests
+11/11 Test #11: linux_platform_tests .............   Passed    0.00 sec
+
+100% tests passed out of 11
+
+Total Test time (real) =   7.35 sec

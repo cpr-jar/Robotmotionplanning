@@ -47,14 +47,22 @@ LivePlanResult<N> prepare_live_plan(std::shared_ptr<const IExecutionSchedule> sc
                                     LivePlanStamp stamp, std::size_t capacity) {
   try {
     if (!schedule || !stamp.clock || !stamp.generation || stamp.generation <= stamp.parent_generation ||
-        schedule->initial_state().q.size() != N || schedule->total_ticks() >= capacity ||
-        schedule->total_ticks() > schedule_detail::max_ticks ||
+        schedule->total_ticks() >= capacity || schedule->total_ticks() > schedule_detail::max_ticks ||
         stamp.start_tick > schedule_detail::max_ticks - schedule->total_ticks() ||
         !schedule_detail::valid_clock(epoch, schedule->cycle_s(), stamp.start_tick + schedule->total_ticks()))
       return {{}, "Invalid live schedule/stamp/capacity"};
-    if (schedule->initial_state().timestamp_s !=
-        epoch + schedule_detail::tick_time(stamp.start_tick, schedule->cycle_s()))
+    const auto initial = schedule->initial_state();
+    const auto limits = schedule->joint_limits();
+    const auto ticks = schedule->total_ticks();
+    const double cycle = schedule->cycle_s();
+    check_limits(limits, N);
+    check_state(initial, N);
+    if (!within_joint_limits(initial, limits))
+      return {{}, "Invalid live initial state"};
+    if (initial.timestamp_s != epoch + schedule_detail::tick_time(stamp.start_tick, cycle))
       return {{}, "Live activation timestamp mismatch"};
+    if (schedule->duration() != schedule_detail::tick_time(ticks, cycle))
+      return {{}, "Invalid live schedule duration"};
     const auto &boundaries = schedule->boundary_ticks();
     if (!std::is_sorted(boundaries.begin(), boundaries.end()) ||
         (!boundaries.empty() && boundaries.back() > schedule->total_ticks()))
@@ -62,12 +70,16 @@ LivePlanResult<N> prepare_live_plan(std::shared_ptr<const IExecutionSchedule> sc
     auto p = std::shared_ptr<PreparedLivePlan<N>>(new PreparedLivePlan<N>);
     p->stamp_ = stamp;
     p->execution_epoch_s_ = epoch;
-    p->cycle_period_s_ = schedule->cycle_s();
-    p->joint_limits_ = schedule->joint_limits();
-    for (std::uint64_t tick = 0; tick <= schedule->total_ticks(); ++tick) {
+    p->cycle_period_s_ = cycle;
+    p->joint_limits_ = limits;
+    p->cached_commands_.reserve(ticks + 1);
+    for (std::uint64_t tick = 0; tick <= ticks; ++tick) {
       const auto state = schedule->sample_tick(tick);
+      check_state(state, N); // Validate the provider before copying to fixed-size arrays.
+      const double local_time = schedule_detail::tick_time(tick, cycle);
       if (!within_joint_limits(state, p->joint_limits_) || !std::isfinite(state.timestamp_s) ||
-          state.timestamp_s != schedule->initial_state().timestamp_s + schedule->tick_time(tick) ||
+          schedule->tick_time(tick) != local_time || state.timestamp_s != initial.timestamp_s + local_time ||
+          (tick == 0 && (state.q != initial.q || state.dq != initial.dq || state.ddq != initial.ddq)) ||
           (std::binary_search(boundaries.begin(), boundaries.end(), tick) && !is_rest(state, 0)))
         return {{}, "Invalid live reference state"};
       FixedJointCommand<N> c;
@@ -77,7 +89,7 @@ LivePlanResult<N> prepare_live_plan(std::shared_ptr<const IExecutionSchedule> sc
       c.tick = stamp.start_tick + tick;
       c.program_time_s = schedule_detail::tick_time(c.tick, p->cycle_period_s_);
       c.timestamp_s = epoch + c.program_time_s;
-      c.terminal = tick == schedule->total_ticks();
+      c.terminal = tick == ticks;
       if (c.terminal && !buffer_detail::rest(c))
         return {{}, "Live plans need terminal rest"};
       p->cached_commands_.push_back(c);

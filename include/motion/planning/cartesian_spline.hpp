@@ -97,7 +97,7 @@ inline CartesianSplineResult map_cartesian_spline(std::shared_ptr<const IKinemat
                                                   std::shared_ptr<const IPosePath> desired,
                                                   const Vector &seed, CartesianSplineOptions options) {
   const auto fail = [](PlanStatus s, const char *d) { return CartesianSplineResult{s, {}, d}; };
-  if (!model || !desired || desired->pieces() == 0 || desired->pieces() > 256 ||
+  if (!model || !desired || desired->pieces() == 0 || desired->pieces() > 256 || seed.empty() ||
       !kinematic_detail::finite(seed, model->dof()) || options.initial_segments < 2 ||
       options.max_segments < options.initial_segments || options.max_segments > 2048 ||
       options.max_enclosure_depth > 20 || !options.max_enclosures)
@@ -106,7 +106,18 @@ inline CartesianSplineResult map_cartesian_spline(std::shared_ptr<const IKinemat
     if (!std::isfinite(x) || x <= 0)
       return fail(PlanStatus::InvalidInput, "Invalid spline tolerances");
   try {
-    const auto first = model->fk(seed), requested = desired->evaluate(0);
+    const auto pose_at = [&](double s) {
+      const auto pose = desired->evaluate(s);
+      if (!kinematic_detail::finite_pose(pose))
+        throw std::invalid_argument("Invalid spline path pose");
+      return pose;
+    };
+    for (double speed : {desired->linear_speed_bound(), desired->angular_speed_bound()})
+      if (!std::isfinite(speed) || speed < 0)
+        return fail(PlanStatus::InvalidInput, "Invalid spline path speed bound");
+    const auto first = model->fk(seed), requested = pose_at(0);
+    if (!kinematic_detail::finite_pose(first))
+      return fail(PlanStatus::InvalidInput, "Invalid spline kinematic pose");
     if (kinematic_detail::norm(kinematic_detail::sub(first.position, requested.position)) >
             options.position_tolerance_m ||
         rotation_distance(first.orientation, requested.orientation) > options.orientation_tolerance_rad)
@@ -117,6 +128,12 @@ inline CartesianSplineResult map_cartesian_spline(std::shared_ptr<const IKinemat
       limits = diff->position_limits();
     else if (!dynamic_cast<const CartesianGantry *>(model.get()))
       return fail(PlanStatus::Unsupported, "No spline enclosure provider");
+    if (!kinematic_detail::finite(limits.lower, seed.size()) ||
+        !kinematic_detail::finite(limits.upper, seed.size()))
+      return fail(PlanStatus::InvalidInput, "Invalid spline joint limits dimension/value");
+    for (std::size_t i = 0; i < seed.size(); ++i)
+      if (limits.lower[i] >= limits.upper[i])
+        return fail(PlanStatus::InvalidInput, "Invalid spline joint limits order");
     for (std::size_t count =
              ((options.initial_segments + desired->pieces() - 1) / desired->pieces()) * desired->pieces();
          count <= options.max_segments; count *= 2) {
@@ -125,11 +142,13 @@ inline CartesianSplineResult map_cartesian_spline(std::shared_ptr<const IKinemat
       std::vector<Vector> q{seed};
       bool okay = true;
       for (std::size_t k = 1; k <= count; ++k) {
-        auto next = model->ik(desired->evaluate(double(k) / count), q.back());
+        auto next = model->ik(pose_at(double(k) / count), q.back());
         if (!next) {
           okay = false;
           break;
         }
+        if (!kinematic_detail::finite(*next, n))
+          return fail(PlanStatus::InvalidInput, "Invalid spline IK dimension/value");
         for (std::size_t i = 0; i < n; ++i)
           if (std::abs((*next)[i] - q.back()[i]) > options.max_joint_step)
             okay = false;
@@ -184,7 +203,7 @@ inline CartesianSplineResult map_cartesian_spline(std::shared_ptr<const IKinemat
             angular[o] = kinematic_detail::norm(a);
           }
           const double mid = begin + span / 2;
-          const auto actual = candidate->evaluate(mid).tcp.pose, goal = desired->evaluate(mid);
+          const auto actual = candidate->evaluate(mid).tcp.pose, goal = pose_at(mid);
           const double p = kinematic_detail::norm(kinematic_detail::sub(actual.position, goal.position)) +
                            (linear[0] + desired->linear_speed_bound()) * span / 2;
           const double r = rotation_distance(actual.orientation, goal.orientation) +
@@ -229,6 +248,8 @@ inline CartesianSplineResult map_cartesian_spline(std::shared_ptr<const IKinemat
                 "Bounded numerical pose tube and differential envelopes"};
     }
     return fail(PlanStatus::Infeasible, "Spline IK/tube admission failed within budget");
+  } catch (const std::invalid_argument &e) {
+    return {PlanStatus::InvalidInput, {}, e.what()};
   } catch (const std::exception &e) {
     return {PlanStatus::Infeasible, {}, e.what()};
   }

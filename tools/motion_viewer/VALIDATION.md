@@ -1,4 +1,13 @@
-# Werkzeugprüfung 0.4.0 · 29.10.2026
+# Werkzeugprüfung 0.4.1 · 30.10.2026
+
+**32/32** Python-Tests mit Release- sowie ASan/UBSan-Exporter bestanden.
+Zwei neue Tests prüfen IO-Fehler vor der Veröffentlichung und beim späteren
+Aufräumen abgelaufener Ergebnisse. Editor- und DXF-Browserprüfungen mit echtem
+Chromium bestanden ebenfalls; keine Browserfehler oder externen Anfragen.
+Die geprüfte Retiming-API der Bibliothek ersetzt den freien Schedule-Austausch.
+Details: [Architekturkorrekturen](../../docs/testing/architecture_review_fixes.md).
+
+## Vorheriger Nachweis 0.4.0 · 29.10.2026
 
 DXF-Erweiterung: drei zusätzliche Python-Tests (insgesamt **30**), native
 DXF-Befehle, bytegleiche YAML+DXF-ZIP-Bündel, Asset-/Pfadgrenzen und Erhalt der

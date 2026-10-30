@@ -322,7 +322,9 @@
         "id": "prepared",
         "name": "PreparedRobotProgram",
         "header": "include/motion/program/robot_program.hpp",
-        "methods": [],
+        "methods": [
+          "validate()"
+        ],
         "fields": [
           "reference: shared_ptr<const RobotProgram>",
           "schedule: shared_ptr<const CycleAlignedProgram>"
@@ -358,7 +360,8 @@
         "methods": [
           "sample_tick(tick)",
           "cycle_s()",
-          "time_scale(index)"
+          "time_scale(index)",
+          "references(program)"
         ],
         "fields": []
       },

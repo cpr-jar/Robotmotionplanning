@@ -132,10 +132,26 @@ hier selbst die weitere Übergabe sperren. Das Referenzbeispiel demonstriert das
 | --- | --- | --- |
 | `parse_robot_program_yaml()` | Unveränderliche `RobotProgramSource` | `RobotProgramError`; keine Modell-Dateizugriffe durch reines Parsen |
 | `compile_robot_program()` / `load_robot_program()` | Ganzes `PreparedRobotProgram` | `RobotProgramError` mit Quellort; keine teilweise erfolgreiche Veröffentlichung |
+| `prepare_robot_program()` / `retime_robot_program()` | Referenz und daraus erzeugtes Zyklusraster | `std::invalid_argument`; keine Änderung des ursprünglichen Paars |
+| `PreparedRobotProgram::validate()` / `simulate_robot_program()` | Herkunft von Referenz und Schedule stimmt überein | `std::invalid_argument` bei leeren/vertauschten Paaren; Simulation schreibt dann keine CSV |
 | `IJointTrajectoryPlanner::plan()` | `PlanResult` mit gültigem bool und Trajektorie | `PlanStatus`/Diagnose; nur bei Erfolg Trajektorie verwenden |
 | `SerialChainKinematics::ik_detailed()` | `SerialIKStatus::Success`, passende Lösung | Begrenzte lokale Suche, detaillierter Status; keine globale Unerreichbarkeitsgarantie |
 | `prepare_live_plan<N>()` | `LivePlanResult` mit Cache | Leerer Plan mit Diagnose bei ungültigem Raster, Randzustand, Uhr oder Kapazität |
 | `sample()` / `sample_tick()` | Vektorhaltiger Zustand | Kann allokieren und werfen; nicht als zyklischen Festwert-Dispatcher benutzen |
+
+Bei eigenen `IExecutionSchedule`-Implementierungen müssen Limits, Anfangszustand
+und sämtliche Samples dieselbe Achszahl besitzen. `prepare_live_plan<N>()` prüft
+sie gegen **N**, bevor Daten in feste Arrays kopiert werden. Dauer und
+`tick_time(tick)` müssen dem kanonischen Raster
+`schedule_detail::tick_time(tick, cycle_s())` entsprechen; Sample-Zeitstempel sind
+`initial_state().timestamp_s + tick_time(tick)`. Tick 0 muss dem Anfangszustand
+entsprechen. Der Provider bleibt während der Vorbereitung unveränderlich.
+
+`IBoundedJointPath` liefert pro Punkt gleich große, endliche Vektoren für
+`q`, `q_s`, `q_ss`, `q_sss`, eine gültige TCP-Pose und endliche TCP-Ableitungen.
+Bounds haben dieselbe Achszahl, geordnete endliche Positionen und nichtnegative
+Ableitungshüllen. Die Zeitplanung prüft Anfang/Ende und die Form bei jedem
+Sampling; sie kann die Wahrheit einer fremden Hüllenbehauptung nicht beweisen.
 
 `IOnlineJointGenerator::step()` verwendet den getrennten `StepStatus`:
 `Running`, `Finished`, `InvalidInput`, `Error`. Diese API plant/generiert und hat

@@ -17,13 +17,21 @@ struct ConveyorState {
 class ConveyorPredictor {
 public:
   explicit ConveyorPredictor(double max_age_s) : max_age_s_(max_age_s) {
-    if (max_age_s_ <= 0)
-      throw std::invalid_argument("max_age_s must be positive");
+    if (!std::isfinite(max_age_s_) || max_age_s_ <= 0)
+      throw std::invalid_argument("max_age_s must be finite and positive");
   }
   std::optional<Pose> predict(const TrackedTarget &target, const ConveyorState &belt,
                               double future_time_s) const {
-    if (future_time_s < belt.observed_at_s || future_time_s - belt.observed_at_s > max_age_s_ ||
-        future_time_s < target.observed_at_s || future_time_s - target.observed_at_s > max_age_s_)
+    const auto finite = [](const auto &values) {
+      return std::all_of(values.begin(), values.end(), [](double x) { return std::isfinite(x); });
+    };
+    if (!std::isfinite(future_time_s) || !std::isfinite(target.observed_at_s) ||
+        !std::isfinite(belt.observed_at_s) || !std::isfinite(belt.position_m) ||
+        !std::isfinite(belt.velocity_m_s) || !std::isfinite(belt.acceleration_m_s2) ||
+        !finite(target.pose_in_conveyor.position) || !finite(target.pose_in_conveyor.orientation) ||
+        !finite(belt.origin_world) || !finite(belt.direction_world) || future_time_s < belt.observed_at_s ||
+        future_time_s - belt.observed_at_s > max_age_s_ || future_time_s < target.observed_at_s ||
+        future_time_s - target.observed_at_s > max_age_s_)
       return std::nullopt;
     auto result = target.pose_in_conveyor;
     const double dt = future_time_s - belt.observed_at_s;
@@ -32,11 +40,13 @@ public:
     double norm = 0;
     for (double v : belt.direction_world)
       norm += v * v;
-    if (norm < 1e-12)
+    if (!std::isfinite(displacement) || !std::isfinite(norm) || norm < 1e-12)
       return std::nullopt;
     norm = std::sqrt(norm);
     for (std::size_t i = 0; i < 3; ++i)
       result.position[i] += belt.origin_world[i] + displacement * belt.direction_world[i] / norm;
+    if (!finite(result.position))
+      return std::nullopt;
     // Assumes belt frame has no rotation and constant acceleration in prediction horizon.
     return result;
   }

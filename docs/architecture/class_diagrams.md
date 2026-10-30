@@ -42,6 +42,11 @@ zusätzliche gespeicherte Laufzeitreferenz. [DOT-Quelle](diagrams/planning.dot).
 Ein vollständig zugelassenes `PreparedRobotProgram` enthält sowohl die fachliche
 Programmreferenz als auch das Zyklusraster. Der Schedule verlängert Segmente mit
 ruhenden Grenzen auf volle Ticks. [DOT-Quelle](diagrams/program.dot).
+Ab 0.13.1 prüfen `validate()` und der Simulator die Objektidentität der Referenz,
+aus der das Raster erstellt wurde. `prepare_robot_program()` und
+`retime_robot_program()` erzeugen passende Paare. Die öffentlichen Felder bleiben
+für vorhandene Aufrufer erhalten; das Struct ist deshalb kein unveränderlicher
+Werttyp. Eine Modell-/Kalibrierrevision ist damit noch nicht eingeführt.
 
 ## 4. Gepufferte Ausführung
 

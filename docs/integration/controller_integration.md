@@ -135,12 +135,20 @@ Taktzeit wird auf Basis der ursprünglichen Referenz neu ausgerichtet:
 
 ```cpp
 const double cycle_period_s = 0.020;
-const auto aligned = motion::align_program_cycles(
-    prepared_program.reference, cycle_period_s);
-if (!aligned) { /* Diagnose außerhalb des zyklischen Threads behandeln */ }
+const auto prepared_for_cycle = motion::retime_robot_program(
+    prepared_program, cycle_period_s);
+// prepared_for_cycle.reference und .schedule gehören nachweislich zusammen.
+// Fehler als std::invalid_argument außerhalb des zyklischen Threads behandeln.
 ```
 
 Die Ausrichtung verkürzt kein Segment und erhält die Stillstandsgrenzen.
+`retime_robot_program()` prüft zuerst die Herkunft des bisherigen Schedule und
+erzeugt anschließend ein neues Paar aus derselben Referenz und dem neuen Raster.
+Das ursprüngliche Paar bleibt auch bei einem Fehler unverändert. Für eine einzelne
+Programmreferenz gibt es `prepare_robot_program(reference, cycle_period_s)`.
+Die öffentliche Paarstruktur bleibt aus Kompatibilitätsgründen verfügbar;
+selbst zusammengesetzte Paare vor eigener Verarbeitung mit `validate()` prüfen.
+Der Simulator lehnt nicht zusammengehörige Paare vor der ersten CSV-Ausgabe ab.
 Eine Bewegung bekommt bei gröberem Raster gegebenenfalls eine längere Dauer.
 Verringerung von v/a/Ruck erfolgt über die Zeitstreckung. Es wird nicht einfach
 jeder zehnte Sollwert verwendet. Ein Wechsel der Host-Zykluszeit während einer

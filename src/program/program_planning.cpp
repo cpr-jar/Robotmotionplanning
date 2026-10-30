@@ -232,15 +232,7 @@ PreparedRobotProgram compile_robot_program(const RobotProgramSource &source, Imp
     }
     if (!program->segment_count())
       throw RobotProgramError(root, "Empty program");
-    const auto grid = align_program_cycles(program, source.cycle_s());
-    if (!grid)
-      throw RobotProgramError(root, grid.diagnostic);
-    const double magnitude = std::max(std::abs(initial.timestamp_s),
-                                      std::abs(initial.timestamp_s + grid.program->duration())),
-                 ulp = std::nextafter(magnitude, INFINITY) - magnitude;
-    if (source.cycle_s() <= 64 * ulp)
-      throw RobotProgramError(root, "Insufficient clock precision for dispatch");
-    return {std::move(program), grid.program};
+    return prepare_robot_program(std::move(program), source.cycle_s());
   } catch (const RobotProgramError &) {
     throw;
   } catch (const std::exception &e) {

@@ -108,7 +108,8 @@ ProgramSimulationReport select(std::size_t n, const PreparedRobotProgram &p, std
 } // namespace
 ProgramSimulationReport simulate_robot_program(const PreparedRobotProgram &p, std::ostream *csv,
                                                ProgramSimulationOptions options) {
-  if (!p.reference || !p.schedule || !options.max_ticks || p.schedule->total_ticks() > options.max_ticks)
+  p.validate(); // Reject mismatched legacy pairs before writing any CSV or sampling.
+  if (!options.max_ticks || p.schedule->total_ticks() > options.max_ticks)
     throw std::invalid_argument("Invalid program or simulation tick budget exceeded");
   struct Format {
     std::ostream *s;

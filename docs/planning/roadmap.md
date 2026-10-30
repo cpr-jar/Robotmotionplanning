@@ -1,5 +1,29 @@
 # Implementierungs- und Integrationsroadmap
 
+## Architektur-Review: nächste Schritte
+
+Basis ist das [Review von 0.13.0](../architecture/architecture_review_v0.13.0.md).
+Das [erste Korrekturpaket in 0.13.1](../testing/architecture_review_fixes.md) behandelt
+die Befunde **F01, F02, F06 und F09**: Providerformen, Programm-/Rasteridentität,
+älteres Tracking und Ergebnisveröffentlichung. Größere Strukturänderungen sind
+damit noch nicht abgeschlossen.
+
+1. **Verlässliche Planübergabe:** Lebensdauer und Besitz, Rücknahme und Shutdown,
+   Host-Annahme/Commit sowie strukturierte Nicht-RT-Diagnosen konkretisieren.
+   Geprüfte Vorbereitung und Retiming sind als Grundlage bereits vorhanden.
+2. **Modulgrenzen:** niedrige gemeinsame Verträge, Abhängigkeitszyklen auflösen,
+   danach getrennte Build-Komponenten; Include-Forwarder und CMake-Fassade erhalten.
+3. **Ressourcen und Prüfungen:** gemeinsame Vorbereitungsbudgets/Abbruch,
+   Wiederverwendung geparster DXF-Daten, speichersparende Spuren und zusätzliche
+   Browser-/Nebenläufigkeits-/ARM-Prüfungen. Die vorhandene Cache-Vorreservierung
+   ersetzt kein Gesamtbudget.
+4. **Bedarfsgerechte Erweiterungen:** typisierte Quell-/Bewegungsrepräsentation,
+   Enclosure-Fähigkeit und das separat offene IK-Skalierungsproblem F07.
+
+CANopen und die konkrete Steuerungsintegration bleiben zurückgestellt.
+
+## Funktionsstand
+
 Mit **0.13.0** ist DXF-Geometrie als YAML-Programmbefehl ergänzt: Import,
 Einheiten/Layer, TCP-/Weltplatzierung und Planung über LIN/CIRC/PTP. Der getrennte
 Testeditor unterstützt Dateiimport, Simulation und YAML+DXF-Bündel.

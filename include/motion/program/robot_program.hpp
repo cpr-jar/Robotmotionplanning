@@ -69,9 +69,15 @@ RobotProgramSource parse_robot_program_yaml(std::string_view, const std::string 
 RobotProgramSource load_robot_program_source(const std::string &);
 class RobotProgram;
 struct PreparedRobotProgram {
+  // Public fields are retained for source compatibility. Prefer the checked
+  // prepare/retime factories; consumers must validate legacy assembled pairs.
   std::shared_ptr<const RobotProgram> reference;
   std::shared_ptr<const CycleAlignedProgram> schedule;
+  void validate() const;
 };
+/// Preparation-thread operations; throw invalid_argument without publishing a partial result.
+PreparedRobotProgram prepare_robot_program(std::shared_ptr<const RobotProgram>, double cycle_s);
+PreparedRobotProgram retime_robot_program(const PreparedRobotProgram &, double cycle_s);
 PreparedRobotProgram compile_robot_program(const RobotProgramSource &, ImportedSerialRobot);
 // Optional asset loader snapshots external DXF text during preparation. No IO
 // happens when the finished program is sampled or executed.

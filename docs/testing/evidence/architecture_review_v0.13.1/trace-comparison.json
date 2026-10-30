@@ -1,0 +1,44 @@
+[
+  {
+    "program": "programs/examples/ur5e_demo.yaml",
+    "cycle_ms": 1,
+    "commands": 9829,
+    "byte_identical": true,
+    "sha256": "68de4eb7485d23e097db82fa62ccf12c0c2e0d4eaaab6b0a5fca3806eef99e6e"
+  },
+  {
+    "program": "programs/examples/ur5e_demo.yaml",
+    "cycle_ms": 10,
+    "commands": 987,
+    "byte_identical": true,
+    "sha256": "9a8428041b55dc9db3626237b25f1072512c9a162f3e2592ba6b406eed5d89b9"
+  },
+  {
+    "program": "programs/examples/ur5e_demo.yaml",
+    "cycle_ms": 20,
+    "commands": 495,
+    "byte_identical": true,
+    "sha256": "5c488d35447b61204775d36926e1f62f99971d721a5023b87969f1667f3f9803"
+  },
+  {
+    "program": "programs/examples/abb_irb120_demo.yaml",
+    "cycle_ms": 10,
+    "commands": 1039,
+    "byte_identical": true,
+    "sha256": "3d22778feeb393fd0a75c8eb444ac67af31339c852cd27e14f825fe1a71129fe"
+  },
+  {
+    "program": "programs/examples/fanuc_lrmate200id_demo.yaml",
+    "cycle_ms": 10,
+    "commands": 998,
+    "byte_identical": true,
+    "sha256": "59857a735a27ed5d954aa8463f6404a5894b862e621126a8e20f04d7ff8b1807"
+  },
+  {
+    "program": "programs/examples/ur5e_dxf_demo.yaml",
+    "cycle_ms": 10,
+    "commands": 1181,
+    "byte_identical": true,
+    "sha256": "a488f59e092cc18fa3280d4ca73f6c7c7692043af93e5547d0687535bb85fe07"
+  }
+]
