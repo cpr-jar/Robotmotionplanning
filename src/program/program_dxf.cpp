@@ -33,6 +33,9 @@ std::vector<ProgramInstruction> expand_dxf(const ProgramInstruction &source, con
       ProgramInstruction travel;
       travel.operation = command.travel == DxfTravel::Line ? ProgramOperation::Line : ProgramOperation::Ptp;
       travel.target = start;
+      // DXF's explicit orientation is established during entry travel. Contour
+      // LIN segments then keep that orientation, just like ordinary LIN.
+      travel.linear_orientation_mode = LinearOrientationMode::Interpolate;
       travel.speed = source.speed;
       travel.location = source.location;
       travel.drawing_location = stroke.location;

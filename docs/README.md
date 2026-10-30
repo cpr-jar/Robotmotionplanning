@@ -1,6 +1,6 @@
 # Dokumentation für Entwicklung und Steuerungseinbindung
 
-Stand: **0.16.0**. Die Zielsteuerung ist eine Eigenentwicklung; die konkrete
+Stand: **0.16.1**. Die Zielsteuerung ist eine Eigenentwicklung; die konkrete
 Adapterplanung folgt später. Der betrachtete Zyklusbereich beträgt **1–20 ms**.
 Die Dokumente beschreiben die vorhandene Bibliothek und benennen noch offene
 Integrationsaufgaben ausdrücklich.
@@ -32,3 +32,7 @@ Die Diagramme sind eingecheckt. Zum Lesen wird weder Python noch Graphviz
 benötigt; die SVG-Dateien lassen sich im Browser öffnen. Für eine zusammenhängende
 Offline-Ausgabe siehe [Handbuch erzeugen](development/naming_and_migration.md#dokumentation-prüfen-und-erzeugen).
 Historische Wiederherstellung und Sicherung stehen unter [history](history/recovery_status.md).
+
+Ab 0.16.1 hält LIN standardmäßig die TCP-Orientierung am Bahnanfang.
+[Orientierungsvertrag](formats/robot_program_yaml.md#lin-und-tcp-orientierung)
+und [Prüfnachweis](testing/lin_orientation_validation.md).

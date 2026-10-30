@@ -236,13 +236,23 @@ RobotProgramSource parse_robot_program_yaml(std::string_view content, const std:
             ProgramInstruction op;
             op.location = location;
             if (type == "PTP" || type == "LIN") {
-              r.keys(n, {"type", "target", "joints", "speed"});
+              if (type == "LIN")
+                r.keys(n, {"type", "target", "joints", "speed", "orientation_mode"});
+              else
+                r.keys(n, {"type", "target", "joints", "speed"});
               if (bool(n["target"]) == bool(n["joints"]))
                 r.fail(n, "Specify exactly one target or joints");
               if (type == "LIN" && n["joints"])
                 r.fail(n, "LIN uses target; joints shortcut is PTP only");
               op.operation = type == "PTP" ? ProgramOperation::Ptp : ProgramOperation::Line;
               op.target = n["target"] ? target(n["target"]) : ProgramPoint(r.vector(n["joints"], 1, 12));
+              if (type == "LIN" && n["orientation_mode"]) {
+                const auto mode = r.text(n["orientation_mode"]);
+                if (mode == "interpolate")
+                  op.linear_orientation_mode = LinearOrientationMode::Interpolate;
+                else if (mode != "keep")
+                  r.fail(n["orientation_mode"], "LIN orientation_mode must be keep or interpolate");
+              }
             } else if (type == "CIRC") {
               r.keys(n, {"type", "center", "center_offset", "normal", "sweep_rad", "orientation", "speed"});
               if (bool(n["center"]) == bool(n["center_offset"]))

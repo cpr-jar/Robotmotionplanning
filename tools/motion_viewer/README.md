@@ -1,4 +1,4 @@
-# Motion Viewer · separates Werkzeug 0.5.0
+# Motion Viewer · separates Werkzeug 0.5.1
 
 Ein **Offline-Viewer für die vorhandenen Bewegungsprogramme**, vollständig unter
 `tools/motion_viewer/`. Bibliothek, Steuerungsschnittstellen und deren Build-
@@ -7,7 +7,7 @@ benutzt ausschließlich die öffentlichen Bibliotheksschnittstellen.
 
 ## Sofort ansehen – ohne Build
 
-1. [Projekt mit Viewer, Editor und DXF-Befehl herunterladen](https://github.com/cpr-jar/Robotmotionplanning/archive/refs/tags/v0.16.0.zip) und entpacken.
+1. [Projekt mit Viewer, Editor und DXF-Befehl herunterladen](https://github.com/cpr-jar/Robotmotionplanning/archive/refs/tags/v0.16.1.zip) und entpacken.
 2. **`tools/motion_viewer/demo/ur5e_motion.html`** im Browser öffnen.
 3. **Abspielen** drücken. Mit dem Zeitregler oder den Programmschritten gezielt
    zu einer Stelle springen; die 3D-Ansicht mit der Maus drehen und zoomen.

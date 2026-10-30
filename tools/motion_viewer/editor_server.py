@@ -39,6 +39,11 @@ MAX_DIAGNOSTIC_BYTES = 16384
 RESULT_LIMIT = 3
 EXAMPLES = {
     "ur5e": ("UR5e · PTP / LIN / Vollkreis / WAIT", TOOL_DIR / "demo/ur5e_visual_demo.yaml", "ur5e"),
+    "ur5e_lin": (
+        "UR5e · LIN mit konstanter Orientierung",
+        ROOT / "programs/examples/ur5e_lin_keep_orientation.yaml",
+        "ur5e",
+    ),
     "ur5e_dxf": ("UR5e · DXF-Kontur abfahren", ROOT / "programs/examples/ur5e_dxf_demo.yaml", "ur5e"),
     "abb_irb120": (
         "ABB IRB120 · Unterprogramm",
@@ -168,7 +173,8 @@ class SimulationService:
         # Known checked-in examples use paths relative to their original folder.
         # Replace only that exact line; preserve all program lines and comments.
         profile_line = next(line for line in source.splitlines() if line.startswith("robot_profile:"))
-        source = source.replace(profile_line, f"robot_profile: models/{robot}/profile.yaml", 1)
+        profile = "profile_pick_place_simulation.yaml" if name == "ur5e_lin" else "profile.yaml"
+        source = source.replace(profile_line, f"robot_profile: models/{robot}/{profile}", 1)
         assets = []
         if name == "ur5e_dxf":
             source = source.replace("file: ../dxf/rounded_path.dxf", "file: rounded_path.dxf", 1)
@@ -328,7 +334,7 @@ class EditorServer(ThreadingHTTPServer):
 
 
 class EditorHandler(BaseHTTPRequestHandler):
-    server_version = "MotionEditor/0.5.0"
+    server_version = "MotionEditor/0.5.1"
 
     def setup(self):
         super().setup()

@@ -236,3 +236,17 @@ nur seine lokalen Hostnamen und schützt Simulationsanfragen durch Sitzungstoken
 und Origin-Prüfung. Es gibt keine CORS-Freigabe oder beliebige Dateiauslieferung.
 
 Tests und tatsächlich ausgeführte Prüfungen stehen in [VALIDATION.md](VALIDATION.md).
+
+## LIN mit konstanter TCP-Orientierung
+
+Ab Bibliothek 0.16.1 / Werkzeug 0.5.1 hält ein normaler LIN-Schritt die tatsächliche
+TCP-Orientierung am Anfang der Bewegung. Die Segmentanzeige nennt **Orientierung
+konstant**. Das Ziel liefert dafür die Position; ein anders gespeichertes
+Quaternion dreht das Werkzeug erst mit `orientation_mode: interpolate`.
+Nach dem Aktualisieren den Editor neu starten und das Programm erneut simulieren;
+vorhandene HTML-Dateien bleiben Schnappschüsse der früheren Simulation.
+[Vertrag und lauffähiges Beispiel](../../docs/formats/robot_program_yaml.md#lin-und-tcp-orientierung).
+
+Zum direkten Prüfen im Editor das Beispiel **„UR5e · LIN mit konstanter Orientierung“**
+laden und simulieren. Es startet mit Achse 1 bei 2 rad und fährt einen nahen
+Arbeitspunkt samt Vollkreis an.

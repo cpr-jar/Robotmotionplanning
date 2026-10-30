@@ -205,6 +205,12 @@ void write_scene(const motion::PreparedRobotProgram &prepared, std::ostream &out
            << ",\"source_line\":" << instruction.location.line
            << ",\"start_s\":" << (index ? schedule.segment_end(index - 1) : 0)
            << ",\"end_s\":" << schedule.segment_end(index) << ",\"speed\":" << instruction.speed;
+    if (instruction.operation == motion::ProgramOperation::Line) {
+      output << ",\"orientation_mode\":";
+      text(output, instruction.linear_orientation_mode == motion::LinearOrientationMode::Keep
+                       ? "keep"
+                       : "interpolate");
+    }
     if (instruction.drawing_location) {
       const auto &drawing = *instruction.drawing_location;
       output << ",\"source_command\":\"DXF\",\"dxf_file\":";

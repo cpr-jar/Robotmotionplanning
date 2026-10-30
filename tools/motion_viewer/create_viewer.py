@@ -147,6 +147,9 @@ def prepare_data(exported, max_frames=4000, visuals="auto", budget=None):
             and segment["end_s"] > previous_end,
             "Invalid segment ordering",
         )
+        if "orientation_mode" in segment:
+            require(segment["operation"] == "LIN" and segment["orientation_mode"] in ("keep", "interpolate"),
+                    "Invalid LIN orientation mode")
         require(finite_number(segment["speed"]) and 0.001 <= segment["speed"] <= 1, "Invalid speed factor")
         for key in ("source_file", "source_block"):
             require(isinstance(segment[key], str) and len(segment[key]) <= 8192, "Invalid source label")

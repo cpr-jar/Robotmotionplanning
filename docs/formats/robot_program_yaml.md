@@ -66,10 +66,49 @@ Schritt. LIN verlangt `target`.
 | Typ | Felder | Bedeutung |
 | --- | --- | --- |
 | PTP | `target` **oder** `joints`, optional `speed` | Rest-to-rest-Gelenkquintik. Posen werden vorher über lokalen IK gelöst. Gelenk- und nichtlineare TCP-v/a/Ruck-Grenzen werden über die ganze Bahn geprüft; keine TCP-Geraden-Garantie. |
-| LIN | `target`, optional `speed` | Kartesische Linie mit glatter kürzester Quaternion-Drehung. Ein Gelenkpunkt liefert seine FK-Pose, keine vorgeschriebene terminale Gelenkbranche. |
+| LIN | `target`, optional `speed`, `orientation_mode` | Kartesische Linie; standardmäßig konstante TCP-Orientierung am Bahnanfang. `orientation_mode: interpolate` aktiviert ausdrücklich die glatte kürzeste Quaternion-Drehung zur Zielorientierung. Ein Gelenkpunkt liefert seine FK-Zielposition, keine vorgeschriebene terminale Gelenkbranche. |
 | CIRC | `center` **oder** `center_offset`, `normal`, `sweep_rad`, optional `orientation`, `speed` | Vorzeichenbehafteter Rechtshandbogen im Weltkoordinatensystem ab der aktuellen TCP-Pose. Betrag des Winkels höchstens 2pi. |
 | WAIT | positive `seconds` | Stillstand mindestens für die angegebene Zeit. |
 | CALL | `program` | Vorab-Auflösen eines internen benannten Unterprogramms. Kein externer Skriptaufruf. |
+
+### LIN und TCP-Orientierung
+
+Ab **0.16.1** ist `orientation_mode: keep` der Standard für LIN. Der Planer
+übernimmt die tatsächliche FK-Orientierung des TCP am Anfang dieses Schritts und
+hält sie im Weltkoordinatensystem entlang der Linie. Das gilt auch nach einem
+vorhergehenden PTP und bei benannten Gelenkpunkten. Vom Zielpunkt wird in diesem
+Modus seine Position verwendet; dessen gespeichertes Quaternion löst keine
+zusätzliche Drehung aus. Posen im Punkteformat enthalten weiterhin ein gültiges
+Quaternion, damit derselbe Punkt auch als vollständige PTP-/Rotationspose dient.
+
+```yaml
+- {type: LIN, target: work}                         # TCP-Orientierung halten
+- {type: LIN, target: work, orientation_mode: keep} # explizit gleiches Verhalten
+- {type: LIN, target: work, orientation_mode: interpolate} # zur Zielorientierung drehen
+```
+
+`keep` und `interpolate` sind die einzigen Werte. Das Feld gehört zu LIN;
+bei anderen Quellbefehlen wird es abgelehnt. **Migration:** Programme, die die
+bisherige automatische Orientierungsinterpolation benötigen, ergänzen
+`orientation_mode: interpolate` an ihren LIN-Schritten. Die expliziten Low-Level-
+PoseSweepPath-Funktionen für rotierende Posen bleiben verfügbar.
+
+Die Arm- und Handachsen bewegen sich weiterhin, um die konstante TCP-Orientierung
+zu erreichen. Eine ruhende TCP-Orientierung bedeutet deshalb keine ruhenden
+Handachsen. Die vorhandene numerische Zulassungstoleranz von 0,5 mrad bleibt
+bestehen; FK und Ausgabe werden unverändert aus den geplanten Gelenken berechnet.
+
+Position und gehaltene Orientierung müssen gemeinsam entlang der gesamten Linie
+planbar sein. Bei Ablehnung liefert der Planer einen Fehler mit Quellort;
+eine Orientierungsänderung wird nicht als Ersatzbewegung eingeschoben.
+Insbesondere nach einer geänderten Ausgangskonfiguration müssen ältere
+kartesische Zielpunkte mit der nun gehaltenen Orientierung neu geprüft werden.
+
+Ein lauffähiges UR5e-Beispiel mit erster Achse bei 2 rad, nahem LIN-Ziel und
+anschließendem Vollkreis steht in
+[`ur5e_lin_keep_orientation.yaml`](../../programs/examples/ur5e_lin_keep_orientation.yaml).
+Prüfung des gemeldeten Falls und der 1/10/20-ms-Raster:
+[LIN-Orientierung](../testing/lin_orientation_validation.md).
 
 Beispiel eines CIRC-Schritts:
 

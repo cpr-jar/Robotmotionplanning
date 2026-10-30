@@ -1,0 +1,75 @@
+Test project /workspace/robot-motion-cpp/build-all
+      Start  1: core_tests
+ 1/35 Test  #1: core_tests .......................   Passed    0.00 sec
+      Start  2: preparation_context_tests
+ 2/35 Test  #2: preparation_context_tests ........   Passed    0.00 sec
+      Start  3: trajectory_tests
+ 3/35 Test  #3: trajectory_tests .................   Passed    0.00 sec
+      Start  4: envelopes_tests
+ 4/35 Test  #4: envelopes_tests ..................   Passed    0.01 sec
+      Start  5: execution_tests
+ 5/35 Test  #5: execution_tests ..................   Passed   10.21 sec
+      Start  6: live_session_tests
+ 6/35 Test  #6: live_session_tests ...............   Passed    0.07 sec
+      Start  7: provider_contracts_tests
+ 7/35 Test  #7: provider_contracts_tests .........   Passed    0.00 sec
+      Start  8: execution_faults_tests
+ 8/35 Test  #8: execution_faults_tests ...........   Passed    0.02 sec
+      Start  9: allocations_tests
+ 9/35 Test  #9: allocations_tests ................   Passed    0.00 sec
+      Start 10: tracking_tests
+10/35 Test #10: tracking_tests ...................   Passed    0.00 sec
+      Start 11: reference_kinematics_tests
+11/35 Test #11: reference_kinematics_tests .......   Passed    0.06 sec
+      Start 12: header_compatibility_tests
+12/35 Test #12: header_compatibility_tests .......   Passed    0.00 sec
+      Start 13: linux_platform_tests
+13/35 Test #13: linux_platform_tests .............   Passed    0.00 sec
+      Start 14: serial_tests
+14/35 Test #14: serial_tests .....................   Passed    0.02 sec
+      Start 15: kinematic_edges_tests
+15/35 Test #15: kinematic_edges_tests ............   Passed    0.47 sec
+      Start 16: kdl_reference_tests
+16/35 Test #16: kdl_reference_tests ..............   Passed    0.01 sec
+      Start 17: calibration_tests
+17/35 Test #17: calibration_tests ................   Passed    0.00 sec
+      Start 18: dxf_import_tests
+18/35 Test #18: dxf_import_tests .................   Passed    0.02 sec
+      Start 19: robot_program_tests
+19/35 Test #19: robot_program_tests ..............   Passed    0.86 sec
+      Start 20: lin_orientation_tests
+20/35 Test #20: lin_orientation_tests ............   Passed    4.14 sec
+      Start 21: preparation_budget_tests
+21/35 Test #21: preparation_budget_tests .........   Passed    0.08 sec
+      Start 22: dxf_program_tests
+22/35 Test #22: dxf_program_tests ................   Passed    6.73 sec
+      Start 23: random_programs_tests
+23/35 Test #23: random_programs_tests ............   Passed   26.16 sec
+      Start 24: parser_fuzz_tests
+24/35 Test #24: parser_fuzz_tests ................   Passed    0.50 sec
+      Start 25: stopping_tests
+25/35 Test #25: stopping_tests ...................   Passed    0.00 sec
+      Start 26: following_tests
+26/35 Test #26: following_tests ..................   Passed    0.77 sec
+      Start 27: controller_cycle_1ms
+27/35 Test #27: controller_cycle_1ms .............   Passed    0.13 sec
+      Start 28: controller_cycle_10ms
+28/35 Test #28: controller_cycle_10ms ............   Passed    0.12 sec
+      Start 29: controller_cycle_20ms
+29/35 Test #29: controller_cycle_20ms ............   Passed    0.15 sec
+      Start 30: controller_late-clock
+30/35 Test #30: controller_late-clock ............   Passed    0.12 sec
+      Start 31: controller_sink-refusal
+31/35 Test #31: controller_sink-refusal ..........   Passed    0.11 sec
+      Start 32: controller_shutdown
+32/35 Test #32: controller_shutdown ..............   Passed    0.12 sec
+      Start 33: program_ur5e_e2e
+33/35 Test #33: program_ur5e_e2e .................   Passed    0.16 sec
+      Start 34: program_abb_irb120_e2e
+34/35 Test #34: program_abb_irb120_e2e ...........   Passed    0.05 sec
+      Start 35: program_fanuc_lrmate200id_e2e
+35/35 Test #35: program_fanuc_lrmate200id_e2e ....   Passed    0.08 sec
+
+100% tests passed out of 35
+
+Total Test time (real) =  51.20 sec

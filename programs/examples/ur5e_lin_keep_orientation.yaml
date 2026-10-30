@@ -1,0 +1,21 @@
+# LIN keeps the TCP orientation of home (axis 1 = 2 rad).
+# The nearby work point is reachable with that orientation; all values are SI.
+schema_version: 1
+units: SI
+frame: world
+robot_profile: ../../models/ur5e/profile_pick_place_simulation.yaml
+cycle_s: 0.01
+start: home
+points:
+  home: {joints: [2, -0.6, 0.7, 0.3, 0.8, -0.2]}
+  wide: {joints: [0.7, -0.9, 1.0, -0.3, 1.1, 0.2]}
+  work:
+    position: [-0.47390467854451826, 0.62398337528833302, 0.24366518271764495]
+    orientation: [-0.36982586929249855, -0.43651321706789414, 0.67017312781802196, 0.47281393430999302]
+steps:
+  - {type: PTP, target: wide, speed: 1}
+  - {type: PTP, target: home, speed: 1}
+  - {type: LIN, target: work, speed: 0.6}
+  - {type: CIRC, center_offset: [-0.015, 0, 0], normal: [0, 0, 1], sweep_rad: 6.283185307179586, speed: 0.9}
+  - {type: WAIT, seconds: 0.3}
+  - {type: PTP, target: home, speed: 0.7}

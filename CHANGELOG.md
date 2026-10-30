@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.16.1 — Keep TCP orientation during ordinary LIN, 2026-10-30
+
+- LIN now keeps the actual segment-start TCP orientation in world coordinates by
+  default, including named joint targets and LIN after PTP. Explicit
+  orientation_mode: interpolate preserves intentional target-orientation sweeps.
+- Keep DXF contour orientation and explicit DXF entry reorientation compatible.
+- Export the LIN orientation policy and label it in the separate viewer; retain
+  actual FK/simulation data. Reject unplannable constant-orientation paths.
+- Add UR5e regressions for the reported 2-rad start, fixed-orientation 1/10/20-ms
+  schedules, explicit rotation, DXF entry and editor failure publication.
+- Document the changed LIN default and add a reachable demonstration program.
+
 ## 0.16.0 — Shared preparation budgets and cancellation, 2026-10-30
 
 - Added explicit per-job PreparationContext with cumulative work/input/cache limits,

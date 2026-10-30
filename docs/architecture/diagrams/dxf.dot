@@ -2,7 +2,7 @@ digraph uml {
 graph [rankdir=LR, bgcolor="white", pad="0.25", nodesep="0.35", ranksep="0.8"];
 node [shape=plain, fontname="DejaVu Sans", fontsize=10];
 edge [fontname="DejaVu Sans", fontsize=9, color="#475569"];
-instruction [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5"><TR><TD BGCOLOR="#dbeafe"><B>ProgramInstruction</B></TD></TR><TR><TD ALIGN="LEFT">operation, location, speed</TD></TR><TR><TD ALIGN="LEFT">dxf, drawing_location</TD></TR></TABLE>>];
+instruction [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5"><TR><TD BGCOLOR="#dbeafe"><B>ProgramInstruction</B></TD></TR><TR><TD ALIGN="LEFT">operation, location, speed</TD></TR><TR><TD ALIGN="LEFT">dxf, drawing_location</TD></TR><TR><TD ALIGN="LEFT">linear_orientation_mode (LIN: Keep / Interpolate)</TD></TR></TABLE>>];
 command [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5"><TR><TD BGCOLOR="#dbeafe"><B>DxfProgramCommand</B></TD></TR><TR><TD ALIGN="LEFT">file, import, placement</TD></TR><TR><TD ALIGN="LEFT">relative_to_tcp, travel</TD></TR></TABLE>>];
 options [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5"><TR><TD BGCOLOR="#dbeafe"><B>DxfImportOptions</B></TD></TR><TR><TD ALIGN="LEFT">units, layer</TD></TR></TABLE>>];
 drawing [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5"><TR><TD BGCOLOR="#dbeafe"><B>DxfDrawing</B></TD></TR><TR><TD ALIGN="LEFT">strokes, metres_per_unit, curve_count</TD></TR></TABLE>>];
