@@ -16,8 +16,8 @@ figure{margin:24px 0;overflow:auto}figure svg{max-width:100%;height:auto}figcapt
 Diese Datei enthält Texte, UML- und Tutorial-Ablaufdiagramme sowie die Lehrkurve offline.
 Weitere Mermaid-Ablaufquellen sind als Code erhalten;
 GitHub rendert sie in der Markdown-Ausgabe. Druck/PDF ist über die Druckfunktion des Browsers möglich.</p>
-<nav><ol><li><a href="#chapter-readme">Dokumentation für Entwicklung und Steuerungseinbindung</a></li><li><a href="#chapter-motion_planning_basics">Bewegungsplanung verstehen – ein kleines Tutorial</a></li><li><a href="#chapter-controller_integration">Integrationshandbuch für die eigene Steuerung</a></li><li><a href="#chapter-interface_contracts">Daten- und Schnittstellenverträge</a></li><li><a href="#chapter-class_diagrams">UML-Klassendiagramme</a></li><li><a href="#chapter-runtime_flows">Laufzeitabläufe und Zustände</a></li><li><a href="#chapter-module_catalog">Ordner und Modulzuständigkeiten</a></li><li><a href="#chapter-naming_and_migration">Benennung und Migration ab 0.12.3</a></li><li><a href="#chapter-acceptance_plan">Test- und Abnahmeplan für die spätere Integration</a></li><li><a href="#chapter-robot_model_yaml">Kinematikbeschreibung und SI-Motion-Profil</a></li><li><a href="#chapter-robot_program_yaml">Eigene Roboterprogramme importieren</a></li><li><a href="#chapter-dxf_program_command">DXF als Programmbefehl</a></li><li><a href="#chapter-validation">Aktuelle Ergänzung — Architekturkorrekturen 0.13.1, 30.10.2026</a></li></ol></nav><section id="chapter-readme"><h1 id="chapter-readme--dokumentation-für-entwicklung-und-steuerungseinbindung">Dokumentation für Entwicklung und Steuerungseinbindung</h1>
-<p>Stand: <strong>0.13.1</strong>. Die Zielsteuerung ist eine Eigenentwicklung; die konkrete
+<nav><ol><li><a href="#chapter-readme">Dokumentation für Entwicklung und Steuerungseinbindung</a></li><li><a href="#chapter-motion_planning_basics">Bewegungsplanung verstehen – ein kleines Tutorial</a></li><li><a href="#chapter-controller_integration">Integrationshandbuch für die eigene Steuerung</a></li><li><a href="#chapter-interface_contracts">Daten- und Schnittstellenverträge</a></li><li><a href="#chapter-live_motion_session">Verwaltete Pläne, Befehlsannahme und Shutdown</a></li><li><a href="#chapter-class_diagrams">UML-Klassendiagramme</a></li><li><a href="#chapter-runtime_flows">Laufzeitabläufe und Zustände</a></li><li><a href="#chapter-module_catalog">Ordner und Modulzuständigkeiten</a></li><li><a href="#chapter-naming_and_migration">Benennung und Migration ab 0.12.3</a></li><li><a href="#chapter-acceptance_plan">Test- und Abnahmeplan für die spätere Integration</a></li><li><a href="#chapter-robot_model_yaml">Kinematikbeschreibung und SI-Motion-Profil</a></li><li><a href="#chapter-robot_program_yaml">Eigene Roboterprogramme importieren</a></li><li><a href="#chapter-dxf_program_command">DXF als Programmbefehl</a></li><li><a href="#chapter-validation">Aktuelle Ergänzung — Planbesitz und Übergabe 0.14.0, 30.10.2026</a></li></ol></nav><section id="chapter-readme"><h1 id="chapter-readme--dokumentation-für-entwicklung-und-steuerungseinbindung">Dokumentation für Entwicklung und Steuerungseinbindung</h1>
+<p>Stand: <strong>0.14.0</strong>. Die Zielsteuerung ist eine Eigenentwicklung; die konkrete
 Adapterplanung folgt später. Der betrachtete Zyklusbereich beträgt <strong>1–20 ms</strong>.
 Die Dokumente beschreiben die vorhandene Bibliothek und benennen noch offene
 Integrationsaufgaben ausdrücklich.</p>
@@ -89,6 +89,11 @@ Integrationsaufgaben ausdrücklich.</p>
 <td>12</td>
 <td><a href="architecture/architecture_review_v0.13.0.md">Architektur-Review</a> / <a href="testing/architecture_review_fixes.md">Korrekturpaket</a></td>
 <td>Historische Befunde, erledigte Maßnahmen und verbleibende Schritte</td>
+</tr>
+<tr>
+<td>13</td>
+<td><a href="#chapter-live_motion_session">Verwaltete Planübergabe</a> / <a href="testing/live_session_validation.md">Prüfnachweis</a></td>
+<td>Lebensdauer, Annahme/Commit, Rücknahme und bestätigter Shutdown ab 0.14.0</td>
 </tr>
 </tbody>
 </table>
@@ -1575,7 +1580,7 @@ Erst <code>DeadlineMotionExecutor</code> bzw. <code>LiveMotionExecutor</code> ü
 geprüfte Ausgabe. Du musst diese Klassen nicht alle verstehen, um die oben
 beschriebenen Schritte im Viewer wiederzuerkennen.</p></section><section id="chapter-controller_integration"><h1 id="chapter-controller_integration--integrationshandbuch-für-die-eigene-steuerung">Integrationshandbuch für die eigene Steuerung</h1>
 <h2 id="chapter-controller_integration--zweck-und-geltungsbereich">Zweck und Geltungsbereich</h2>
-<p>Dieses Handbuch beschreibt <strong>Robot Motion C++ 0.12.3</strong> als einbettbare C++20-
+<p>Dieses Handbuch beschreibt <strong>Robot Motion C++ 0.14.0</strong> als einbettbare C++20-
 Bibliothek. Eure Steuerung ist selbst entwickelt; konkrete Adapter, Prozesse,
 Feldbuszuordnung und Freigabelogik werden später festgelegt. Der betrachtete
 Zyklustakt liegt zwischen <strong>1 und 20 ms</strong>. Die Bibliothek plant Sollbewegungen
@@ -1770,7 +1775,7 @@ Befehlsinhalt und aktuelle Zeit dürfen dabei nicht vermischt werden.</p>
 <td>Vollständiger Cache</td>
 <td>Erster Integrationstest, begrenzte Programmlänge</td>
 <td>Alle festen Befehle mit <code>prepare_live_plan&lt;N&gt;()</code> erzeugen</td>
-<td><code>LiveMotionExecutor&lt;N&gt;::poll_clock()</code></td>
+<td><code>LiveMotionSession&lt;N&gt;::dispatch_clock()</code></td>
 </tr>
 <tr>
 <td>SPSC-Puffer</td>
@@ -1785,28 +1790,30 @@ Befehlsinhalt und aktuelle Zeit dürfen dabei nicht vermischt werden.</p>
 verwendet <code>N=6</code>; ein anderes Modell braucht eine passende Instanziierung und
 Achsabbildung, keine stille Abschneidung oder Auffüllung.</p>
 <h3 id="chapter-controller_integration--cachepfad">Cachepfad</h3>
-<pre><code class="language-cpp">#include &lt;motion/execution/live_motion_executor.hpp&gt;
+<pre><code class="language-cpp">#include &lt;motion/execution/live_motion_session.hpp&gt;
 
 constexpr std::size_t axis_count = 6;
 constexpr motion::ClockId controller_clock_id = 1;
 const auto execution_schedule = prepared_program.schedule;
 const double execution_epoch_s = execution_schedule-&gt;initial_state().timestamp_s;
-const auto prepared_cache = motion::prepare_live_plan&lt;axis_count&gt;(
+auto prepared_cache = motion::prepare_live_plan&lt;axis_count&gt;(
     execution_schedule, execution_epoch_s,
     {1, 0, 0, controller_clock_id}); // generation, parent, global start tick, clock
 if (!prepared_cache) { /* Start verhindern; diagnostic ausgeben */ }
 
-motion::LivePlanMailbox&lt;axis_count&gt; plan_mailbox;
 const double cycle_period_s = execution_schedule-&gt;cycle_s();
 const motion::ExecutionTimingPolicy timing_policy{
     0, cycle_period_s * .1, 0, 0}; // Nur ideales virtuelles Beispiel!
-motion::LiveMotionExecutor&lt;axis_count&gt; motion_executor(
-    *prepared_cache.plan, plan_mailbox, timing_policy);
+motion::LiveMotionSession&lt;axis_count&gt; motion_session(
+    std::move(prepared_cache.plan), timing_policy);
 </code></pre>
-<p>Die Host-Anwendung hält <code>prepared_cache.plan</code> so lange am Leben, wie der Executor
-oder ein ausstehender Wechsel ihn referenziert. Der Executor übernimmt keinen
-<code>shared_ptr</code>. Ein Cache darf nach Beginn der Benutzung nicht verändert werden.
-Die Freigabe und damit verbundene Speicherarbeit findet außerhalb RT statt.</p>
+<p>Die Sitzung übernimmt den Cachebesitz über <code>LivePlanOwner</code>. Dessen
+Managementmethoden halten aktive/angebotene Caches bis zur Rückmeldung oder
+bestätigten Quieszenz am Leben. Der zyklische Executor leiht weiterhin nur
+Adressen; Freigaben finden außerhalb RT statt. Die alte rohe Executor-/Postfach-
+API bleibt für Hosts mit eigener Besitzverwaltung verfügbar.</p>
+<p>Den vollständigen Annahmevertrag, Planwechsel, Abbruchwünsche und den
+Shutdown-Handschlag beschreibt <a href="#chapter-live_motion_session">Verwaltete Planübergabe</a>.</p>
 <h3 id="chapter-controller_integration--gepufferter-pfad">Gepufferter Pfad</h3>
 <p><code>BufferedMotionProducer&lt;N&gt;::fill(ring, budget)</code> gehört in einen eigenen
 Nicht-RT-Producer. Der Ring ist SPSC: exakt ein Producer und ein Consumer.
@@ -1817,36 +1824,27 @@ nicht fort. Den Worst-Case-Vorlauf des Producers gegen die Ringkapazität planen
 Die Konstruktoren und das finale Freigeben der geteilten Schedules gehören in
 die Vor-/Nachbereitungsphase.</p>
 <h2 id="chapter-controller_integration--5-zyklische-befehlsübergabe">5. Zyklische Befehlsübergabe</h2>
-<p>Die Steuerungsuhr braucht <code>ClockTime now() noexcept</code>; sie muss eigene Fehler über
-nichtendliche Werte oder einen expliziten Host-Fehlerpfad melden. Alternativ kann
-unter Linux <code>LinuxMonotonicClock</code> benutzt werden. Der Dispatcher schreibt seinen
-Ausgabewert nur bei <code>Running</code> und <code>Finished</code>.</p>
-<pre><code class="language-cpp">// Nur der zyklische Eigentümer greift direkt auf den Executor zu.
-motion::LiveJointCommand&lt;axis_count&gt; next_command;
-const auto execution_status = motion_executor.poll_clock(clock, next_command);
-if (execution_status == motion::ExecutionStatus::Running ||
-    execution_status == motion::ExecutionStatus::Finished) {
-  // Inhalt jetzt genau einmal an die Host-Achsschnittstelle übergeben.
-  // Finished enthält den letzten Stillstandsbefehl und muss ebenfalls raus.
-} else if (execution_status == motion::ExecutionStatus::Error) {
-  // Anwendungsfehler verriegeln; vereinbarte Stop-/Fehlerreaktion auslösen.
-}
-// Inactive: nichts neu senden. Den alten Inhalt von next_command nicht wiederholen.
+<p>Die Steuerungsuhr liefert <code>ClockTime now() noexcept</code> in der vereinbarten
+monotonen Domäne. Der Host-Sink implementiert
+<code>bool try_write(const LiveJointCommand&lt;N&gt;&amp;) noexcept</code> und
+<code>void request_stop() noexcept</code>, jeweils mit begrenzter Laufzeit.</p>
+<pre><code class="language-cpp">// Nur ein zyklischer Eigentümer; axes kopiert und akzeptiert den ganzen Befehl.
+const auto status = motion_session.dispatch_clock(clock, axes);
+// Running / Finished: bereits genau einmal übergeben UND Delivery-Fence bestätigt.
+// Nicht zusätzlich selbst try_write() aufrufen!
+// Inactive: keine neue Übergabe. Error: Ausgabe bleibt verriegelt.
 </code></pre>
-<p><code>poll_clock()</code> liest die Uhr vor und nach der Prüfung. Damit kann es auch eine
-Unterbrechung während der Verarbeitung erkennen. <code>poll(now, output)</code> hat nur die
-eine vom Aufrufer bereitgestellte Zeitbeobachtung. Beide Varianten können
-zukünftige Verzögerungen der nachfolgenden Achsschnittstelle nicht messen.
-Deren garantierte maximale Annahmelatenz muss in <code>dispatch_latency_bound_s</code>
-eingerechnet und später auf der Zielsteuerung überprüft werden.</p>
-<p>Die spätere Achsschnittstelle benötigt einen klaren Vertrag: Annahme aller
-Achswerte für genau diesen Tick oder gemeldeter Fehler, begrenzte Ausführungszeit,
-kein Behalten eines Zeigers auf die wiederverwendete Ausgabestruktur und
-geklärter Umgang mit partieller Übertragung. Bei Ablehnung ist der Dispatcher
-bereits weitergeschaltet: nicht denselben Befehl erneut senden und nicht
-ungeprüft weiterpollen. Die Anwendung verriegelt diesen Übergabefehler und
-führt die vereinbarte Fehlerreaktion aus. Das Referenzbeispiel zeigt diese
-zusätzliche Anwendungssperre, ohne einen bestimmten Hardware-Stopp vorzugeben.</p>
+<p><code>try_write()==true</code> bedeutet unwiderrufliche Annahme durch den Host, nicht
+bereits bestätigte physische Ausführung. Eine Ablehnung führt ohne Wiederholung
+zu <code>Error</code>, einem strukturierten Diagnostic und einmaliger Stopanforderung.
+Auch der letzte Stillstandsbefehl muss angenommen werden, bevor <code>Finished</code>
+zurückgegeben wird. Die tatsächliche Stopreaktion und Ist-Ruhe gehören zum Host.</p>
+<p>Beim Herunterfahren fordert die Managementseite <code>plans().request_shutdown()</code> an.
+Der zyklische Thread wird weiter aufgerufen, bis <code>Quiescent</code> bestätigt ist.
+Erst dann <code>plans().release_after_shutdown()</code> außerhalb RT ausführen. Sitzung
+selbst erst nach Ende/Join aller aufrufenden Threads zerstören. Der
+<a href="#chapter-live_motion_session--6-shutdown-mit-nachgewiesener-speicherfreigabe">genaue Ablauf</a>
+erklärt laufende Übergaben und ungelesene Aktivierungsantworten.</p>
 <h2 id="chapter-controller_integration--6-speicher-und-threadgrenzen">6. Speicher und Threadgrenzen</h2>
 <table>
 <thead>
@@ -1865,12 +1863,20 @@ zusätzliche Anwendungssperre, ohne einen bestimmten Hardware-Stopp vorzugeben.<
 <td>Vorbereitungs-/Producerthread</td>
 </tr>
 <tr>
-<td><code>poll[_clock]()</code>, feste Push/Pop, Live-Aktivierung, Fence</td>
+<td><code>dispatch[_clock]()</code>, rohe <code>poll[_clock]()</code>, feste Push/Pop, Live-Aktivierung, Fence</td>
 <td>Ein zyklischer Eigentümer</td>
 </tr>
 <tr>
-<td><code>snapshot()</code></td>
-<td>Auch parallele Beobachter; begrenzte Wiederholversuche, optionales Ergebnis</td>
+<td><code>snapshot()</code>, Session-<code>diagnostic()</code>, Owner-<code>state()</code></td>
+<td>Auch parallele Beobachter; begrenzte Leseoperationen</td>
+</tr>
+<tr>
+<td>Owner: <code>try_offer()</code>, <code>collect_response()</code>, <code>request_cancel()</code>, <code>release_after_shutdown()</code></td>
+<td>Ein Managementthread; shared_ptr-Arbeit außerhalb RT</td>
+</tr>
+<tr>
+<td>Owner: <code>request_shutdown()</code></td>
+<td>Atomar aus beliebigem Thread; wartet nicht</td>
 </tr>
 <tr>
 <td><code>generation()</code>, <code>fault()</code>, <code>commit_delivery()</code>, <code>service_requests()</code></td>
@@ -1908,6 +1914,9 @@ Postfach nicht im zyklischen Thread mit einer Warteschleife bedienen.</p>
 <p>Wenn die Host-Achsschnittstelle bereits Befehle angenommen hat, wird die
 unwiderruflich übergebene Grenze mit <code>commit_delivery(generation, through_tick)</code>
 geführt. Kein Wechsel darf bereits angenommene Befehle rückwirkend ersetzen.
+In <code>LiveMotionSession</code> erfolgt dieser Commit automatisch nach der Sink-Annahme;
+der Host ruft ihn nicht zusätzlich auf. Angebote und Rückmeldungen laufen dort
+über <code>plans().try_offer()</code> und <code>plans().collect_response()</code>.
 Besitzdauer, Acknowledgement und Freigabe sind in den
 <a href="#chapter-runtime_flows">Live-Sequenzen</a> beschrieben.</p>
 <h2 id="chapter-controller_integration--8-timing-für-120-ms">8. Timing für 1–20 ms</h2>
@@ -2342,6 +2351,14 @@ höher als die aktuelle und benennen deren Identität als Vorgänger.</p>
 <td><code>Faulted</code></td>
 <td>Ausführer ist fehlerhaft/beendet oder ausstehender Wechsel wurde beim Fehler abgebrochen</td>
 </tr>
+<tr>
+<td><code>Cancelled</code></td>
+<td>Angebot vor Aktivierung zurückgenommen; Kandidat kann außerhalb RT freigegeben werden</td>
+</tr>
+<tr>
+<td><code>Shutdown</code></td>
+<td>Offenes Angebot beim zyklischen Shutdown verworfen; vollständige Cache-Freigabe erst nach Quieszenz</td>
+</tr>
 </tbody>
 </table>
 <p>Der Planer besitzt angebotene Caches mindestens bis zur zugehörigen Antwort.
@@ -2355,6 +2372,24 @@ ist nur <code>start_tick &lt;= tick &lt;= end_tick</code>. Direkten Anwendungszu
 Ergebnis ist eine fehlgeschlagene begrenzte Leseprobe, kein Bewegungsfehler.
 Andere direkte Getter sind nicht für beliebige parallele Leser freigegeben.
 Ein angebotener Kandidat darf bis zur Antwort nicht geändert oder ersetzt werden.</p>
+<p>Ab 0.14.0 übernimmt <a href="#chapter-live_motion_session">LiveMotionSession</a> diesen Besitzvertrag
+über ihren <code>LivePlanOwner</code>. Ein Managementthread bietet Caches als shared_ptr an
+und sammelt Antworten; die zyklische Seite nutzt ausschließlich geliehene Adressen.
+<code>dispatch[_clock]()</code> übergibt jeden Befehl einmal an einen begrenzten noexcept-Sink
+und bestätigt den Delivery-Fence nur nach dessen unwiderruflicher Annahme.
+Ein <code>false</code> des Sinks verriegelt die Ausgabe ohne Wiederholung. <code>diagnostic()</code>
+erhält Code, eigentlichen <code>ExecutionFault</code>, Generation und fehlerhaften Tick.</p>
+<p><code>request_cancel()</code> ist ein Wunsch, keine Zusage; als definitive Antwort kann
+bei bereits erfolgter Aktivierung auch <code>Activated</code> ankommen. Angebotsnummern
+werden innerhalb einer Sitzung nicht wiederverwendet. Ein Shutdown wird
+asynchron angefordert und vom zyklischen Thread als <code>Quiescent</code> bestätigt.
+Erst dann gibt <code>release_after_shutdown()</code> alle Referenzen außerhalb RT frei.
+Der Executor-Snapshot kennzeichnet dies mit <code>quiescent=true</code>, <code>generation=0</code>.
+Vor dem Zerstören der Sitzung alle aufrufenden Threads beenden/joinen.</p>
+<p>Der Producerpfad meldet Referenzfehler zusätzlich als <code>BufferFillDiagnostic</code>
+mit Code <code>ReferenceFailure</code>, Tick und ursprünglicher <code>exception_ptr</code>.
+Nach einem solchen Fehler bleibt <code>fill()</code> verriegelt. Bereits ausgegebene
+Präfixbefehle werden nicht zurückgenommen; der Host muss den Fehler behandeln.</p>
 <h2 id="chapter-interface_contracts--beobachtungen-frames-und-kalibrierung">Beobachtungen, Frames und Kalibrierung</h2>
 <p><code>ObjectObservation</code> trägt Objekt-ID, Frame, Pose, Messzeit, Empfangszeit und
 Positions-/Orientierungsfehler. <code>EncoderObservation</code> trägt Position, v/a,
@@ -2372,7 +2407,285 @@ ist deshalb eine spätere explizite Host-Policy.</p>
 <code>PointCorrespondence {source, target, weight}</code>. Beide Punktmengen sind metrische
 3D-Positionen. Es wird ein starrer Transform, keine Skalierung, keine bewegte
 Framefusion und keine Gelenknullpunktkalibrierung geschätzt. Residuen und
-ausgelagerte Validierungspunkte vor Übernahme prüfen.</p></section><section id="chapter-class_diagrams"><h1 id="chapter-class_diagrams--uml-klassendiagramme">UML-Klassendiagramme</h1>
+ausgelagerte Validierungspunkte vor Übernahme prüfen.</p></section><section id="chapter-live_motion_session"><h1 id="chapter-live_motion_session--verwaltete-pläne-befehlsannahme-und-shutdown">Verwaltete Pläne, Befehlsannahme und Shutdown</h1>
+<p>Ab <strong>0.14.0</strong> ist <code>LiveMotionSession&lt;N&gt;</code> der empfohlene Cachepfad für eine
+Steuerungseinbindung. Sie verbindet den vorhandenen <code>LiveMotionExecutor</code> mit
+einem <code>LivePlanOwner</code> und einer synchronen Achsannahme. Es gibt keinen eigenen
+Thread, keinen Scheduler und keinen Feldbusadapter. Die Host-Steuerung bestimmt
+weiterhin Takt, Istwertüberwachung, Freigaben und physische Stopreaktion.</p>
+<h2 id="chapter-live_motion_session--1-zwei-rollen-ein-besitzer">1. Zwei Rollen, ein Besitzer</h2>
+<table>
+<thead>
+<tr>
+<th>Rolle</th>
+<th>Methoden</th>
+<th>Vertrag</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Ein Managementthread</td>
+<td><code>plans().try_offer()</code>, <code>collect_response()</code>, <code>request_cancel()</code>, <code>release_after_shutdown()</code></td>
+<td>Darf planen, shared_ptr verwalten und Caches freigeben; nicht im RT-Zyklus aufrufen</td>
+</tr>
+<tr>
+<td>Ein zyklischer Thread</td>
+<td><code>dispatch()</code> oder <code>dispatch_clock()</code></td>
+<td>Feste Befehle prüfen, höchstens einmal übergeben und deren Annahme bestätigen</td>
+</tr>
+<tr>
+<td>Beliebige parallele Leser</td>
+<td><code>snapshot()</code>, <code>diagnostic()</code>, <code>plans().state()</code></td>
+<td>Begrenzte atomare Leseoperationen, keine Cache-Adressen</td>
+</tr>
+<tr>
+<td>Beliebiger Thread</td>
+<td><code>plans().request_shutdown()</code></td>
+<td>Atomare Anforderung; wartet nicht auf deren Umsetzung</td>
+</tr>
+</tbody>
+</table>
+<p>Sitzung und Owner sind weder kopierbar noch verschiebbar. Sie werden außerhalb
+RT konstruiert und zerstört. Der Owner hält höchstens einen aktiven und einen
+angebotenen Cache. Im RT-Pfad werden nur geliehene Adressen benutzt; dort
+werden keine shared_ptr kopiert oder freigegeben. Weitere vom Host gehaltene
+Referenzen können die Speicherlebensdauer zusätzlich verlängern.</p>
+<pre><code class="language-mermaid">flowchart LR
+    Prepare[Vorbereitung: Programm / Cache] --&gt;|shared_ptr außerhalb RT| Owner[LivePlanOwner]
+    Owner --&gt;|geliehene Adresse / atomare Übergabe| Executor[LiveMotionExecutor]
+    Executor --&gt; Session[LiveMotionSession: feste Ausgabe]
+    Session --&gt;|try_write: Befehl kopieren und annehmen| Sink[Host-Achsschnittstelle]
+    Sink --&gt;|true| Commit[Delivery-Fence bestätigen]
+    Sink --&gt;|false| Fault[Fehler verriegeln / Stop anfordern]
+    Executor --&gt;|Aktivierung / Ablehnung| Owner
+    Owner --&gt;|Rückmeldung oder bestätigte Quieszenz| Free[Freigabe außerhalb RT]
+</code></pre>
+<h2 id="chapter-live_motion_session--2-vorbereiten-und-starten">2. Vorbereiten und starten</h2>
+<pre><code class="language-cpp">#include &lt;motion/execution/live_motion_session.hpp&gt;
+
+// In der Vorbereitung, aus dem bereits geprüften schedule:
+auto cached = motion::prepare_live_plan&lt;6&gt;(schedule, epoch_s, {1, 0, 0, clock_id});
+if (!cached)
+  throw std::runtime_error(cached.diagnostic);
+
+motion::LiveMotionSession&lt;6&gt; session(std::move(cached.plan), timing_policy);
+</code></pre>
+<p>Erst danach startet der Host seinen zyklischen Aufruf. Der Zustand <code>Running</code>
+bedeutet, dass die Sitzung Befehle und Planangebote verarbeiten kann. Er ist
+keine Aussage über eine Hardwarefreigabe oder tatsächliche Istbewegung. Die
+bekannten Start-/Uhr-/Achsprüfungen aus dem <a href="#chapter-controller_integration">Integrationshandbuch</a>
+gelten weiterhin.</p>
+<h2 id="chapter-live_motion_session--3-der-annahmevertrag-der-achsschnittstelle">3. Der Annahmevertrag der Achsschnittstelle</h2>
+<p>Der Sink muss diese beiden Operationen anbieten:</p>
+<pre><code class="language-cpp">bool try_write(const motion::LiveJointCommand&lt;6&gt;&amp; command) noexcept;
+void request_stop() noexcept;
+</code></pre>
+<p><code>try_write()</code> muss den <strong>gesamten Befehl einschließlich Generation und Tick</strong>
+innerhalb seiner begrenzten Aufrufdauer kopieren und endgültig annehmen oder
+ablehnen. Die Referenz auf das Argument darf nicht gespeichert werden.</p>
+<ul>
+<li><strong>true:</strong> Der Befehl ist unwiderruflich übernommen. Die Sitzung bestätigt
+  anschließend <code>commit_delivery(generation, tick)</code> für genau diesen Tick.</li>
+<li><strong>false:</strong> Keine Wiederholung, kein Überspringen und kein Weiterlaufen.
+  Die Sitzung verriegelt <code>SinkRejected</code>, fordert einmal <code>request_stop()</code> an
+  und beendet weitere normale Ausgabe. Auch eine Ablehnung des terminalen
+  Befehls ergibt <code>Error</code>, kein erfolgreiches Ende.</li>
+</ul>
+<p>Der Vertrag unterstützt eine synchrone Annahme durch einen Host-Puffer. Eine
+spätere physische Ausführung oder Antriebsbestätigung ist damit nicht behauptet.
+Bei partieller Übertragung gilt <code>false</code>; der Host muss den Fehlerpfad für bereits
+übertragene Anteile beherrschen. Asynchrone Annahme mit späterem Ack benötigt
+eine eigene Integration; die Sitzung bietet dafür kein Wiederholungsprotokoll.</p>
+<pre><code class="language-cpp">// Zyklischer Eigentümer; clock.now() und beide Sink-Methoden sind noexcept.
+const auto status = session.dispatch_clock(clock, axes);
+// Running/Finished: Befehl ist bereits übergeben und bestätigt.
+// Nicht zusätzlich selbst try_write() oder commit_delivery() aufrufen!
+// Inactive: keine neue Übergabe. Error: weitere Ausgabe ist verriegelt.
+</code></pre>
+<p><code>Finished</code> wird erst nach Annahme des letzten Stillstandsbefehls zurückgegeben.
+Weitere Aufrufe liefern <code>Inactive</code>, ohne denselben Befehl nochmals zu senden.
+Die Session kann die Laufzeit eines fremden Sinks nicht vorhersagen.
+<code>dispatch_latency_bound_s</code> muss deshalb dessen begründete maximale Dauer und
+die zugehörige Übergabearbeit abdecken. <code>noexcept</code> allein begrenzt keine Laufzeit.</p>
+<h2 id="chapter-live_motion_session--4-plan-anbieten-und-retirement-einsammeln">4. Plan anbieten und Retirement einsammeln</h2>
+<p>Der neue Cache wird weiterhin außerhalb RT ab dem <strong>exakten</strong> aktiven
+q/dq/ddq-/Zeitstempelzustand eines zukünftigen Ticks zugelassen. Die Sitzung
+ändert keine Bewegungsplanung oder Zulassungsbedingungen.</p>
+<pre><code class="language-cpp">// Ein Managementthread; candidate ist bereits vollständig vorbereitet.
+const auto offered = session.plans().try_offer(candidate);
+if (offered) {
+  candidate.reset(); // Der Owner hält den Kandidaten jetzt selbst am Leben.
+}
+
+// Regelmäßig außerhalb RT aufrufen:
+if (const auto response = session.plans().collect_response()) {
+  // Activated: neuer Cache bleibt erhalten, alter wurde hier freigegeben.
+  // Ablehnung/Cancelled/Shutdown: Kandidatenreferenz wurde hier freigegeben.
+}
+</code></pre>
+<p><code>LivePlanOfferStatus</code> ist ein synchroner Managementstatus:</p>
+<table>
+<thead>
+<tr>
+<th>Code</th>
+<th>Bedeutung</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Offered</code></td>
+<td>Adresse sicher übergeben, noch keine Aktivierungszusage</td>
+</tr>
+<tr>
+<td><code>Busy</code></td>
+<td>Ein Angebot oder dessen ungelesene Antwort ist noch offen</td>
+</tr>
+<tr>
+<td><code>InvalidPlan</code></td>
+<td>Leerer Kandidat</td>
+</tr>
+<tr>
+<td><code>GenerationReused</code></td>
+<td>Nummer wurde in dieser Sitzung bereits angeboten oder ist älter</td>
+</tr>
+<tr>
+<td><code>Stopping</code></td>
+<td>Shutdown angefordert oder bereits bestätigt</td>
+</tr>
+</tbody>
+</table>
+<p>Jede <strong>veröffentlichte Angebotsgeneration</strong> ist größer als alle vorherigen,
+auch wenn ein früheres Angebot abgelehnt wurde. Der letzte Wert steht in
+<code>last_offered_generation()</code>. Der Host vermeidet Überlauf und wählt die nächste
+Nummer. <code>parent_generation</code> bezeichnet weiter die tatsächlich aktive Referenz.
+Diese Trennung verhindert, dass eine verspätete Abbruchanforderung ein späteres
+Angebot mit wiederverwendeter Nummer trifft. Die eigentliche Aktivierungsprüfung
+und deren <code>LiveResponseStatus</code> erfolgen weiterhin im Executor.</p>
+<p>Eine <code>Activated</code>-Rückmeldung besagt, dass die alte Referenz nicht mehr gelesen
+wird. Sie bestätigt noch keine physische Annahme der neuen Bewegung. Falls der
+Sink anschließend ablehnt, entscheidet das verriegelte Session-Diagnostic über
+den Ausführungsfehler; die alte Cache-Referenz kann trotzdem sicher freigegeben werden.</p>
+<h2 id="chapter-live_motion_session--5-ein-angebot-zurücknehmen">5. Ein Angebot zurücknehmen</h2>
+<pre><code class="language-cpp">const bool requested = session.plans().request_cancel();
+// requested bestätigt nur den Auftrag, nicht dessen Erfolg.
+</code></pre>
+<p>Vor der nächsten Ausgabe versucht der zyklische Thread die benannte Generation
+zu entfernen. Vor der Aktivierung lautet die Antwort <code>Cancelled</code>; der alte
+Plan läuft weiter. War die Aktivierung bereits erfolgt, bleibt <code>Activated</code> die
+definitive Antwort. Ein Abbruchwunsch nimmt weder einen übernommenen Befehl noch
+eine bereits aktive Bewegung zurück. Für deren Beendigung braucht der Host
+einen passenden Halt-/Fehlerpfad.</p>
+<h2 id="chapter-live_motion_session--6-shutdown-mit-nachgewiesener-speicherfreigabe">6. Shutdown mit nachgewiesener Speicherfreigabe</h2>
+<pre><code class="language-mermaid">sequenceDiagram
+    participant M as Management
+    participant S as LiveMotionSession
+    participant RT as Zyklischer Thread
+    participant A as Host-Sink
+    M-&gt;&gt;S: plans().request_shutdown()
+    S--&gt;&gt;M: angefordert; noch keine Freigabe
+    RT-&gt;&gt;S: nächster dispatch_clock()
+    opt terminaler Befehl noch nicht angenommen
+        S-&gt;&gt;A: request_stop() genau einmal
+    end
+    S-&gt;&gt;S: Executor trennt aktive / ausstehende Cache-Adressen
+    S-&gt;&gt;S: Quiescent mit Release veröffentlichen
+    S--&gt;&gt;RT: Inactive (bei verriegeltem Fehler weiterhin Error)
+    M-&gt;&gt;S: plans().state() mit Acquire lesen
+    M-&gt;&gt;S: plans().release_after_shutdown()
+    S-&gt;&gt;S: alle Cache-Referenzen außerhalb RT freigeben
+    M-&gt;&gt;RT: Thread beenden und joinen
+    M-&gt;&gt;S: Sitzung zerstören
+</code></pre>
+<p>Die Zustandsfolge ist <code>Running → ShutdownRequested → Quiescent</code>. Ein
+Ausführungs-/Annahmefehler führt direkt zu <code>Quiescent</code>, behält aber seine
+Fehlerdiagnose. Die Sitzung wird danach nicht automatisch wieder freigegeben
+oder gestartet; dafür ist eine neue, vom Host freigegebene Sitzung nötig.</p>
+<ol>
+<li><code>request_shutdown()</code> ist idempotent und wartet nicht.</li>
+<li>Ein bereits laufender Dispatch darf seine Übergabe noch abschließen. Erst
+   <code>Quiescent</code> bestätigt, dass kein Aufruf mehr Cache-Adressen lesen wird.</li>
+<li>Vor dieser Bestätigung liefert <code>release_after_shutdown()</code> <strong>false</strong> und
+   behält sämtliche Referenzen.</li>
+<li>Nach der Bestätigung werden alle Pläne freigegeben, einschließlich einer
+   ungelesenen Aktivierungsantwort oder eines gleichzeitig mit einem Shutdown oder Fehler
+   eingetroffenen Angebots. Eine einzelne Antwort kann bei diesem letzten
+   Grenzfall entfallen; Quieszenz ist die abschließende Retirement-Zusage für alle.</li>
+<li>Spätere Dispatch-Aufrufe greifen nicht mehr auf Caches/Postfach zu und geben
+   keine neuen Befehle aus. Die Sitzung selbst bleibt bis zum Ende aller Aufrufe
+   am Leben: <strong>erst Thread beenden/joinen, dann Sitzung zerstören</strong>.</li>
+</ol>
+<p>Wenn der zyklische Thread nicht mehr aufgerufen wird, erfolgt keine automatische
+Shutdown-Quittierung. Nach einem extern nachgewiesenen Join darf der Host die
+gesamte Sitzung außerhalb RT zerstören; eine Freigabe während noch möglicher
+Aufrufe darf er daraus nicht ableiten. Es gibt keinen blockierenden Destruktor.</p>
+<p>Ein normales Ende benötigt keine zusätzliche Stopanforderung, wenn der terminale
+Befehl bereits angenommen wurde. Bei Shutdown während einer Bewegung oder bei
+einem Fehler wird der Sink einmal benachrichtigt. <strong>Quiescent bedeutet keine
+bestätigte physische Ruhe.</strong> Kontrolliertes Abbremsen, Bus-/Antriebsreaktion und
+Ist-Ruhe sind weiterhin Aufgaben der Steuerung. Der Shutdown erzeugt selbst
+keine Bremsbahn.
+Bereits angenommene Treiberbefehle werden dadurch nicht zurückgenommen. Das
+Abbrechen oder Entleeren einer Host-/Antriebsqueue gehört zur Stopreaktion.</p>
+<h2 id="chapter-live_motion_session--7-beobachtung-und-fehlerursachen">7. Beobachtung und Fehlerursachen</h2>
+<p><code>snapshot()</code> ist der kohärente Executor-Snapshot. <code>next_tick</code> beschreibt die
+bereits erzeugte Referenz, <code>committed_through</code> nur unwiderruflich angenommene
+Befehle. Während eines Sinks-Aufrufs können beide auseinanderliegen. Bei
+Quieszenz steht <code>generation=0</code>, das neue Feld <code>quiescent=true</code> kennzeichnet
+die beendete Referenzbenutzung. <code>finished</code> beschreibt weiterhin den terminalen
+Referenztick; bei einer Sink-Ablehnung ist zusätzlich das Session-Diagnostic maßgeblich.</p>
+<p><code>diagnostic()</code> liefert einen einmal geschriebenen, danach unveränderten
+<code>LiveSessionFault</code>: <code>code</code>, <code>execution_fault</code>, <code>generation</code>, <code>tick</code>.</p>
+<table>
+<thead>
+<tr>
+<th>Code</th>
+<th>Ursache</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Execution</code></td>
+<td>Zeit-/Uhrfehler; genauer Grund in <code>execution_fault</code></td>
+</tr>
+<tr>
+<td><code>SinkRejected</code></td>
+<td>Host lehnt den erzeugten Befehl ab; keine Wiederholung</td>
+</tr>
+<tr>
+<td><code>CommitRejected</code></td>
+<td>Interne Delivery-Bestätigung unerwartet fehlgeschlagen; Ausgabe ebenfalls verriegelt</td>
+</tr>
+</tbody>
+</table>
+<p>Ein fehlerfreier Shutdown erzeugt kein Diagnostic. Snapshot, Zustandsabfrage und
+Diagnostic sind jeweils sicher lesbar, aber bilden zusammen keine einzige
+atomare Gesamttransaktion. Für Speicherfreigabe ist ausschließlich die
+Acquire-gelesene <code>plans().state()==Quiescent</code> maßgeblich, geprüft durch
+<code>release_after_shutdown()</code>.</p>
+<p>Im getrennten Producerpfad enthält <code>BufferFillResult::diagnostic</code> ab 0.14.0
+außerdem Code, fehlerhaften Tick und die ursprüngliche <code>exception_ptr</code>.
+<code>std::rethrow_exception(result.diagnostic.cause)</code> erhält den Originaltyp auch
+für eigene Provider-Ausnahmen. Das geschieht außerhalb RT. Nach einem
+Referenzfehler liefert der Producer dauerhaft <code>Error</code> und sampelt nicht erneut.
+<code>count</code> zählt die bereits veröffentlichten gültigen Präfixbefehle; ein Fill ist
+keine atomare Veröffentlichung des gesamten Programms. Der Host muss auf den
+Fehler reagieren, statt die Queue unbeaufsichtigt weiter abzuarbeiten.</p>
+<h2 id="chapter-live_motion_session--8-einstieg-und-bestehende-schnittstellen">8. Einstieg und bestehende Schnittstellen</h2>
+<pre><code class="language-sh">./build/controller_contract_example programs/examples/ur5e_demo.yaml 1 normal
+./build/controller_contract_example programs/examples/ur5e_demo.yaml 20 normal
+./build/controller_contract_example programs/examples/ur5e_demo.yaml 10 sink-refusal
+./build/controller_contract_example programs/examples/ur5e_demo.yaml 10 shutdown
+</code></pre>
+<p>Das Beispiel verwendet die neue Sitzung, eine ideale Uhr und eine simulierte
+Achsannahme. Der <a href="testing/live_session_validation.md">Prüfnachweis</a> beschreibt
+Lebensdauertests, Nebenläufigkeit, Allokationsprüfung und Sanitizer.</p>
+<p>Der rohe <code>LiveMotionExecutor</code> und die alten Includes bleiben verfügbar. Wer ihn
+direkt nutzt, ist weiter selbst für Besitz, Annahme, Rückmeldungen und Fehler
+verantwortlich. Seine neuen <code>cancel_offer()</code> und <code>shutdown()</code> sind ausschließlich
+Operationen des zyklischen Eigentümers. Nach <code>shutdown()</code> muss der Host neue
+rohe Postfachangebote unterbinden. Die verwaltete Sitzung erledigt dies über
+ihren Owner. Wegen der erweiterten Header-Typen/Enums müssen Verbraucher neu
+übersetzt werden; eine stabile binäre ABI ist nicht zugesagt.</p></section><section id="chapter-class_diagrams"><h1 id="chapter-class_diagrams--uml-klassendiagramme">UML-Klassendiagramme</h1>
 <p>Die folgenden acht Sichten beschreiben vorhandene Typen. Eine leere
 Dreieckspitze bezeichnet Vererbung; eine ausgefüllte Raute den Besitzer der
 enthaltenen Werte oder <code>shared_ptr</code>. Gestrichelte Pfeile zeigen Nutzung bzw.
@@ -3072,126 +3385,196 @@ Werttyp. Eine Modell-/Kalibrierrevision ist damit noch nicht eingeführt.</p>
 <code>fill()</code> sampelt außerhalb RT; <code>poll_clock()</code> liest feste Befehle und prüft die
 Zeit vor der Veröffentlichung. <a href="architecture/diagrams/buffered_execution.dot">DOT-Quelle</a>.</p>
 <h2 id="chapter-class_diagrams--5-cache-und-live-planwechsel">5. Cache und Live-Planwechsel</h2>
-<figure><svg width="1457pt" height="385pt"
- viewBox="0.00 0.00 1457.00 385.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
-<g id="chapter-class_diagrams--figure-live_execution-graph0" class="graph" transform="scale(1 1) rotate(0) translate(18 367)">
+<figure><svg width="1871pt" height="465pt"
+ viewBox="0.00 0.00 1871.00 464.50" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="chapter-class_diagrams--figure-live_execution-graph0" class="graph" transform="scale(1 1) rotate(0) translate(18 446.5)">
 <title>uml</title>
-<polygon fill="white" stroke="transparent" points="-18,18 -18,-367 1439,-367 1439,18 -18,18"/>
+<polygon fill="white" stroke="transparent" points="-18,18 -18,-446.5 1853,-446.5 1853,18 -18,18"/>
 <!-- plan -->
 <g id="chapter-class_diagrams--figure-live_execution-node1" class="node">
 <title>plan</title>
-<polygon fill="#dbeafe" stroke="transparent" points="802,-326.5 802,-347.5 1086,-347.5 1086,-326.5 802,-326.5"/>
-<text text-anchor="start" x="880.5" y="-335.5" font-family="DejaVu Sans" font-weight="bold" font-size="10.00">PreparedLivePlan&lt;N&gt;</text>
-<text text-anchor="start" x="807" y="-313.5" font-family="DejaVu Sans" font-size="10.00">cached_commands_: vector&lt;FixedJointCommand&lt;N&gt;&gt;</text>
-<text text-anchor="start" x="807" y="-292.5" font-family="DejaVu Sans" font-size="10.00">command(global_tick)</text>
-<text text-anchor="start" x="807" y="-271.5" font-family="DejaVu Sans" font-size="10.00">end_tick()</text>
-<text text-anchor="start" x="807" y="-250.5" font-family="DejaVu Sans" font-size="10.00">stamp()</text>
-<polygon fill="none" stroke="black" points="801,-242 801,-349 1087,-349 1087,-242 801,-242"/>
+<polygon fill="#dbeafe" stroke="transparent" points="1216,-244.5 1216,-265.5 1500,-265.5 1500,-244.5 1216,-244.5"/>
+<text text-anchor="start" x="1294.5" y="-253.5" font-family="DejaVu Sans" font-weight="bold" font-size="10.00">PreparedLivePlan&lt;N&gt;</text>
+<text text-anchor="start" x="1221" y="-231.5" font-family="DejaVu Sans" font-size="10.00">cached_commands_: vector&lt;FixedJointCommand&lt;N&gt;&gt;</text>
+<text text-anchor="start" x="1221" y="-210.5" font-family="DejaVu Sans" font-size="10.00">command(global_tick)</text>
+<text text-anchor="start" x="1221" y="-189.5" font-family="DejaVu Sans" font-size="10.00">end_tick()</text>
+<text text-anchor="start" x="1221" y="-168.5" font-family="DejaVu Sans" font-size="10.00">stamp()</text>
+<polygon fill="none" stroke="black" points="1215,-160 1215,-267 1501,-267 1501,-160 1215,-160"/>
 </g>
 <!-- stamp -->
 <g id="chapter-class_diagrams--figure-live_execution-node2" class="node">
 <title>stamp</title>
-<polygon fill="#dbeafe" stroke="transparent" points="1262,-305.5 1262,-326.5 1420,-326.5 1420,-305.5 1262,-305.5"/>
-<text text-anchor="start" x="1298.5" y="-314.5" font-family="DejaVu Sans" font-weight="bold" font-size="10.00">LivePlanStamp</text>
-<text text-anchor="start" x="1267" y="-292.5" font-family="DejaVu Sans" font-size="10.00">generation, parent_generation</text>
-<text text-anchor="start" x="1267" y="-271.5" font-family="DejaVu Sans" font-size="10.00">start_tick, clock</text>
-<polygon fill="none" stroke="black" points="1261,-263 1261,-328 1421,-328 1421,-263 1261,-263"/>
+<polygon fill="#dbeafe" stroke="transparent" points="1676,-223.5 1676,-244.5 1834,-244.5 1834,-223.5 1676,-223.5"/>
+<text text-anchor="start" x="1712.5" y="-232.5" font-family="DejaVu Sans" font-weight="bold" font-size="10.00">LivePlanStamp</text>
+<text text-anchor="start" x="1681" y="-210.5" font-family="DejaVu Sans" font-size="10.00">generation, parent_generation</text>
+<text text-anchor="start" x="1681" y="-189.5" font-family="DejaVu Sans" font-size="10.00">start_tick, clock</text>
+<polygon fill="none" stroke="black" points="1675,-181 1675,-246 1835,-246 1835,-181 1675,-181"/>
 </g>
 <!-- plan&#45;&gt;stamp -->
 <g id="chapter-class_diagrams--figure-live_execution-edge1" class="edge">
 <title>plan&#45;&gt;stamp</title>
-<path fill="none" stroke="#475569" d="M1099.14,-295.5C1154.44,-295.5 1214.51,-295.5 1260.83,-295.5"/>
-<polygon fill="#475569" stroke="#475569" points="1099.05,-295.5 1093.05,-299.5 1087.05,-295.5 1093.05,-291.5 1099.05,-295.5"/>
-<text text-anchor="middle" x="1174" y="-298.3" font-family="DejaVu Sans" font-size="9.00">unveränderliche Identität</text>
+<path fill="none" stroke="#475569" d="M1513.14,-213.5C1568.44,-213.5 1628.51,-213.5 1674.83,-213.5"/>
+<polygon fill="#475569" stroke="#475569" points="1513.05,-213.5 1507.05,-217.5 1501.05,-213.5 1507.05,-209.5 1513.05,-213.5"/>
+<text text-anchor="middle" x="1588" y="-216.3" font-family="DejaVu Sans" font-size="9.00">unveränderliche Identität</text>
 </g>
 <!-- mailbox -->
 <g id="chapter-class_diagrams--figure-live_execution-node3" class="node">
 <title>mailbox</title>
-<polygon fill="#dbeafe" stroke="transparent" points="437.5,-222.5 437.5,-243.5 565.5,-243.5 565.5,-222.5 437.5,-222.5"/>
-<text text-anchor="start" x="442.5" y="-231.5" font-family="DejaVu Sans" font-weight="bold" font-size="10.00">LivePlanMailbox&lt;N&gt;</text>
-<text text-anchor="start" x="442.5" y="-209.5" font-family="DejaVu Sans" font-size="10.00">try_offer(plan)</text>
-<text text-anchor="start" x="442.5" y="-188.5" font-family="DejaVu Sans" font-size="10.00">try_response(response)</text>
-<polygon fill="none" stroke="black" points="436.5,-180 436.5,-245 566.5,-245 566.5,-180 436.5,-180"/>
+<polygon fill="#dbeafe" stroke="transparent" points="824.5,-126.5 824.5,-147.5 952.5,-147.5 952.5,-126.5 824.5,-126.5"/>
+<text text-anchor="start" x="829.5" y="-135.5" font-family="DejaVu Sans" font-weight="bold" font-size="10.00">LivePlanMailbox&lt;N&gt;</text>
+<text text-anchor="start" x="829.5" y="-113.5" font-family="DejaVu Sans" font-size="10.00">try_offer(plan)</text>
+<text text-anchor="start" x="829.5" y="-92.5" font-family="DejaVu Sans" font-size="10.00">try_response(response)</text>
+<polygon fill="none" stroke="black" points="823.5,-84 823.5,-149 953.5,-149 953.5,-84 823.5,-84"/>
 </g>
 <!-- mailbox&#45;&gt;plan -->
 <g id="chapter-class_diagrams--figure-live_execution-edge2" class="edge">
 <title>mailbox&#45;&gt;plan</title>
-<path fill="none" stroke="#475569" stroke-dasharray="5,2" d="M566.55,-224.57C625.01,-235.58 713.72,-252.3 790.35,-266.74"/>
-<polygon fill="#475569" stroke="#475569" points="800.59,-268.67 789.93,-271.24 795.68,-267.74 790.76,-266.82 790.76,-266.82 790.76,-266.82 795.68,-267.74 791.6,-262.39 800.59,-268.67 800.59,-268.67"/>
-<text text-anchor="middle" x="696.5" y="-263.3" font-family="DejaVu Sans" font-size="9.00">eine offene Anfrage; kein Besitzer</text>
+<path fill="none" stroke="#475569" stroke-dasharray="5,2" d="M953.65,-126.92C1013.87,-137 1106.35,-153.25 1186,-170.5 1192.18,-171.84 1198.49,-173.24 1204.84,-174.69"/>
+<polygon fill="#475569" stroke="#475569" points="1214.87,-177 1204.12,-179.14 1210,-175.88 1205.13,-174.76 1205.13,-174.76 1205.13,-174.76 1210,-175.88 1206.14,-170.37 1214.87,-177 1214.87,-177"/>
+<text text-anchor="middle" x="1110.5" y="-173.3" font-family="DejaVu Sans" font-size="9.00">eine offene Anfrage; kein Besitzer</text>
 </g>
 <!-- response -->
 <g id="chapter-class_diagrams--figure-live_execution-node4" class="node">
 <title>response</title>
-<polygon fill="#dbeafe" stroke="transparent" points="855,-194.5 855,-215.5 1034,-215.5 1034,-194.5 855,-194.5"/>
-<text text-anchor="start" x="893" y="-203.5" font-family="DejaVu Sans" font-weight="bold" font-size="10.00">LivePlanResponse</text>
-<text text-anchor="start" x="860" y="-181.5" font-family="DejaVu Sans" font-size="10.00">status, generation</text>
-<text text-anchor="start" x="860" y="-160.5" font-family="DejaVu Sans" font-size="10.00">retired_generation, activation_tick</text>
-<polygon fill="none" stroke="black" points="853.5,-152 853.5,-217 1034.5,-217 1034.5,-152 853.5,-152"/>
+<polygon fill="#dbeafe" stroke="transparent" points="1269,-112.5 1269,-133.5 1448,-133.5 1448,-112.5 1269,-112.5"/>
+<text text-anchor="start" x="1307" y="-121.5" font-family="DejaVu Sans" font-weight="bold" font-size="10.00">LivePlanResponse</text>
+<text text-anchor="start" x="1274" y="-99.5" font-family="DejaVu Sans" font-size="10.00">status, generation</text>
+<text text-anchor="start" x="1274" y="-78.5" font-family="DejaVu Sans" font-size="10.00">retired_generation, activation_tick</text>
+<polygon fill="none" stroke="black" points="1267.5,-70 1267.5,-135 1448.5,-135 1448.5,-70 1267.5,-70"/>
 </g>
 <!-- mailbox&#45;&gt;response -->
 <g id="chapter-class_diagrams--figure-live_execution-edge3" class="edge">
 <title>mailbox&#45;&gt;response</title>
-<path fill="none" stroke="#475569" d="M578.91,-207.28C592.91,-206.34 607.39,-205.38 621,-204.5 699.53,-199.41 788.85,-193.88 853.46,-189.93"/>
-<polygon fill="#475569" stroke="#475569" points="578.74,-207.29 573.02,-211.69 566.76,-208.1 572.48,-203.7 578.74,-207.29"/>
-<text text-anchor="middle" x="696.5" y="-207.3" font-family="DejaVu Sans" font-size="9.00">eine Antwort</text>
+<path fill="none" stroke="#475569" d="M965.59,-114.22C1048.15,-111.75 1179.86,-107.8 1267.37,-105.18"/>
+<polygon fill="#475569" stroke="#475569" points="965.52,-114.22 959.64,-118.4 953.52,-114.58 959.4,-110.4 965.52,-114.22"/>
+<text text-anchor="middle" x="1110.5" y="-115.3" font-family="DejaVu Sans" font-size="9.00">eine Antwort</text>
 </g>
 <!-- executor -->
 <g id="chapter-class_diagrams--figure-live_execution-node5" class="node">
 <title>executor</title>
-<polygon fill="#dbeafe" stroke="transparent" points="1.5,-198.5 1.5,-219.5 198.5,-219.5 198.5,-198.5 1.5,-198.5"/>
-<text text-anchor="start" x="32" y="-207.5" font-family="DejaVu Sans" font-weight="bold" font-size="10.00">LiveMotionExecutor&lt;N&gt;</text>
-<text text-anchor="start" x="6.5" y="-185.5" font-family="DejaVu Sans" font-size="10.00">poll_clock(clock, output)</text>
-<text text-anchor="start" x="6.5" y="-164.5" font-family="DejaVu Sans" font-size="10.00">service_requests()</text>
-<text text-anchor="start" x="6.5" y="-143.5" font-family="DejaVu Sans" font-size="10.00">commit_delivery(generation, through)</text>
-<text text-anchor="start" x="6.5" y="-122.5" font-family="DejaVu Sans" font-size="10.00">snapshot()</text>
-<polygon fill="none" stroke="black" points="0,-114 0,-221 199,-221 199,-114 0,-114"/>
+<polygon fill="#dbeafe" stroke="transparent" points="361.5,-390.5 361.5,-411.5 558.5,-411.5 558.5,-390.5 361.5,-390.5"/>
+<text text-anchor="start" x="392" y="-399.5" font-family="DejaVu Sans" font-weight="bold" font-size="10.00">LiveMotionExecutor&lt;N&gt;</text>
+<text text-anchor="start" x="366.5" y="-377.5" font-family="DejaVu Sans" font-size="10.00">poll_clock(clock, output)</text>
+<text text-anchor="start" x="366.5" y="-356.5" font-family="DejaVu Sans" font-size="10.00">service_requests()</text>
+<text text-anchor="start" x="366.5" y="-335.5" font-family="DejaVu Sans" font-size="10.00">commit_delivery(generation, through)</text>
+<text text-anchor="start" x="366.5" y="-314.5" font-family="DejaVu Sans" font-size="10.00">snapshot()</text>
+<text text-anchor="start" x="366.5" y="-293.5" font-family="DejaVu Sans" font-size="10.00">cancel_offer(generation)</text>
+<text text-anchor="start" x="366.5" y="-272.5" font-family="DejaVu Sans" font-size="10.00">shutdown()</text>
+<polygon fill="none" stroke="black" points="360,-264 360,-413 559,-413 559,-264 360,-264"/>
 </g>
 <!-- executor&#45;&gt;plan -->
 <g id="chapter-class_diagrams--figure-live_execution-edge4" class="edge">
 <title>executor&#45;&gt;plan</title>
-<path fill="none" stroke="#475569" stroke-dasharray="5,2" d="M199.33,-204.36C208.97,-207.59 218.65,-210.7 228,-213.5 397.45,-264.27 444.6,-263.32 621,-276.5 676.22,-280.63 736.82,-284.4 790.4,-287.48"/>
-<polygon fill="#475569" stroke="#475569" points="800.67,-288.06 790.43,-291.99 795.68,-287.78 790.69,-287.49 790.69,-287.49 790.69,-287.49 795.68,-287.78 790.95,-283 800.67,-288.06 800.67,-288.06"/>
-<text text-anchor="middle" x="501.5" y="-276.3" font-family="DejaVu Sans" font-size="9.00">active / pending; Planer hält Speicher</text>
+<path fill="none" stroke="#475569" stroke-dasharray="5,2" d="M559.45,-371.3C669.82,-403.03 852.98,-441.08 1006,-402.5 1105.11,-377.51 1206.68,-318.46 1274.89,-272.95"/>
+<polygon fill="#475569" stroke="#475569" points="1283.46,-267.19 1277.67,-276.51 1279.31,-269.98 1275.16,-272.77 1275.16,-272.77 1275.16,-272.77 1279.31,-269.98 1272.65,-269.04 1283.46,-267.19 1283.46,-267.19"/>
+<text text-anchor="middle" x="888.5" y="-421.3" font-family="DejaVu Sans" font-size="9.00">active / pending; Planer hält Speicher</text>
 </g>
 <!-- executor&#45;&gt;mailbox -->
 <g id="chapter-class_diagrams--figure-live_execution-edge5" class="edge">
 <title>executor&#45;&gt;mailbox</title>
-<path fill="none" stroke="#475569" stroke-dasharray="5,2" d="M199.12,-178.59C269.39,-186.5 362.36,-196.96 426.36,-204.16"/>
-<polygon fill="#475569" stroke="#475569" points="436.37,-205.29 425.93,-208.64 431.4,-204.73 426.43,-204.17 426.43,-204.17 426.43,-204.17 431.4,-204.73 426.94,-199.7 436.37,-205.29 436.37,-205.29"/>
-<text text-anchor="middle" x="305" y="-200.3" font-family="DejaVu Sans" font-size="9.00">SPSC&#45;Handshake</text>
+<path fill="none" stroke="#475569" stroke-dasharray="5,2" d="M559.05,-281.88C619.56,-247.78 699.01,-204.2 771,-168.5 784.75,-161.68 799.6,-154.74 813.94,-148.25"/>
+<polygon fill="#475569" stroke="#475569" points="823.27,-144.05 816,-152.25 818.71,-146.1 814.15,-148.15 814.15,-148.15 814.15,-148.15 818.71,-146.1 812.31,-144.05 823.27,-144.05 823.27,-144.05"/>
+<text text-anchor="middle" x="665" y="-265.3" font-family="DejaVu Sans" font-size="9.00">SPSC&#45;Handshake</text>
 </g>
 <!-- snapshot -->
 <g id="chapter-class_diagrams--figure-live_execution-node6" class="node">
 <title>snapshot</title>
-<polygon fill="#dbeafe" stroke="transparent" points="412.5,-132.5 412.5,-153.5 591.5,-153.5 591.5,-132.5 412.5,-132.5"/>
-<text text-anchor="start" x="436.5" y="-141.5" font-family="DejaVu Sans" font-weight="bold" font-size="10.00">LiveExecutionSnapshot</text>
-<text text-anchor="start" x="417.5" y="-119.5" font-family="DejaVu Sans" font-size="10.00">generation, next_tick</text>
-<text text-anchor="start" x="417.5" y="-98.5" font-family="DejaVu Sans" font-size="10.00">committed_through, fault, finished</text>
-<polygon fill="none" stroke="black" points="411,-90 411,-155 592,-155 592,-90 411,-90"/>
+<polygon fill="#dbeafe" stroke="transparent" points="772.5,-277.5 772.5,-298.5 1005.5,-298.5 1005.5,-277.5 772.5,-277.5"/>
+<text text-anchor="start" x="823.5" y="-286.5" font-family="DejaVu Sans" font-weight="bold" font-size="10.00">LiveExecutionSnapshot</text>
+<text text-anchor="start" x="777.5" y="-264.5" font-family="DejaVu Sans" font-size="10.00">generation, next_tick</text>
+<text text-anchor="start" x="777.5" y="-243.5" font-family="DejaVu Sans" font-size="10.00">committed_through, fault, finished, quiescent</text>
+<polygon fill="none" stroke="black" points="771,-235 771,-300 1006,-300 1006,-235 771,-235"/>
 </g>
 <!-- executor&#45;&gt;snapshot -->
 <g id="chapter-class_diagrams--figure-live_execution-edge6" class="edge">
 <title>executor&#45;&gt;snapshot</title>
-<path fill="none" stroke="#475569" stroke-dasharray="5,2" d="M199.12,-156.41C260.48,-149.5 339.14,-140.65 400.72,-133.73"/>
-<polygon fill="#475569" stroke="#475569" points="410.84,-132.59 401.4,-138.18 405.87,-133.15 400.9,-133.71 400.9,-133.71 400.9,-133.71 405.87,-133.15 400.4,-129.23 410.84,-132.59 410.84,-132.59"/>
-<text text-anchor="middle" x="305" y="-155.3" font-family="DejaVu Sans" font-size="9.00">atomare Veröffentlichung</text>
+<path fill="none" stroke="#475569" stroke-dasharray="5,2" d="M559.27,-322.08C619.13,-312.12 696.1,-299.33 760.46,-288.62"/>
+<polygon fill="#475569" stroke="#475569" points="770.68,-286.92 761.55,-293 765.75,-287.74 760.81,-288.56 760.81,-288.56 760.81,-288.56 765.75,-287.74 760.08,-284.13 770.68,-286.92 770.68,-286.92"/>
+<text text-anchor="middle" x="665" y="-318.3" font-family="DejaVu Sans" font-size="9.00">atomare Veröffentlichung</text>
 </g>
 <!-- command -->
 <g id="chapter-class_diagrams--figure-live_execution-node7" class="node">
 <title>command</title>
-<polygon fill="#dbeafe" stroke="transparent" points="419.5,-42.5 419.5,-63.5 584.5,-63.5 584.5,-42.5 419.5,-42.5"/>
-<text text-anchor="start" x="437" y="-51.5" font-family="DejaVu Sans" font-weight="bold" font-size="10.00">LiveJointCommand&lt;N&gt;</text>
-<text text-anchor="start" x="424.5" y="-29.5" font-family="DejaVu Sans" font-size="10.00">joints: FixedJointCommand&lt;N&gt;</text>
-<text text-anchor="start" x="424.5" y="-8.5" font-family="DejaVu Sans" font-size="10.00">generation</text>
-<polygon fill="none" stroke="black" points="418,0 418,-65 585,-65 585,0 418,0"/>
+<polygon fill="#dbeafe" stroke="transparent" points="806.5,-367.5 806.5,-388.5 971.5,-388.5 971.5,-367.5 806.5,-367.5"/>
+<text text-anchor="start" x="824" y="-376.5" font-family="DejaVu Sans" font-weight="bold" font-size="10.00">LiveJointCommand&lt;N&gt;</text>
+<text text-anchor="start" x="811.5" y="-354.5" font-family="DejaVu Sans" font-size="10.00">joints: FixedJointCommand&lt;N&gt;</text>
+<text text-anchor="start" x="811.5" y="-333.5" font-family="DejaVu Sans" font-size="10.00">generation</text>
+<polygon fill="none" stroke="black" points="805,-325 805,-390 972,-390 972,-325 805,-325"/>
 </g>
 <!-- executor&#45;&gt;command -->
 <g id="chapter-class_diagrams--figure-live_execution-edge7" class="edge">
 <title>executor&#45;&gt;command</title>
-<path fill="none" stroke="#475569" stroke-dasharray="5,2" d="M199.2,-130.67C208.91,-127.18 218.64,-123.74 228,-120.5 287.72,-99.86 355.3,-78.03 408.22,-61.27"/>
-<polygon fill="#475569" stroke="#475569" points="417.93,-58.2 409.75,-65.51 413.16,-59.71 408.39,-61.21 408.39,-61.21 408.39,-61.21 413.16,-59.71 407.04,-56.92 417.93,-58.2 417.93,-58.2"/>
-<text text-anchor="middle" x="305" y="-123.3" font-family="DejaVu Sans" font-size="9.00">maximal ein neuer Befehl pro Tick</text>
+<path fill="none" stroke="#475569" stroke-dasharray="5,2" d="M559.27,-342.89C630.17,-346.05 725.09,-350.27 794.62,-353.37"/>
+<polygon fill="#475569" stroke="#475569" points="804.69,-353.82 794.5,-357.87 799.69,-353.59 794.7,-353.37 794.7,-353.37 794.7,-353.37 799.69,-353.59 794.9,-348.87 804.69,-353.82 804.69,-353.82"/>
+<text text-anchor="middle" x="665" y="-353.3" font-family="DejaVu Sans" font-size="9.00">maximal ein neuer Befehl pro Tick</text>
+</g>
+<!-- owner -->
+<g id="chapter-class_diagrams--figure-live_execution-node8" class="node">
+<title>owner</title>
+<polygon fill="#dbeafe" stroke="transparent" points="392.5,-216.5 392.5,-237.5 526.5,-237.5 526.5,-216.5 392.5,-216.5"/>
+<text text-anchor="start" x="405" y="-225.5" font-family="DejaVu Sans" font-weight="bold" font-size="10.00">LivePlanOwner&lt;N&gt;</text>
+<text text-anchor="start" x="397.5" y="-203.5" font-family="DejaVu Sans" font-size="10.00">try_offer(plan)</text>
+<text text-anchor="start" x="397.5" y="-182.5" font-family="DejaVu Sans" font-size="10.00">collect_response()</text>
+<text text-anchor="start" x="397.5" y="-161.5" font-family="DejaVu Sans" font-size="10.00">request_cancel()</text>
+<text text-anchor="start" x="397.5" y="-140.5" font-family="DejaVu Sans" font-size="10.00">request_shutdown()</text>
+<text text-anchor="start" x="397.5" y="-119.5" font-family="DejaVu Sans" font-size="10.00">release_after_shutdown()</text>
+<text text-anchor="start" x="397.5" y="-98.5" font-family="DejaVu Sans" font-size="10.00">state()</text>
+<polygon fill="none" stroke="black" points="391.5,-90 391.5,-239 527.5,-239 527.5,-90 391.5,-90"/>
+</g>
+<!-- owner&#45;&gt;plan -->
+<g id="chapter-class_diagrams--figure-live_execution-edge10" class="edge">
+<title>owner&#45;&gt;plan</title>
+<path fill="none" stroke="#475569" d="M539.86,-168.84C691.45,-177.12 1024.03,-195.3 1214.87,-205.73"/>
+<polygon fill="#475569" stroke="#475569" points="539.5,-168.82 533.29,-172.48 527.52,-168.16 533.73,-164.5 539.5,-168.82"/>
+<text text-anchor="middle" x="888.5" y="-196.3" font-family="DejaVu Sans" font-size="9.00">geteilter Cachebesitz: active / offered</text>
+</g>
+<!-- owner&#45;&gt;mailbox -->
+<g id="chapter-class_diagrams--figure-live_execution-edge11" class="edge">
+<title>owner&#45;&gt;mailbox</title>
+<path fill="none" stroke="#475569" d="M539.68,-155.6C621.53,-146.4 747.72,-132.21 823.49,-123.7"/>
+<polygon fill="#475569" stroke="#475569" points="539.61,-155.61 534.1,-160.25 527.69,-156.95 533.2,-152.3 539.61,-155.61"/>
+<text text-anchor="middle" x="665" y="-151.3" font-family="DejaVu Sans" font-size="9.00">genau ein offenes Angebot</text>
+</g>
+<!-- session -->
+<g id="chapter-class_diagrams--figure-live_execution-node9" class="node">
+<title>session</title>
+<polygon fill="#dbeafe" stroke="transparent" points="1,-195.5 1,-216.5 143,-216.5 143,-195.5 1,-195.5"/>
+<text text-anchor="start" x="7" y="-204.5" font-family="DejaVu Sans" font-weight="bold" font-size="10.00">LiveMotionSession&lt;N&gt;</text>
+<text text-anchor="start" x="6" y="-182.5" font-family="DejaVu Sans" font-size="10.00">plans()</text>
+<text text-anchor="start" x="6" y="-161.5" font-family="DejaVu Sans" font-size="10.00">dispatch_clock(clock, sink)</text>
+<text text-anchor="start" x="6" y="-140.5" font-family="DejaVu Sans" font-size="10.00">snapshot()</text>
+<text text-anchor="start" x="6" y="-119.5" font-family="DejaVu Sans" font-size="10.00">diagnostic()</text>
+<polygon fill="none" stroke="black" points="0,-111 0,-218 144,-218 144,-111 0,-111"/>
+</g>
+<!-- session&#45;&gt;executor -->
+<g id="chapter-class_diagrams--figure-live_execution-edge9" class="edge">
+<title>session&#45;&gt;executor</title>
+<path fill="none" stroke="#475569" d="M155.45,-201.71C215.29,-228.72 296.51,-265.38 359.8,-293.95"/>
+<polygon fill="#475569" stroke="#475569" points="155.09,-201.55 147.98,-202.73 144.16,-196.62 151.27,-195.44 155.09,-201.55"/>
+<text text-anchor="middle" x="252" y="-279.3" font-family="DejaVu Sans" font-size="9.00">zyklischer Endpunkt</text>
+</g>
+<!-- session&#45;&gt;owner -->
+<g id="chapter-class_diagrams--figure-live_execution-edge8" class="edge">
+<title>session&#45;&gt;owner</title>
+<path fill="none" stroke="#475569" d="M156.49,-164.5C226.79,-164.5 326.05,-164.5 391.31,-164.5"/>
+<polygon fill="#475569" stroke="#475569" points="156.16,-164.5 150.16,-168.5 144.16,-164.5 150.16,-160.5 156.16,-164.5"/>
+<text text-anchor="middle" x="252" y="-167.3" font-family="DejaVu Sans" font-size="9.00">Management&#45;Endpunkt</text>
+</g>
+<!-- diagnostic -->
+<g id="chapter-class_diagrams--figure-live_execution-node10" class="node">
+<title>diagnostic</title>
+<polygon fill="#dbeafe" stroke="transparent" points="402.5,-42.5 402.5,-63.5 517.5,-63.5 517.5,-42.5 402.5,-42.5"/>
+<text text-anchor="start" x="412.5" y="-51.5" font-family="DejaVu Sans" font-weight="bold" font-size="10.00">LiveSessionFault</text>
+<text text-anchor="start" x="407.5" y="-29.5" font-family="DejaVu Sans" font-size="10.00">code, execution_fault</text>
+<text text-anchor="start" x="407.5" y="-8.5" font-family="DejaVu Sans" font-size="10.00">generation, tick</text>
+<polygon fill="none" stroke="black" points="401,0 401,-65 518,-65 518,0 401,0"/>
+</g>
+<!-- session&#45;&gt;diagnostic -->
+<g id="chapter-class_diagrams--figure-live_execution-edge12" class="edge">
+<title>session&#45;&gt;diagnostic</title>
+<path fill="none" stroke="#475569" d="M155.73,-136.17C229.62,-110.87 335.95,-74.46 400.95,-52.2"/>
+<polygon fill="#475569" stroke="#475569" points="155.51,-136.25 151.13,-141.98 144.16,-140.14 148.54,-134.41 155.51,-136.25"/>
+<text text-anchor="middle" x="252" y="-132.3" font-family="DejaVu Sans" font-size="9.00">einmalig gesetzt; atomar publiziert</text>
 </g>
 </g>
 </svg>
@@ -3201,6 +3584,11 @@ Zeit vor der Veröffentlichung. <a href="architecture/diagrams/buffered_executio
 leihen deren Adressen. Die Rückmeldung identifiziert abgelehnte bzw. nicht mehr
 benutzte Generationen; die Freigabe erfolgt außerhalb des zyklischen Threads.
 <a href="architecture/diagrams/live_execution.dot">DOT-Quelle</a>.</p>
+<p>Ab 0.14.0 kapselt <code>LiveMotionSession</code> den Executor und <code>LivePlanOwner</code>.
+Der Owner hält aktive/angebotene Caches, verarbeitet Rückmeldungen und gibt
+nach bestätigter Quieszenz frei. Die Session koppelt Annahme und Delivery-Fence,
+verriegelt Übergabefehler und koordiniert den Shutdown. Details und Rollen:
+<a href="#chapter-live_motion_session">Verwaltete Planübergabe</a>.</p>
 <h2 id="chapter-class_diagrams--6-optionales-following-und-vorbereiteter-halt">6. Optionales Following und vorbereiteter Halt</h2>
 <figure><svg width="1465pt" height="351pt"
  viewBox="0.00 0.00 1465.00 351.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
@@ -3441,8 +3829,15 @@ erneut als SVG oder PDF erzeugt werden. Alle SVGs sind ohne Renderer lesbar.</p>
 FK/IK, PTP/LIN/CIRC, Weg und Zeit sowie die Sollwertausgabe mit Ablaufdiagrammen.</p>
 <p>Die Sequenzen zeigen Rollen der späteren Host-Anwendung und vorhandene
 Bibliotheksobjekte. Rollen wie „Achsschnittstelle“ oder „Freigabe“ sind noch
-keine implementierten Hardwareadapter. Die sieben strukturellen UML-Sichten
+keine implementierten Hardwareadapter. Die acht strukturellen UML-Sichten
 stehen unter <a href="#chapter-class_diagrams">Klassendiagramme</a>.</p>
+<h2 id="chapter-runtime_flows--verwaltete-sitzung-ab-0140">Verwaltete Sitzung ab 0.14.0</h2>
+<p>Für die neue Einbindung übernimmt <code>LiveMotionSession</code> Cachebesitz,
+Sink-Annahme/Commit und Verriegelung; <code>LivePlanOwner</code> bearbeitet Management-
+Rückmeldungen und Freigabe. Ein bestätigter Shutdown beendet Cachezugriffe,
+aber bestätigt keinen physischen Stillstand. Rollen, Zustände und Sequenz:
+<a href="#chapter-live_motion_session">Verwaltete Planübergabe</a>.
+Die folgenden Diagramme erklären zusätzlich die darunterliegenden Schritte.</p>
 <h2 id="chapter-runtime_flows--vorbereitung-und-zyklische-übergabe">Vorbereitung und zyklische Übergabe</h2>
 <pre><code class="language-mermaid">sequenceDiagram
     participant App as Host-Vorbereitung
@@ -3774,6 +4169,16 @@ in den zyklischen Thread.</p>
 <td>Cachebau außerhalb RT; feste Befehlsausgabe, Wechsel und Snapshot zyklisch</td>
 </tr>
 <tr>
+<td><code>execution/live_plan_owner.hpp</code></td>
+<td><code>LivePlanOwner</code>, Angebots-/Sitzungsstatus</td>
+<td>Managementseitiger Besitz aktiver/angebotener Caches, Rückmeldungen und Freigabe nach Quieszenz</td>
+</tr>
+<tr>
+<td><code>execution/live_motion_session.hpp</code></td>
+<td><code>LiveMotionSession</code>, <code>LiveSessionFault</code></td>
+<td>Zyklische Annahme/Commit, verriegelte Übergabefehler und Shutdown-Handschlag; kein eigener Thread</td>
+</tr>
+<tr>
 <td><code>execution/stop_schedules.hpp</code></td>
 <td><code>JointStopSchedule</code>, <code>PolynomialStopSchedule</code>, <code>PreparedStopTransition</code></td>
 <td>Optional vorbereitete Halteverläufe; Sampling außerhalb RT</td>
@@ -4052,7 +4457,11 @@ vorhandene Softwareprüfungen von noch zu vereinbarenden Host-Verträgen.</p>
 </tr>
 <tr>
 <td>Host-Vertrag als Simulation</td>
-<td>Cacheausgabe bei 1/10/20 ms, spätes Zeitfenster, abgelehnte Achsübergabe</td>
+<td>Cacheausgabe bei 1/10/20 ms, spätes Zeitfenster, abgelehnte Achsübergabe, bestätigter Shutdown</td>
+</tr>
+<tr>
+<td>Verwaltete Lebensdauer</td>
+<td>Freigabe außerhalb RT, Rücknahme, ungelesene Antworten, laufende Übergabe beim Shutdown, 200 Zwei-Thread-Wechsel</td>
 </tr>
 </tbody>
 </table>
@@ -4096,8 +4505,8 @@ keine reale Maschinenabnahme.</p>
 </tr>
 <tr>
 <td>Achsannahme</td>
-<td>Batch-/Atomizitätsvertrag, maximale Latenz, Rückmeldung, partielle Fehler, Delivery-Fence</td>
-<td>Treiber-/Hardwareadapter bewusst später</td>
+<td>Konkrete Abbildung des synchronen Session-Sink-Vertrags, maximale Latenz und partielle Übertragung</td>
+<td>Softwarevertrag vorhanden; Treiber-/Hardwareadapter bewusst später</td>
 </tr>
 <tr>
 <td>Fehlerreaktion</td>
@@ -4830,7 +5239,16 @@ Simulations-/Zeitbudgets bleiben bestehen.</p>
 <figcaption>DXF-Klassen und Programmbezug</figcaption></figure>
 
 <p>Der native Importer ist in <code>io/</code>, die Befehlsexpansion in <code>program/</code> getrennt.
-Editor und Visualisierung bleiben unter <code>tools/motion_viewer/</code>.</p></section><section id="chapter-validation"><h1 id="chapter-validation--aktuelle-ergänzung-architekturkorrekturen-0131-30102026">Aktuelle Ergänzung — Architekturkorrekturen 0.13.1, 30.10.2026</h1>
+Editor und Visualisierung bleiben unter <code>tools/motion_viewer/</code>.</p></section><section id="chapter-validation"><h1 id="chapter-validation--aktuelle-ergänzung-planbesitz-und-übergabe-0140-30102026">Aktuelle Ergänzung — Planbesitz und Übergabe 0.14.0, 30.10.2026</h1>
+<p>Die neue verwaltete Sitzung besteht Lebensdauer-, Annahme-/Commit-, Rücknahme-
+und Shutdown-Tests. <strong>32/32</strong> CTests bestehen in Release und ASan/UBSan,
+<strong>12/12</strong> im Minimalbuild. Der fokussierte Clang-19-TSan-Lauf besteht ebenfalls:
+200 Zwei-Thread-Wechsel und 200 Angebot-/Fehlerrennen. C++-new/delete im geprüften
+zyklischen Pfad: <strong>0/0</strong>. 39 Header, beide externen Consumer und 32 Tool-Tests
+sind geprüft. Sechs vollständige Exporte haben identische SHA-256 wie in 0.13.1.
+Umfang und Grenzen: <a href="testing/live_session_validation.md">Prüfnachweis</a>,
+<a href="#chapter-live_motion_session">Integrationsvertrag</a>.</p>
+<h2 id="chapter-validation--architekturkorrekturen-0131-30102026">Architekturkorrekturen 0.13.1, 30.10.2026</h2>
 <p>F01/F02/F06/F09 des Architektur-Reviews sind mit Regressionen bearbeitet.
 Die Vollkonfiguration besteht <strong>30/30</strong> CTests in Release und ASan/UBSan;
 der getrennte Viewer/Editor besteht <strong>32/32</strong> Python-Tests in beiden nativen

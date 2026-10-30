@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.14.0 — Managed plan ownership and delivery lifecycle, 2026-10-30
+
+- Added LiveMotionSession and its non-RT LivePlanOwner: retain active/offered
+  caches, collect retirement replies, cancel pending offers, and release only
+  after cyclic quiescence. Cache destruction stays outside the cyclic thread.
+- Added synchronous, noexcept sink acceptance followed by delivery commit;
+  rejection and execution faults latch a structured diagnostic and stop further
+  normal output. The terminal command is accepted exactly once.
+- Added explicit cyclic shutdown and cancellation to the existing low-level
+  executor, retaining its prior APIs and enum values. Snapshots report quiescence.
+- Preserve BufferedMotionProducer's original exception and failed tick, and latch
+  reference failures instead of silently retrying on a later refill.
+- Migrated the controller contract example and external consumer to the managed
+  API; added lifecycle/concurrency/allocation regressions, diagrams and a detailed
+  integration contract. CANopen and physical stop integration remain deferred.
+
 ## 0.13.1 — Architecture review corrections, 2026-10-30
 
 - Reject malformed schedule/path dimensions and nonfinite provider values before

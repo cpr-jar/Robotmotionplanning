@@ -5,6 +5,10 @@ Basis ist das [historische Review für `ecf4259`](../architecture/architecture_r
 Dieser Nachweis ergänzt es; die ursprünglichen Befunde und Bewertungen bleiben
 als Beschreibung des damaligen Stands erhalten.
 
+Fortschreibung: Besitz, Annahme/Commit und Shutdown wurden anschließend in
+**0.14.0** ergänzt. Der folgende Bericht bleibt der Nachweis für 0.13.1;
+aktueller Folgestand: [verwaltete Sitzung](live_session_validation.md).
+
 ## Umgesetzte Befunde
 
 | Befund | Änderung | Nachweis |
@@ -110,7 +114,7 @@ python3 tools/motion_viewer/tests/dxf_browser_smoke.py
 
 Es gibt weiterhin keinen Raspberry-Pi-WCET-, TSan- oder Hardwareabnahmenachweis.
 
-## Nächste Arbeitspakete
+## Nächste Arbeitspakete aus Sicht von 0.13.1
 
 Das erste Paket behebt F01/F02/F06/F09. Offen bleiben insbesondere Lebensdauer
 und Host-Übergabe, Modulzyklen/Targets (F03), Erweiterungspunkte und Programmmodell

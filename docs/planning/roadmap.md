@@ -8,17 +8,24 @@ die Befunde **F01, F02, F06 und F09**: Providerformen, Programm-/Rasteridentitä
 älteres Tracking und Ergebnisveröffentlichung. Größere Strukturänderungen sind
 damit noch nicht abgeschlossen.
 
-1. **Verlässliche Planübergabe:** Lebensdauer und Besitz, Rücknahme und Shutdown,
-   Host-Annahme/Commit sowie strukturierte Nicht-RT-Diagnosen konkretisieren.
-   Geprüfte Vorbereitung und Retiming sind als Grundlage bereits vorhanden.
-2. **Modulgrenzen:** niedrige gemeinsame Verträge, Abhängigkeitszyklen auflösen,
+Mit **0.14.0** ist das zweite Paket [verwaltete Planübergabe](../integration/live_motion_session.md)
+umgesetzt: Cachebesitz außerhalb RT, Annahme/Commit, Rücknahme von Angeboten,
+strukturierte Session-/Producer-Diagnosen und bestätigter Shutdown. Nachweise:
+[Lifecycle-Prüfung](../testing/live_session_validation.md). Ein physischer Halt,
+asynchrone Antriebs-Acks und konkrete Host-Freigaben werden damit nicht vorweggenommen.
+
+Die nächsten strukturellen Schritte:
+
+1. **Modulgrenzen:** niedrige gemeinsame Verträge, Abhängigkeitszyklen auflösen,
    danach getrennte Build-Komponenten; Include-Forwarder und CMake-Fassade erhalten.
-3. **Ressourcen und Prüfungen:** gemeinsame Vorbereitungsbudgets/Abbruch,
+2. **Ressourcen und Prüfungen:** gemeinsame Vorbereitungsbudgets/Abbruch,
    Wiederverwendung geparster DXF-Daten, speichersparende Spuren und zusätzliche
-   Browser-/Nebenläufigkeits-/ARM-Prüfungen. Die vorhandene Cache-Vorreservierung
-   ersetzt kein Gesamtbudget.
-4. **Bedarfsgerechte Erweiterungen:** typisierte Quell-/Bewegungsrepräsentation,
+   Browser-/Nebenläufigkeits-/ARM-Prüfungen. Der fokussierte lokale TSan-Nachweis
+   für die neue Session ersetzt keine vollständige CI-/Zielplattformabdeckung.
+3. **Bedarfsgerechte Erweiterungen:** typisierte Quell-/Bewegungsrepräsentation,
    Enclosure-Fähigkeit und das separat offene IK-Skalierungsproblem F07.
+   F11 ist für Session/Producer verbessert; durchgehende Planerdiagnosen und
+   benannte Zulassungspolicies bleiben offen.
 
 CANopen und die konkrete Steuerungsintegration bleiben zurückgestellt.
 

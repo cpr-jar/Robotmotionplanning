@@ -173,6 +173,8 @@ höher als die aktuelle und benennen deren Identität als Vorgänger.
 | `Late` | Zu spät, zu geringer Mindestvorlauf oder außerhalb des aktiven Bereichs |
 | `Committed` | Wechsel würde bereits übergebene Befehle ersetzen |
 | `Faulted` | Ausführer ist fehlerhaft/beendet oder ausstehender Wechsel wurde beim Fehler abgebrochen |
+| `Cancelled` | Angebot vor Aktivierung zurückgenommen; Kandidat kann außerhalb RT freigegeben werden |
+| `Shutdown` | Offenes Angebot beim zyklischen Shutdown verworfen; vollständige Cache-Freigabe erst nach Quieszenz |
 
 Der Planer besitzt angebotene Caches mindestens bis zur zugehörigen Antwort.
 Bei `Activated` behält er den **neuen** Cache; nur der nicht mehr referenzierte
@@ -186,6 +188,27 @@ ist nur `start_tick <= tick <= end_tick`. Direkten Anwendungszugriff begrenzen.
 Ergebnis ist eine fehlgeschlagene begrenzte Leseprobe, kein Bewegungsfehler.
 Andere direkte Getter sind nicht für beliebige parallele Leser freigegeben.
 Ein angebotener Kandidat darf bis zur Antwort nicht geändert oder ersetzt werden.
+
+Ab 0.14.0 übernimmt [LiveMotionSession](live_motion_session.md) diesen Besitzvertrag
+über ihren `LivePlanOwner`. Ein Managementthread bietet Caches als shared_ptr an
+und sammelt Antworten; die zyklische Seite nutzt ausschließlich geliehene Adressen.
+`dispatch[_clock]()` übergibt jeden Befehl einmal an einen begrenzten noexcept-Sink
+und bestätigt den Delivery-Fence nur nach dessen unwiderruflicher Annahme.
+Ein `false` des Sinks verriegelt die Ausgabe ohne Wiederholung. `diagnostic()`
+erhält Code, eigentlichen `ExecutionFault`, Generation und fehlerhaften Tick.
+
+`request_cancel()` ist ein Wunsch, keine Zusage; als definitive Antwort kann
+bei bereits erfolgter Aktivierung auch `Activated` ankommen. Angebotsnummern
+werden innerhalb einer Sitzung nicht wiederverwendet. Ein Shutdown wird
+asynchron angefordert und vom zyklischen Thread als `Quiescent` bestätigt.
+Erst dann gibt `release_after_shutdown()` alle Referenzen außerhalb RT frei.
+Der Executor-Snapshot kennzeichnet dies mit `quiescent=true`, `generation=0`.
+Vor dem Zerstören der Sitzung alle aufrufenden Threads beenden/joinen.
+
+Der Producerpfad meldet Referenzfehler zusätzlich als `BufferFillDiagnostic`
+mit Code `ReferenceFailure`, Tick und ursprünglicher `exception_ptr`.
+Nach einem solchen Fehler bleibt `fill()` verriegelt. Bereits ausgegebene
+Präfixbefehle werden nicht zurückgenommen; der Host muss den Fehler behandeln.
 
 ## Beobachtungen, Frames und Kalibrierung
 

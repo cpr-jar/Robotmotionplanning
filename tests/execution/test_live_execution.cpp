@@ -111,6 +111,31 @@ int main() {
            execution.fault() == ExecutionFault::DeadlineMissed);
   }
   {
+    auto owned = prepare_live_plan<1>(original, 10, {1, 0, 0, 7}).plan;
+    auto offered = replacement.plan;
+    LivePlanMailbox<1> box;
+    LiveMotionExecutor<1> execution(*owned, box, {0, .001, 0, 0});
+    assert(box.try_offer(*offered) && !execution.cancel_offer(99));
+    execution.service_requests();
+    assert(execution.cancel_offer(2));
+    LivePlanResponse response;
+    assert(box.try_response(response) && response.status == LiveResponseStatus::Cancelled);
+    assert(box.try_offer(*offered));
+    execution.shutdown();
+    assert(box.try_response(response) && response.status == LiveResponseStatus::Shutdown);
+    owned.reset();
+    offered.reset();
+    LiveJointCommand<1> command;
+    command.generation = 999;
+    const auto saved = command.joints;
+    execution.shutdown();
+    execution.service_requests();
+    assert(!execution.commit_delivery(1, 0) && !execution.cancel_offer(2));
+    assert(execution.poll({10, 7, 0}, command) == ExecutionStatus::Inactive);
+    assert(command.generation == 999 && command.joints == saved);
+    assert(execution.generation() == 0 && execution.snapshot()->quiescent);
+  }
+  {
     SpscSetpointBuffer<1, 16> ring;
     std::thread writer([&] {
       for (std::uint64_t i = 0; i < 100000; ++i) {

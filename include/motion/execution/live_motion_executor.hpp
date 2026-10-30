@@ -99,7 +99,16 @@ LivePlanResult<N> prepare_live_plan(std::shared_ptr<const IExecutionSchedule> sc
     return {{}, e.what()};
   }
 }
-enum class LiveResponseStatus { Activated, IdentityMismatch, StateMismatch, Late, Committed, Faulted };
+enum class LiveResponseStatus {
+  Activated,
+  IdentityMismatch,
+  StateMismatch,
+  Late,
+  Committed,
+  Faulted,
+  Cancelled,
+  Shutdown
+};
 struct LivePlanResponse {
   LiveResponseStatus status{};
   std::uint64_t generation{}, retired_generation{}, activation_tick{};
@@ -139,6 +148,7 @@ struct LiveExecutionSnapshot {
   std::uint64_t generation{}, next_tick{}, committed_through{UINT64_MAX};
   ExecutionFault fault{};
   bool finished{};
+  bool quiescent{};
 };
 /// Single cyclic owner; only snapshot() is intended for concurrent observer reads.
 /// Keep active/pending caches alive until a matching rejection/retirement response.
@@ -170,7 +180,8 @@ public:
                               published_next_tick_.load(std::memory_order_relaxed),
                               published_committed_tick_.load(std::memory_order_relaxed),
                               ExecutionFault(published_fault_code_.load(std::memory_order_relaxed)),
-                              bool(published_finished_flag_.load(std::memory_order_relaxed))};
+                              bool(published_finished_flag_.load(std::memory_order_relaxed)),
+                              bool(published_quiescent_flag_.load(std::memory_order_relaxed))};
       std::atomic_thread_fence(std::memory_order_acquire);
       if (snapshot_version_.load(std::memory_order_relaxed) == before)
         return s;
@@ -178,8 +189,33 @@ public:
     return std::nullopt;
   }
   ExecutionFault fault() const noexcept { return fault_; }
-  std::uint64_t generation() const noexcept { return active_plan_->stamp().generation; }
+  std::uint64_t generation() const noexcept { return active_plan_ ? active_plan_->stamp().generation : 0; }
+  /// Cyclic owner only. Cancellation wins if processed before activation.
+  bool cancel_offer(std::uint64_t generation) noexcept {
+    if (quiescent_)
+      return false;
+    const auto *p = plan_mailbox_.offered();
+    if (!p || p->stamp().generation != generation)
+      return false;
+    pending_plan_ = nullptr;
+    respond(*p, LiveResponseStatus::Cancelled);
+    return true;
+  }
+  /// Cyclic owner only: detach all borrowed caches; no physical stop is performed here.
+  /// No further commands or plan offers are consumed after this operation.
+  void shutdown() noexcept {
+    if (quiescent_)
+      return;
+    if (const auto *p = plan_mailbox_.offered())
+      respond(*p, LiveResponseStatus::Shutdown);
+    pending_plan_ = nullptr;
+    active_plan_ = nullptr;
+    quiescent_ = true;
+    publish();
+  }
   void service_requests() noexcept {
+    if (quiescent_)
+      return;
     const auto *p = plan_mailbox_.offered();
     if (!p || p == pending_plan_)
       return;
@@ -218,7 +254,7 @@ public:
     pending_plan_ = p;
   }
   bool commit_delivery(std::uint64_t generation, std::uint64_t through) noexcept {
-    if (fault_ != ExecutionFault::None || generation != active_plan_->stamp().generation ||
+    if (quiescent_ || fault_ != ExecutionFault::None || generation != active_plan_->stamp().generation ||
         through > active_plan_->end_tick() ||
         (committed_through_tick_ != UINT64_MAX && through < committed_through_tick_))
       return false;
@@ -242,11 +278,12 @@ private:
   void publish() noexcept {
     snapshot_version_.fetch_add(1, std::memory_order_acq_rel);
     std::atomic_thread_fence(std::memory_order_release);
-    published_generation_.store(active_plan_->stamp().generation, std::memory_order_relaxed);
+    published_generation_.store(generation(), std::memory_order_relaxed);
     published_next_tick_.store(next_tick_, std::memory_order_relaxed);
     published_committed_tick_.store(committed_through_tick_, std::memory_order_relaxed);
     published_fault_code_.store(std::uint64_t(fault_), std::memory_order_relaxed);
     published_finished_flag_.store(finished_, std::memory_order_relaxed);
+    published_quiescent_flag_.store(quiescent_, std::memory_order_relaxed);
     snapshot_version_.fetch_add(1, std::memory_order_release);
   }
   void respond(const PreparedLivePlan<N> &p, LiveResponseStatus status, std::uint64_t retired = 0) noexcept {
@@ -281,6 +318,8 @@ private:
   }
   template <class Observe>
   ExecutionStatus poll_impl(ClockTime now, LiveJointCommand<N> &out, Observe observe, bool second) noexcept {
+    if (quiescent_)
+      return ExecutionStatus::Inactive;
     service_requests();
     if (fault_ != ExecutionFault::None)
       return ExecutionStatus::Error;
@@ -330,8 +369,9 @@ private:
   std::uint64_t minimum_lead_ticks_, next_tick_{}, committed_through_tick_{UINT64_MAX};
   std::optional<double> last_observed_time_s_;
   ExecutionFault fault_{ExecutionFault::None};
-  bool finished_{};
+  bool finished_{}, quiescent_{};
   std::atomic<std::uint64_t> snapshot_version_{}, published_generation_{}, published_next_tick_{},
-      published_committed_tick_{UINT64_MAX}, published_fault_code_{}, published_finished_flag_{};
+      published_committed_tick_{UINT64_MAX}, published_fault_code_{}, published_finished_flag_{},
+      published_quiescent_flag_{};
 };
 } // namespace motion

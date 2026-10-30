@@ -1,4 +1,15 @@
-# Aktuelle Ergänzung — Architekturkorrekturen 0.13.1, 30.10.2026
+# Aktuelle Ergänzung — Planbesitz und Übergabe 0.14.0, 30.10.2026
+
+Die neue verwaltete Sitzung besteht Lebensdauer-, Annahme-/Commit-, Rücknahme-
+und Shutdown-Tests. **32/32** CTests bestehen in Release und ASan/UBSan,
+**12/12** im Minimalbuild. Der fokussierte Clang-19-TSan-Lauf besteht ebenfalls:
+200 Zwei-Thread-Wechsel und 200 Angebot-/Fehlerrennen. C++-new/delete im geprüften
+zyklischen Pfad: **0/0**. 39 Header, beide externen Consumer und 32 Tool-Tests
+sind geprüft. Sechs vollständige Exporte haben identische SHA-256 wie in 0.13.1.
+Umfang und Grenzen: [Prüfnachweis](live_session_validation.md),
+[Integrationsvertrag](../integration/live_motion_session.md).
+
+## Architekturkorrekturen 0.13.1, 30.10.2026
 
 F01/F02/F06/F09 des Architektur-Reviews sind mit Regressionen bearbeitet.
 Die Vollkonfiguration besteht **30/30** CTests in Release und ASan/UBSan;

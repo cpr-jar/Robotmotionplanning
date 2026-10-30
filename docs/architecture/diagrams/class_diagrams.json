@@ -612,7 +612,9 @@
           "poll_clock(clock, output)",
           "service_requests()",
           "commit_delivery(generation, through)",
-          "snapshot()"
+          "snapshot()",
+          "cancel_offer(generation)",
+          "shutdown()"
         ],
         "fields": []
       },
@@ -623,7 +625,7 @@
         "methods": [],
         "fields": [
           "generation, next_tick",
-          "committed_through, fault, finished"
+          "committed_through, fault, finished, quiescent"
         ]
       },
       {
@@ -635,6 +637,42 @@
           "joints: FixedJointCommand<N>",
           "generation"
         ]
+      },
+      {
+        "id": "owner",
+        "name": "LivePlanOwner<N>",
+        "header": "include/motion/execution/live_plan_owner.hpp",
+        "fields": [],
+        "methods": [
+          "try_offer(plan)",
+          "collect_response()",
+          "request_cancel()",
+          "request_shutdown()",
+          "release_after_shutdown()",
+          "state()"
+        ]
+      },
+      {
+        "id": "session",
+        "name": "LiveMotionSession<N>",
+        "header": "include/motion/execution/live_motion_session.hpp",
+        "fields": [],
+        "methods": [
+          "plans()",
+          "dispatch_clock(clock, sink)",
+          "snapshot()",
+          "diagnostic()"
+        ]
+      },
+      {
+        "id": "diagnostic",
+        "name": "LiveSessionFault",
+        "header": "include/motion/execution/live_motion_session.hpp",
+        "fields": [
+          "code, execution_fault",
+          "generation, tick"
+        ],
+        "methods": []
       }
     ],
     "edges": [
@@ -679,6 +717,36 @@
         "command",
         "uses",
         "maximal ein neuer Befehl pro Tick"
+      ],
+      [
+        "session",
+        "owner",
+        "owns",
+        "Management-Endpunkt"
+      ],
+      [
+        "session",
+        "executor",
+        "owns",
+        "zyklischer Endpunkt"
+      ],
+      [
+        "owner",
+        "plan",
+        "owns",
+        "geteilter Cachebesitz: active / offered"
+      ],
+      [
+        "owner",
+        "mailbox",
+        "owns",
+        "genau ein offenes Angebot"
+      ],
+      [
+        "session",
+        "diagnostic",
+        "owns",
+        "einmalig gesetzt; atomar publiziert"
       ]
     ]
   },

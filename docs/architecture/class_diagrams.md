@@ -65,6 +65,12 @@ leihen deren Adressen. Die Rückmeldung identifiziert abgelehnte bzw. nicht mehr
 benutzte Generationen; die Freigabe erfolgt außerhalb des zyklischen Threads.
 [DOT-Quelle](diagrams/live_execution.dot).
 
+Ab 0.14.0 kapselt `LiveMotionSession` den Executor und `LivePlanOwner`.
+Der Owner hält aktive/angebotene Caches, verarbeitet Rückmeldungen und gibt
+nach bestätigter Quieszenz frei. Die Session koppelt Annahme und Delivery-Fence,
+verriegelt Übergabefehler und koordiniert den Shutdown. Details und Rollen:
+[Verwaltete Planübergabe](../integration/live_motion_session.md).
+
 ## 6. Optionales Following und vorbereiteter Halt
 
 ![Tracking und Halt](diagrams/tracking_stops.svg)

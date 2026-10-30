@@ -1,0 +1,67 @@
+CMake Warning (author) at /workspace/.motion-tools/cmake/data/share/cmake-4.4/Modules/FetchContent.cmake:1386 (message):
+  The DOWNLOAD_EXTRACT_TIMESTAMP option was not given and policy CMP0135 is
+  not set.  The policy's OLD behavior will be used.  When using a URL
+  download, the timestamps of extracted files should preferably be that of
+  the time of extraction, otherwise code that depends on the extracted
+  contents might not be rebuilt if the URL changes.  The OLD behavior
+  preserves the timestamps from the archive instead, but this is usually not
+  what you want.  Update your project to the NEW behavior or specify the
+  DOWNLOAD_EXTRACT_TIMESTAMP option with a value of true to avoid this
+  robustness issue.
+Call Stack (most recent call first):
+  /workspace/robot-motion-cpp/cmake/MotionDependencies.cmake:11 (FetchContent_Declare)
+  /workspace/robot-motion-cpp/CMakeLists.txt:46 (motion_dependencies)
+This warning is for project developers.  Use -Wno-author to suppress it.
+
+CMake Warning (author) at /workspace/.motion-tools/cmake/data/share/cmake-4.4/Modules/FetchContent.cmake:1386 (message):
+  The DOWNLOAD_EXTRACT_TIMESTAMP option was not given and policy CMP0135 is
+  not set.  The policy's OLD behavior will be used.  When using a URL
+  download, the timestamps of extracted files should preferably be that of
+  the time of extraction, otherwise code that depends on the extracted
+  contents might not be rebuilt if the URL changes.  The OLD behavior
+  preserves the timestamps from the archive instead, but this is usually not
+  what you want.  Update your project to the NEW behavior or specify the
+  DOWNLOAD_EXTRACT_TIMESTAMP option with a value of true to avoid this
+  robustness issue.
+Call Stack (most recent call first):
+  /workspace/robot-motion-cpp/cmake/MotionDependencies.cmake:12 (FetchContent_Declare)
+  /workspace/robot-motion-cpp/CMakeLists.txt:46 (motion_dependencies)
+This warning is for project developers.  Use -Wno-author to suppress it.
+
+CMake Warning (author) at /workspace/.motion-tools/cmake/data/share/cmake-4.4/Modules/FetchContent.cmake:1386 (message):
+  The DOWNLOAD_EXTRACT_TIMESTAMP option was not given and policy CMP0135 is
+  not set.  The policy's OLD behavior will be used.  When using a URL
+  download, the timestamps of extracted files should preferably be that of
+  the time of extraction, otherwise code that depends on the extracted
+  contents might not be rebuilt if the URL changes.  The OLD behavior
+  preserves the timestamps from the archive instead, but this is usually not
+  what you want.  Update your project to the NEW behavior or specify the
+  DOWNLOAD_EXTRACT_TIMESTAMP option with a value of true to avoid this
+  robustness issue.
+Call Stack (most recent call first):
+  /workspace/robot-motion-cpp/cmake/MotionDependencies.cmake:13 (FetchContent_Declare)
+  /workspace/robot-motion-cpp/CMakeLists.txt:46 (motion_dependencies)
+This warning is for project developers.  Use -Wno-author to suppress it.
+
+CMake Warning (deprecated) at /workspace/robot-motion-cpp/build-consumer/_deps/motion_yaml-src/CMakeLists.txt:2 (cmake_minimum_required):
+  Compatibility with CMake < 3.10 will be removed from a future version of
+  CMake.
+
+  Update the VERSION argument <min> value.  Or, use the <min>...<max> syntax
+  to tell CMake that the project requires at least <min> but has been updated
+  to work with policies introduced by <max> or earlier.
+This warning is for project developers.  Use -Wno-author or -Wno-deprecated
+to suppress it.
+
+-- Configuring done (0.2s)
+-- Generating done (0.0s)
+-- Build files have been written to: /workspace/robot-motion-cpp/build-consumer
+[  4%] Built target tinyxml2
+[ 72%] Built target yaml-cpp
+[ 74%] Building CXX object robot_motion/src/CMakeFiles/robot_motion_serial.dir/program/program_simulation.cpp.o
+[ 76%] Linking CXX static library librobot_motion_serial.a
+[ 95%] Built target robot_motion_serial
+[ 97%] Building CXX object CMakeFiles/controller_consumer.dir/main.cpp.o
+[100%] Linking CXX executable controller_consumer
+[100%] Built target controller_consumer
+External CMake consumer: library link and public API passed

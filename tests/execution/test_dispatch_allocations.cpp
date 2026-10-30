@@ -1,5 +1,6 @@
 #include "motion/execution/boundary_polynomial_schedule.hpp"
 #include "motion/execution/live_motion_executor.hpp"
+#include "motion/execution/live_motion_session.hpp"
 #include <cassert>
 #include <cstdlib>
 #include <iostream>
@@ -96,6 +97,55 @@ int main() {
   }
   track = false;
   assert(switches == 1 && allocations == 0 && deletions == 0);
+  struct Sink {
+    std::uint64_t refused_tick{UINT64_MAX}, stops{};
+    bool try_write(const LiveJointCommand<1> &command) noexcept {
+      return command.joints.tick != refused_tick;
+    }
+    void request_stop() noexcept { ++stops; }
+  } sink;
+  {
+    LiveMotionSession<1> session(first.plan, {0, .001, 0, 0});
+    assert(session.plans().try_offer(next.plan));
+    for (std::uint64_t tick = 0; tick <= next.plan->end_tick(); ++tick) {
+      track = true;
+      const auto status = session.dispatch({10 + schedule_detail::tick_time(tick, .01), 7, 0}, sink);
+      assert(status == ExecutionStatus::Running || status == ExecutionStatus::Finished);
+      assert(session.snapshot() && !session.diagnostic());
+      track = false;
+      session.plans().collect_response(); // Management operations may destroy caches.
+    }
+    assert(session.plans().request_shutdown());
+    track = true;
+    assert(session.dispatch({100, 7, 0}, sink) == ExecutionStatus::Inactive);
+    track = false;
+    assert(session.plans().release_after_shutdown() && sink.stops == 0);
+  }
+  {
+    LiveMotionSession<1> session(first.plan, {0, .001, 0, 0});
+    assert(session.plans().try_offer(next.plan) && session.plans().request_cancel());
+    track = true;
+    assert(session.dispatch({10, 7, 0}, sink) == ExecutionStatus::Running);
+    track = false;
+    assert(session.plans().collect_response()->status == LiveResponseStatus::Cancelled);
+    assert(session.plans().request_shutdown());
+    track = true;
+    assert(session.dispatch({10.01, 7, 0}, sink) == ExecutionStatus::Inactive);
+    track = false;
+    assert(session.plans().release_after_shutdown() && sink.stops == 1);
+  }
+  {
+    LiveMotionSession<1> session(first.plan, {0, .001, 0, 0});
+    sink.refused_tick = 0;
+    track = true;
+    assert(session.dispatch({10, 7, 0}, sink) == ExecutionStatus::Error);
+    assert(session.diagnostic()->code == LiveSessionFaultCode::SinkRejected);
+    assert(session.snapshot()->quiescent);
+    assert(session.dispatch({10, 7, 0}, sink) == ExecutionStatus::Error);
+    track = false;
+    assert(session.plans().release_after_shutdown() && sink.stops == 2);
+  }
+  assert(allocations == 0 && deletions == 0);
   std::cout
-      << "No C++ new/delete during live activation, cached dispatch, snapshot, fence or acknowledgement\n";
+      << "No C++ new/delete in raw/managed dispatch, activation, cancellation, sink failure or quiescence\n";
 }

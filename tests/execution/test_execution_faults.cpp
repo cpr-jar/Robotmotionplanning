@@ -5,6 +5,32 @@
 #include <iostream>
 #include <random>
 using namespace motion;
+namespace {
+class ThrowingSchedule final : public IExecutionSchedule {
+public:
+  explicit ThrowingSchedule(std::shared_ptr<const IExecutionSchedule> valid) : valid_(std::move(valid)) {}
+  double duration() const noexcept override { return valid_->duration(); }
+  double cycle_s() const noexcept override { return valid_->cycle_s(); }
+  std::uint64_t total_ticks() const noexcept override { return valid_->total_ticks(); }
+  double tick_time(std::uint64_t tick) const noexcept override { return valid_->tick_time(tick); }
+  const std::vector<std::uint64_t> &boundary_ticks() const noexcept override {
+    return valid_->boundary_ticks();
+  }
+  const JointState &initial_state() const noexcept override { return valid_->initial_state(); }
+  const JointLimits &joint_limits() const noexcept override { return valid_->joint_limits(); }
+  JointState sample(double t) const override { return valid_->sample(t); }
+  JointState sample_tick(std::uint64_t tick) const override {
+    ++calls;
+    if (tick == 1)
+      throw 77; // Preserve even non-std provider exceptions for non-RT diagnostics.
+    return valid_->sample_tick(tick);
+  }
+  mutable std::size_t calls{};
+
+private:
+  std::shared_ptr<const IExecutionSchedule> valid_;
+};
+} // namespace
 int main() {
   const JointLimits limits{{-2}, {2}, {2}, {5}, {50}};
   auto p = plan_boundary_quintic(limits, {{0}, {0}, {0}, 10}, {{1}, {0}, {0}}, 2);
@@ -22,6 +48,31 @@ int main() {
         .plan;
   };
   auto replacement = candidate(20);
+  {
+    auto faulty = std::make_shared<ThrowingSchedule>(schedule);
+    BufferedMotionProducer<1> producer(faulty, .01);
+    SpscSetpointBuffer<1, 8> ring;
+    const auto result = producer.fill(ring, 8);
+    assert(result.status == BufferFillStatus::Error && result.count == 1);
+    assert(result.diagnostic.code == BufferFillFault::ReferenceFailure && result.diagnostic.tick == 1 &&
+           result.diagnostic.cause);
+    bool original_cause = false;
+    try {
+      std::rethrow_exception(result.diagnostic.cause);
+    } catch (int code) {
+      original_cause = code == 77;
+    }
+    assert(original_cause);
+    const auto calls = faulty->calls;
+    FixedJointCommand<1> prefix;
+    assert(ring.try_pop(prefix) && prefix.tick == 0 && !ring.try_pop(prefix));
+    for (int retry = 0; retry < 3; ++retry) {
+      const auto failed = producer.fill(ring, 8);
+      assert(failed.status == BufferFillStatus::Error && failed.count == 0 && failed.diagnostic.tick == 1 &&
+             failed.diagnostic.cause == result.diagnostic.cause);
+    }
+    assert(faulty->calls == calls && !ring.try_pop(prefix));
+  }
   // Duplicate/stale payloads, corrupt values and regressing clocks cannot advance output.
   for (int kind = 0; kind < 6; ++kind) {
     BufferedMotionProducer<1> producer(schedule, .01);

@@ -1,0 +1,7 @@
+-- Configuring done (0.0s)
+-- Generating done (0.0s)
+-- Build files have been written to: /workspace/robot-motion-cpp/build-consumer-minimal-asan
+[ 50%] Building CXX object CMakeFiles/controller_consumer.dir/main.cpp.o
+[100%] Linking CXX executable controller_consumer
+[100%] Built target controller_consumer
+External CMake consumer: library link and public API passed

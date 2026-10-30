@@ -1,6 +1,6 @@
 // Executable contract demonstration with an ideal clock and a simulated axis interface.
 // This is not a production controller adapter and performs no hardware I/O.
-#include "motion/execution/live_motion_executor.hpp"
+#include "motion/execution/live_motion_session.hpp"
 #include "motion/program/robot_program.hpp"
 #include <charconv>
 #include <iostream>
@@ -20,17 +20,18 @@ public:
 // Example boundary owned by the application, deliberately outside the public library API.
 class SimulatedAxisInterface {
 public:
-  bool try_write(const AxisCommand &command) noexcept {
-    if (stop_requests || command.tick != accepted_commands ||
-        (reject_enabled && command.tick == rejected_tick))
+  bool try_write(const motion::LiveJointCommand<axis_count> &command) noexcept {
+    if (stop_requests || command.joints.tick != accepted_commands ||
+        (reject_enabled && command.joints.tick == rejected_tick))
       return false;
-    last_command = command;
+    last_command = command.joints;
+    last_generation = command.generation;
     ++accepted_commands;
     return true;
   }
   void request_stop() noexcept { ++stop_requests; }
   AxisCommand last_command{};
-  std::uint64_t accepted_commands{}, stop_requests{}, rejected_tick{};
+  std::uint64_t accepted_commands{}, stop_requests{}, rejected_tick{}, last_generation{};
   bool reject_enabled{};
 };
 
@@ -43,56 +44,47 @@ int run_contract(const std::string &filename, unsigned cycle_ms, std::string_vie
   const double cycle_period_s = cycle_ms * .001;
   const auto aligned = retime_robot_program(prepared_program, cycle_period_s);
   const double execution_epoch_s = aligned.schedule->initial_state().timestamp_s;
-  const auto prepared_cache =
+  auto prepared_cache =
       prepare_live_plan<axis_count>(aligned.schedule, execution_epoch_s, {1, 0, 0, controller_clock_id});
   if (!prepared_cache)
     throw std::invalid_argument(prepared_cache.diagnostic);
 
-  // The cache owner must outlive executor and every use of its raw plan pointer.
-  LivePlanMailbox<axis_count> plan_mailbox;
+  const auto terminal_tick = prepared_cache.plan->end_tick();
+  // Session owns caches; management releases them only after cyclic quiescence.
   const ExecutionTimingPolicy timing_policy{0, cycle_period_s * .1, 0, 0};
-  LiveMotionExecutor<axis_count> motion_executor(*prepared_cache.plan, plan_mailbox, timing_policy);
+  LiveMotionSession<axis_count> motion_session(std::move(prepared_cache.plan), timing_policy);
   SimulatedAxisInterface axes;
   VirtualControllerClock clock;
-  const auto fault_tick = std::min<std::uint64_t>(5, prepared_cache.plan->end_tick());
+  const auto fault_tick = std::min<std::uint64_t>(5, terminal_tick);
   axes.reject_enabled = scenario == "sink-refusal";
   axes.rejected_tick = fault_tick;
-  LiveJointCommand<axis_count> next_command;
-  bool application_fault_latched = false;
-  const auto latch_fault = [&]() noexcept {
-    if (!application_fault_latched) {
-      application_fault_latched = true;
-      axes.request_stop(); // Real stop handling belongs to the host controller.
-    }
-    return ExecutionStatus::Error;
-  };
-  const auto dispatch_cycle = [&]() noexcept {
-    if (application_fault_latched)
-      return ExecutionStatus::Error;
-    const auto execution_status = motion_executor.poll_clock(clock, next_command);
-    if (execution_status == ExecutionStatus::Error)
-      return latch_fault();
-    if (execution_status == ExecutionStatus::Running || execution_status == ExecutionStatus::Finished) {
-      // Finished carries the terminal command and must also be delivered exactly once.
-      if (!axes.try_write(next_command.joints))
-        return latch_fault();
-    }
-    return execution_status;
-  };
+  const auto dispatch_cycle = [&]() noexcept { return motion_session.dispatch_clock(clock, axes); };
 
   // Virtual cyclic phase: no parsing, planning, sample(), logging or allocations.
   clock.observation = {execution_epoch_s - cycle_period_s, controller_clock_id, 0};
   if (dispatch_cycle() != ExecutionStatus::Inactive || axes.accepted_commands != 0)
     return 1;
-  bool observed_expected_fault = false;
-  for (std::uint64_t tick = 0; tick <= prepared_cache.plan->end_tick(); ++tick) {
+  bool observed_expected_termination = false;
+  for (std::uint64_t tick = 0; tick <= terminal_tick; ++tick) {
     clock.observation = {execution_epoch_s + aligned.schedule->tick_time(tick), controller_clock_id, 0};
     if (scenario == "late-clock" && tick == fault_tick)
       clock.observation.seconds += cycle_period_s * .5;
+    if (scenario == "shutdown" && tick == fault_tick)
+      motion_session.plans().request_shutdown(); // Atomic request; no cache deletion here.
     const auto execution_status = dispatch_cycle();
+    if (scenario == "shutdown" && tick == fault_tick) {
+      if (execution_status != ExecutionStatus::Inactive || motion_session.diagnostic() ||
+          axes.accepted_commands != fault_tick || axes.stop_requests != 1)
+        return 1;
+      observed_expected_termination = true;
+      break;
+    }
     if (execution_status == ExecutionStatus::Error) {
-      observed_expected_fault = scenario != "normal" && tick == fault_tick;
-      if (scenario == "late-clock" && motion_executor.fault() != ExecutionFault::DeadlineMissed)
+      observed_expected_termination = scenario != "normal" && tick == fault_tick;
+      const auto diagnostic = motion_session.diagnostic();
+      if (!diagnostic || diagnostic->tick != fault_tick ||
+          (scenario == "late-clock" && diagnostic->execution_fault != ExecutionFault::DeadlineMissed) ||
+          (scenario == "sink-refusal" && diagnostic->code != LiveSessionFaultCode::SinkRejected))
         return 1;
       const auto delivered_before_retry = axes.accepted_commands;
       // Fault remains latched even if a later clock reading is valid.
@@ -106,8 +98,7 @@ int run_contract(const std::string &filename, unsigned cycle_ms, std::string_vie
         return 1;
       break;
     }
-    if (execution_status !=
-        (tick == prepared_cache.plan->end_tick() ? ExecutionStatus::Finished : ExecutionStatus::Running))
+    if (execution_status != (tick == terminal_tick ? ExecutionStatus::Finished : ExecutionStatus::Running))
       return 1;
   }
   if (scenario == "normal") {
@@ -115,9 +106,20 @@ int run_contract(const std::string &filename, unsigned cycle_ms, std::string_vie
     clock.observation.seconds += cycle_period_s;
     if (dispatch_cycle() != ExecutionStatus::Inactive || axes.accepted_commands != delivered_before_retry ||
         axes.stop_requests || !axes.last_command.terminal || !buffer_detail::rest(axes.last_command) ||
-        axes.accepted_commands != aligned.schedule->total_ticks() + 1)
+        axes.accepted_commands != aligned.schedule->total_ticks() + 1 || axes.last_generation != 1)
       return 1;
-  } else if (!observed_expected_fault)
+  } else if (!observed_expected_termination)
+    return 1;
+
+  // Virtual RT shutdown acknowledgement. A real host keeps cycling until this
+  // acknowledgement, then joins its cyclic thread before destroying the session.
+  motion_session.plans().request_shutdown();
+  clock.observation.seconds += cycle_period_s;
+  const auto shutdown_status = dispatch_cycle();
+  if (shutdown_status != (motion_session.diagnostic() ? ExecutionStatus::Error : ExecutionStatus::Inactive))
+    return 1;
+  // Management phase: dropping shared_ptrs and freeing caches is allowed here.
+  if (!motion_session.plans().release_after_shutdown() || motion_session.plans().retained_plan_count())
     return 1;
 
   // Diagnostics after the cyclic phase; ordinary console output is intentionally outside it.
@@ -132,7 +134,7 @@ int main(int argc, char **argv) {
   try {
     if (argc < 2 || argc > 4)
       throw std::invalid_argument("Usage: controller_contract_example PROGRAM.yaml [cycle_ms:1..20] "
-                                  "[normal|late-clock|sink-refusal]");
+                                  "[normal|late-clock|sink-refusal|shutdown]");
     unsigned cycle_ms = 10;
     if (argc >= 3) {
       const std::string_view input = argv[2];
@@ -142,7 +144,8 @@ int main(int argc, char **argv) {
         throw std::invalid_argument("cycle_ms must be an integer from 1 to 20");
     }
     const std::string_view scenario = argc == 4 ? argv[3] : "normal";
-    if (scenario != "normal" && scenario != "late-clock" && scenario != "sink-refusal")
+    if (scenario != "normal" && scenario != "late-clock" && scenario != "sink-refusal" &&
+        scenario != "shutdown")
       throw std::invalid_argument("Unknown contract scenario");
     return run_contract(argv[1], cycle_ms, scenario);
   } catch (const std::exception &error) {

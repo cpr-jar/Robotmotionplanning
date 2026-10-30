@@ -6,8 +6,17 @@ FK/IK, PTP/LIN/CIRC, Weg und Zeit sowie die Sollwertausgabe mit Ablaufdiagrammen
 
 Die Sequenzen zeigen Rollen der späteren Host-Anwendung und vorhandene
 Bibliotheksobjekte. Rollen wie „Achsschnittstelle“ oder „Freigabe“ sind noch
-keine implementierten Hardwareadapter. Die sieben strukturellen UML-Sichten
+keine implementierten Hardwareadapter. Die acht strukturellen UML-Sichten
 stehen unter [Klassendiagramme](class_diagrams.md).
+
+## Verwaltete Sitzung ab 0.14.0
+
+Für die neue Einbindung übernimmt `LiveMotionSession` Cachebesitz,
+Sink-Annahme/Commit und Verriegelung; `LivePlanOwner` bearbeitet Management-
+Rückmeldungen und Freigabe. Ein bestätigter Shutdown beendet Cachezugriffe,
+aber bestätigt keinen physischen Stillstand. Rollen, Zustände und Sequenz:
+[Verwaltete Planübergabe](../integration/live_motion_session.md).
+Die folgenden Diagramme erklären zusätzlich die darunterliegenden Schritte.
 
 ## Vorbereitung und zyklische Übergabe
 

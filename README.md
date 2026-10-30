@@ -1,4 +1,4 @@
-# Robot Motion C++ — 0.13.1
+# Robot Motion C++ — 0.14.0
 
 C++20-Bibliothek für Roboterkinematik, Bewegungsplanung, Anwenderprogramme und
 zeitlich geprüfte Sollwertausgabe. Der Quellcode ist nach Aufgaben gegliedert;
@@ -19,6 +19,10 @@ Die anschließenden vier Robustheitspakete sind in [Robustheitstests](docs/testi
 
 **Architektur-Review:** [Befunde für 0.13.0](docs/architecture/architecture_review_v0.13.0.md)
 und [Umsetzung des ersten Korrekturpakets in 0.13.1](docs/testing/architecture_review_fixes.md).
+
+Neu in **0.14.0**: [verwaltete Pläne und sichere Übergabe](docs/integration/live_motion_session.md)
+mit `LiveMotionSession`, Rücknahme angebotener Pläne, bestätigtem Shutdown und
+Fehlerursachen. Das Steuerungsbeispiel verwendet diesen Ablauf.
 
 ## Starten
 
@@ -56,6 +60,7 @@ Uhr und simulierte Achsen:
 ```sh
 ./build/controller_contract_example programs/examples/ur5e_demo.yaml 1 normal
 ./build/controller_contract_example programs/examples/ur5e_demo.yaml 20 normal
+./build/controller_contract_example programs/examples/ur5e_demo.yaml 10 shutdown
 ./build/controller_contract_example programs/examples/ur5e_demo.yaml 10 late-clock
 ./build/controller_contract_example programs/examples/ur5e_demo.yaml 10 sink-refusal
 ```
@@ -138,6 +143,6 @@ Dispatch-Test sind kein Nachweis physischer Ausführung oder harter Echtzeit.
 Zielrepository: https://github.com/cpr-jar/Robotmotionplanning
 
 Der fortgeführte Quellstand liegt auf `recovery/reconstructed-v0.12.1`.
-[Quell-ZIP v0.12.3](https://github.com/cpr-jar/Robotmotionplanning/archive/refs/tags/v0.12.3.zip).
+[Quell-ZIP v0.14.0](https://github.com/cpr-jar/Robotmotionplanning/archive/refs/tags/v0.14.0.zip).
 Die frühere Rekonstruktionssicherung v0.12.1 bleibt zusätzlich als Git-Bundle in
 `backups/` erhalten; sie wird durch neue Versionen nicht überschrieben.

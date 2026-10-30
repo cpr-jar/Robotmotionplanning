@@ -1,6 +1,7 @@
 #pragma once
 #include "motion/execution/cycle_aligned_program.hpp"
 #include <atomic>
+#include <exception>
 namespace motion {
 template <std::size_t N> struct FixedJointCommand {
   std::array<double, N> q{}, dq{}, ddq{};
@@ -54,9 +55,16 @@ private:
   alignas(64) std::atomic<std::size_t> write_{};
 };
 enum class BufferFillStatus { Ready, Finished, Error };
+enum class BufferFillFault { None, ReferenceFailure };
+struct BufferFillDiagnostic {
+  BufferFillFault code{BufferFillFault::None};
+  std::uint64_t tick{};
+  std::exception_ptr cause;
+};
 struct BufferFillResult {
   BufferFillStatus status;
   std::size_t count{};
+  BufferFillDiagnostic diagnostic{};
 };
 /// Samples vector-valued trajectories outside the realtime thread; fill() may allocate.
 template <std::size_t N> class BufferedMotionProducer {
@@ -70,6 +78,8 @@ public:
   const FixedJointCommand<N> &initial_command() const { return initial_; }
   template <std::size_t Capacity>
   BufferFillResult fill(SpscSetpointBuffer<N, Capacity> &ring, std::size_t budget) {
+    if (failure_)
+      return {BufferFillStatus::Error, 0, {BufferFillFault::ReferenceFailure, next_, failure_}};
     std::size_t count = 0;
     try {
       while (count < budget && next_ <= schedule_->total_ticks()) {
@@ -81,7 +91,8 @@ public:
       }
       return {next_ > schedule_->total_ticks() ? BufferFillStatus::Finished : BufferFillStatus::Ready, count};
     } catch (...) {
-      return {BufferFillStatus::Error, count};
+      failure_ = std::current_exception();
+      return {BufferFillStatus::Error, count, {BufferFillFault::ReferenceFailure, next_, failure_}};
     }
   }
 
@@ -104,5 +115,6 @@ private:
   std::shared_ptr<const IExecutionSchedule> schedule_;
   FixedJointCommand<N> initial_;
   std::uint64_t next_{};
+  std::exception_ptr failure_;
 };
 } // namespace motion

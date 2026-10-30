@@ -17,7 +17,8 @@ vorhandene Softwareprüfungen von noch zu vereinbarenden Host-Verträgen.
 | Fehlerhafte Beobachtungen | Alter, Kausalität, Objektzuordnung, Revision, Ausreißer, vorbereiteter Halt |
 | Zufall/Fuzzing | Reproduzierbare Programme, Parsermutationen, Ressourcenbudgets, libFuzzer |
 | Neue Struktur | Kompatibilitätsheader, Diagrammdeklarationen, Links, separates CMake-Anwenderprojekt |
-| Host-Vertrag als Simulation | Cacheausgabe bei 1/10/20 ms, spätes Zeitfenster, abgelehnte Achsübergabe |
+| Host-Vertrag als Simulation | Cacheausgabe bei 1/10/20 ms, spätes Zeitfenster, abgelehnte Achsübergabe, bestätigter Shutdown |
+| Verwaltete Lebensdauer | Freigabe außerhalb RT, Rücknahme, ungelesene Antworten, laufende Übergabe beim Shutdown, 200 Zwei-Thread-Wechsel |
 
 Die konkreten ausgeführten Konfigurationen und Sanitizer-Ergebnisse stehen im
 [Prüfbericht](../testing/validation.md). Diese Tests decken Softwareverträge ab,
@@ -32,7 +33,7 @@ keine reale Maschinenabnahme.
 | Uhrbezug | Monotone Domäne, Unsicherheitsgrenze, Epochbindung und Startvorlauf | Kein automatischer Uhren-/Startadapter vorhanden |
 | Achsabbildung | Namen/Reihenfolge, Skalierung, Vorzeichen, Nullpunkte, m/rad ↔ Steuerungseinheiten | Nominalmodelle enthalten keine Host-Encoderzuordnung |
 | Startfreigabe | Frische Istwerte, Grenz-/Folgefehler, Ruhe, Referenzierung, Kalibrierung | Dispatcher ist Sollwertausführung, kein Maschinen-Freigabeautomat |
-| Achsannahme | Batch-/Atomizitätsvertrag, maximale Latenz, Rückmeldung, partielle Fehler, Delivery-Fence | Treiber-/Hardwareadapter bewusst später |
+| Achsannahme | Konkrete Abbildung des synchronen Session-Sink-Vertrags, maximale Latenz und partielle Übertragung | Softwarevertrag vorhanden; Treiber-/Hardwareadapter bewusst später |
 | Fehlerreaktion | Verhalten bei Zeitfehler, Unterlauf, Treiberfehler, Abbruch, Verlust von Feedback | Neue normale Befehle zu sperren definiert noch keinen physischen Halt |
 | Rücksetzung | Wer quittiert; wie neuer Startzustand, neue Epoche und Generation entstehen | Kein automatischer Reset/Resume im Executor |
 | Beobachtung | Nichtblockierende Status-/Fehlerübergabe, Logformat und Zeitkorrelation | UI-/Diagnosekanal gehört zur Host-Steuerung |

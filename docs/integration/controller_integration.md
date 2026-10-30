@@ -2,7 +2,7 @@
 
 ## Zweck und Geltungsbereich
 
-Dieses Handbuch beschreibt **Robot Motion C++ 0.12.3** als einbettbare C++20-
+Dieses Handbuch beschreibt **Robot Motion C++ 0.14.0** als einbettbare C++20-
 Bibliothek. Eure Steuerung ist selbst entwickelt; konkrete Adapter, Prozesse,
 Feldbuszuordnung und Freigabelogik werden später festgelegt. Der betrachtete
 Zyklustakt liegt zwischen **1 und 20 ms**. Die Bibliothek plant Sollbewegungen
@@ -181,7 +181,7 @@ Befehlsinhalt und aktuelle Zeit dürfen dabei nicht vermischt werden.
 
 | Modell | Geeignet für | Vorbereitung | Zyklisch |
 | --- | --- | --- | --- |
-| Vollständiger Cache | Erster Integrationstest, begrenzte Programmlänge | Alle festen Befehle mit `prepare_live_plan<N>()` erzeugen | `LiveMotionExecutor<N>::poll_clock()` |
+| Vollständiger Cache | Erster Integrationstest, begrenzte Programmlänge | Alle festen Befehle mit `prepare_live_plan<N>()` erzeugen | `LiveMotionSession<N>::dispatch_clock()` |
 | SPSC-Puffer | Längere Programme mit dauerhaft verfügbarem Producer | `BufferedMotionProducer<N>` und festen Ring anlegen/vorfüllen | `DeadlineMotionExecutor<N>::poll_clock()` |
 
 Für den ersten Test ist der vollständige Cache leichter nachzuvollziehen.
@@ -192,29 +192,32 @@ Achsabbildung, keine stille Abschneidung oder Auffüllung.
 ### Cachepfad
 
 ```cpp
-#include <motion/execution/live_motion_executor.hpp>
+#include <motion/execution/live_motion_session.hpp>
 
 constexpr std::size_t axis_count = 6;
 constexpr motion::ClockId controller_clock_id = 1;
 const auto execution_schedule = prepared_program.schedule;
 const double execution_epoch_s = execution_schedule->initial_state().timestamp_s;
-const auto prepared_cache = motion::prepare_live_plan<axis_count>(
+auto prepared_cache = motion::prepare_live_plan<axis_count>(
     execution_schedule, execution_epoch_s,
     {1, 0, 0, controller_clock_id}); // generation, parent, global start tick, clock
 if (!prepared_cache) { /* Start verhindern; diagnostic ausgeben */ }
 
-motion::LivePlanMailbox<axis_count> plan_mailbox;
 const double cycle_period_s = execution_schedule->cycle_s();
 const motion::ExecutionTimingPolicy timing_policy{
     0, cycle_period_s * .1, 0, 0}; // Nur ideales virtuelles Beispiel!
-motion::LiveMotionExecutor<axis_count> motion_executor(
-    *prepared_cache.plan, plan_mailbox, timing_policy);
+motion::LiveMotionSession<axis_count> motion_session(
+    std::move(prepared_cache.plan), timing_policy);
 ```
 
-Die Host-Anwendung hält `prepared_cache.plan` so lange am Leben, wie der Executor
-oder ein ausstehender Wechsel ihn referenziert. Der Executor übernimmt keinen
-`shared_ptr`. Ein Cache darf nach Beginn der Benutzung nicht verändert werden.
-Die Freigabe und damit verbundene Speicherarbeit findet außerhalb RT statt.
+Die Sitzung übernimmt den Cachebesitz über `LivePlanOwner`. Dessen
+Managementmethoden halten aktive/angebotene Caches bis zur Rückmeldung oder
+bestätigten Quieszenz am Leben. Der zyklische Executor leiht weiterhin nur
+Adressen; Freigaben finden außerhalb RT statt. Die alte rohe Executor-/Postfach-
+API bleibt für Hosts mit eigener Besitzverwaltung verfügbar.
+
+Den vollständigen Annahmevertrag, Planwechsel, Abbruchwünsche und den
+Shutdown-Handschlag beschreibt [Verwaltete Planübergabe](live_motion_session.md).
 
 ### Gepufferter Pfad
 
@@ -229,40 +232,31 @@ die Vor-/Nachbereitungsphase.
 
 ## 5. Zyklische Befehlsübergabe
 
-Die Steuerungsuhr braucht `ClockTime now() noexcept`; sie muss eigene Fehler über
-nichtendliche Werte oder einen expliziten Host-Fehlerpfad melden. Alternativ kann
-unter Linux `LinuxMonotonicClock` benutzt werden. Der Dispatcher schreibt seinen
-Ausgabewert nur bei `Running` und `Finished`.
+Die Steuerungsuhr liefert `ClockTime now() noexcept` in der vereinbarten
+monotonen Domäne. Der Host-Sink implementiert
+`bool try_write(const LiveJointCommand<N>&) noexcept` und
+`void request_stop() noexcept`, jeweils mit begrenzter Laufzeit.
 
 ```cpp
-// Nur der zyklische Eigentümer greift direkt auf den Executor zu.
-motion::LiveJointCommand<axis_count> next_command;
-const auto execution_status = motion_executor.poll_clock(clock, next_command);
-if (execution_status == motion::ExecutionStatus::Running ||
-    execution_status == motion::ExecutionStatus::Finished) {
-  // Inhalt jetzt genau einmal an die Host-Achsschnittstelle übergeben.
-  // Finished enthält den letzten Stillstandsbefehl und muss ebenfalls raus.
-} else if (execution_status == motion::ExecutionStatus::Error) {
-  // Anwendungsfehler verriegeln; vereinbarte Stop-/Fehlerreaktion auslösen.
-}
-// Inactive: nichts neu senden. Den alten Inhalt von next_command nicht wiederholen.
+// Nur ein zyklischer Eigentümer; axes kopiert und akzeptiert den ganzen Befehl.
+const auto status = motion_session.dispatch_clock(clock, axes);
+// Running / Finished: bereits genau einmal übergeben UND Delivery-Fence bestätigt.
+// Nicht zusätzlich selbst try_write() aufrufen!
+// Inactive: keine neue Übergabe. Error: Ausgabe bleibt verriegelt.
 ```
 
-`poll_clock()` liest die Uhr vor und nach der Prüfung. Damit kann es auch eine
-Unterbrechung während der Verarbeitung erkennen. `poll(now, output)` hat nur die
-eine vom Aufrufer bereitgestellte Zeitbeobachtung. Beide Varianten können
-zukünftige Verzögerungen der nachfolgenden Achsschnittstelle nicht messen.
-Deren garantierte maximale Annahmelatenz muss in `dispatch_latency_bound_s`
-eingerechnet und später auf der Zielsteuerung überprüft werden.
+`try_write()==true` bedeutet unwiderrufliche Annahme durch den Host, nicht
+bereits bestätigte physische Ausführung. Eine Ablehnung führt ohne Wiederholung
+zu `Error`, einem strukturierten Diagnostic und einmaliger Stopanforderung.
+Auch der letzte Stillstandsbefehl muss angenommen werden, bevor `Finished`
+zurückgegeben wird. Die tatsächliche Stopreaktion und Ist-Ruhe gehören zum Host.
 
-Die spätere Achsschnittstelle benötigt einen klaren Vertrag: Annahme aller
-Achswerte für genau diesen Tick oder gemeldeter Fehler, begrenzte Ausführungszeit,
-kein Behalten eines Zeigers auf die wiederverwendete Ausgabestruktur und
-geklärter Umgang mit partieller Übertragung. Bei Ablehnung ist der Dispatcher
-bereits weitergeschaltet: nicht denselben Befehl erneut senden und nicht
-ungeprüft weiterpollen. Die Anwendung verriegelt diesen Übergabefehler und
-führt die vereinbarte Fehlerreaktion aus. Das Referenzbeispiel zeigt diese
-zusätzliche Anwendungssperre, ohne einen bestimmten Hardware-Stopp vorzugeben.
+Beim Herunterfahren fordert die Managementseite `plans().request_shutdown()` an.
+Der zyklische Thread wird weiter aufgerufen, bis `Quiescent` bestätigt ist.
+Erst dann `plans().release_after_shutdown()` außerhalb RT ausführen. Sitzung
+selbst erst nach Ende/Join aller aufrufenden Threads zerstören. Der
+[genaue Ablauf](live_motion_session.md#6-shutdown-mit-nachgewiesener-speicherfreigabe)
+erklärt laufende Übergaben und ungelesene Aktivierungsantworten.
 
 ## 6. Speicher und Threadgrenzen
 
@@ -270,8 +264,10 @@ zusätzliche Anwendungssperre, ohne einen bestimmten Hardware-Stopp vorzugeben.
 | --- | --- |
 | URDF/YAML, IK, Planung, Hüllen, Kalibrierungs-Fit | Vorbereitungs-/Planerthread |
 | `sample()`, `sample_tick()`, Cachebau, `fill()` | Vorbereitungs-/Producerthread |
-| `poll[_clock]()`, feste Push/Pop, Live-Aktivierung, Fence | Ein zyklischer Eigentümer |
-| `snapshot()` | Auch parallele Beobachter; begrenzte Wiederholversuche, optionales Ergebnis |
+| `dispatch[_clock]()`, rohe `poll[_clock]()`, feste Push/Pop, Live-Aktivierung, Fence | Ein zyklischer Eigentümer |
+| `snapshot()`, Session-`diagnostic()`, Owner-`state()` | Auch parallele Beobachter; begrenzte Leseoperationen |
+| Owner: `try_offer()`, `collect_response()`, `request_cancel()`, `release_after_shutdown()` | Ein Managementthread; shared_ptr-Arbeit außerhalb RT |
+| Owner: `request_shutdown()` | Atomar aus beliebigem Thread; wartet nicht |
 | `generation()`, `fault()`, `commit_delivery()`, `service_requests()` | Zyklischer Eigentümer, keine beliebigen parallelen Zugriffe |
 | Logs, Dateien, UI-Meldungen, `shared_ptr`-Freigaben | Außerhalb des zyklischen Pfads |
 
@@ -306,6 +302,9 @@ Postfach nicht im zyklischen Thread mit einer Warteschleife bedienen.
 Wenn die Host-Achsschnittstelle bereits Befehle angenommen hat, wird die
 unwiderruflich übergebene Grenze mit `commit_delivery(generation, through_tick)`
 geführt. Kein Wechsel darf bereits angenommene Befehle rückwirkend ersetzen.
+In `LiveMotionSession` erfolgt dieser Commit automatisch nach der Sink-Annahme;
+der Host ruft ihn nicht zusätzlich auf. Angebote und Rückmeldungen laufen dort
+über `plans().try_offer()` und `plans().collect_response()`.
 Besitzdauer, Acknowledgement und Freigabe sind in den
 [Live-Sequenzen](../architecture/runtime_flows.md) beschrieben.
 

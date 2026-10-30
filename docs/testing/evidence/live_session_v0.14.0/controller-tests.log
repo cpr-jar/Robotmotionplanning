@@ -1,0 +1,17 @@
+Test project /workspace/robot-motion-cpp/build-all
+    Start 24: controller_cycle_1ms
+1/6 Test #24: controller_cycle_1ms .............   Passed    0.12 sec
+    Start 25: controller_cycle_10ms
+2/6 Test #25: controller_cycle_10ms ............   Passed    0.10 sec
+    Start 26: controller_cycle_20ms
+3/6 Test #26: controller_cycle_20ms ............   Passed    0.08 sec
+    Start 27: controller_late-clock
+4/6 Test #27: controller_late-clock ............   Passed    0.10 sec
+    Start 28: controller_sink-refusal
+5/6 Test #28: controller_sink-refusal ..........   Passed    0.08 sec
+    Start 29: controller_shutdown
+6/6 Test #29: controller_shutdown ..............   Passed    0.10 sec
+
+100% tests passed out of 6
+
+Total Test time (real) =   0.59 sec

@@ -80,6 +80,8 @@ in den zyklischen Thread.
 | `execution/setpoint_buffer.hpp` | `FixedJointCommand`, `SpscSetpointBuffer`, `BufferedMotionProducer` | `fill()` außerhalb RT; feste Push/Pop-Übergaben zyklisch |
 | `execution/deadline_motion_executor.hpp` | `DeadlineMotionExecutor` | Gepufferte Ausgabe mit Daten-/Zeitprüfung; `poll[_clock]()` zyklisch |
 | `execution/live_motion_executor.hpp` | `PreparedLivePlan`, `LivePlanMailbox`, `LiveMotionExecutor` | Cachebau außerhalb RT; feste Befehlsausgabe, Wechsel und Snapshot zyklisch |
+| `execution/live_plan_owner.hpp` | `LivePlanOwner`, Angebots-/Sitzungsstatus | Managementseitiger Besitz aktiver/angebotener Caches, Rückmeldungen und Freigabe nach Quieszenz |
+| `execution/live_motion_session.hpp` | `LiveMotionSession`, `LiveSessionFault` | Zyklische Annahme/Commit, verriegelte Übergabefehler und Shutdown-Handschlag; kein eigener Thread |
 | `execution/stop_schedules.hpp` | `JointStopSchedule`, `PolynomialStopSchedule`, `PreparedStopTransition` | Optional vorbereitete Halteverläufe; Sampling außerhalb RT |
 | `tracking/constant_velocity_predictor.hpp` | `ConveyorPredictor` | Einfacher ursprünglicher Prädiktor; kein Ausführungs-Dispatcher |
 | `tracking/frame_snapshot.hpp` | `TrackingFrameSnapshot` | Statische kalibrierte Framegraphen; außerhalb RT |
