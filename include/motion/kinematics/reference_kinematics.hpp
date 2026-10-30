@@ -1,4 +1,5 @@
 #pragma once
+#include "motion/kinematics/differential_kinematics.hpp"
 #include "motion/math/derivative_jets.hpp"
 namespace motion {
 namespace reference_detail {

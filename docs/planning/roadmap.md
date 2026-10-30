@@ -14,15 +14,19 @@ strukturierte Session-/Producer-Diagnosen und bestätigter Shutdown. Nachweise:
 [Lifecycle-Prüfung](../testing/live_session_validation.md). Ein physischer Halt,
 asynchrone Antriebs-Acks und konkrete Host-Freigaben werden damit nicht vorweggenommen.
 
-Die nächsten strukturellen Schritte:
+Mit **0.15.0** ist Paket 3 [Modulgrenzen und Komponenten](../architecture/components.md)
+umgesetzt: niedrigere Verträge und Mathematik, keine Datei-/Modul-/CMake-Zyklen,
+separate Bibliotheken und unabhängig geprüfte Verbraucher. Legacy-Fassade,
+Headerpfade und vollständiges Serial-Archiv bleiben erhalten.
+Nachweise: [Komponentenprüfung](../testing/components_validation.md).
 
-1. **Modulgrenzen:** niedrige gemeinsame Verträge, Abhängigkeitszyklen auflösen,
-   danach getrennte Build-Komponenten; Include-Forwarder und CMake-Fassade erhalten.
-2. **Ressourcen und Prüfungen:** gemeinsame Vorbereitungsbudgets/Abbruch,
+Die nächsten Schritte:
+
+1. **Ressourcen und Prüfungen:** gemeinsame Vorbereitungsbudgets/Abbruch,
    Wiederverwendung geparster DXF-Daten, speichersparende Spuren und zusätzliche
    Browser-/Nebenläufigkeits-/ARM-Prüfungen. Der fokussierte lokale TSan-Nachweis
    für die neue Session ersetzt keine vollständige CI-/Zielplattformabdeckung.
-3. **Bedarfsgerechte Erweiterungen:** typisierte Quell-/Bewegungsrepräsentation,
+2. **Bedarfsgerechte Erweiterungen:** typisierte Quell-/Bewegungsrepräsentation,
    Enclosure-Fähigkeit und das separat offene IK-Skalierungsproblem F07.
    F11 ist für Session/Producer verbessert; durchgehende Planerdiagnosen und
    benannte Zulassungspolicies bleiben offen.

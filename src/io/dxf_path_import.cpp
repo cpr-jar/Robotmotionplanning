@@ -1,4 +1,5 @@
 #include "motion/io/dxf_path_import.hpp"
+#include "motion/math/rigid_transform.hpp"
 #include <charconv>
 #include <fstream>
 #include <set>

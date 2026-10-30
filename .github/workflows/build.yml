@@ -76,6 +76,8 @@ jobs:
       - name: Check layout, diagram declarations and standalone public headers
         run: |
           python3 tools/architecture/check_structure.py
+          python3 tools/architecture/check_layers.py
+          python3 -m unittest discover -s tools/architecture/tests -v
           python3 tools/architecture/check_public_headers.py --with-serial
       - name: Check reproducible offline handbook
         run: |
@@ -92,3 +94,18 @@ jobs:
           cmake -S examples/integration/consumer -B build-consumer-asan -DROBOT_MOTION_SOURCE_DIR="$GITHUB_WORKSPACE" -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS_DEBUG="-O1 -g1" -DMOTION_WITH_SERIAL=OFF -DMOTION_SANITIZE=ON
           cmake --build build-consumer-asan --parallel 2
           UBSAN_OPTIONS=halt_on_error=1 ./build-consumer-asan/controller_consumer
+  component-consumers:
+    runs-on: ubuntu-latest
+    strategy:
+      max-parallel: 4
+      matrix:
+        case: [execution, planning, serial_kinematics, serial_planning, differential_kinematics, calibration, dxf_import, model_import, program, serial, following]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build independent consumer and inspect actual CMake source graph
+        run: python3 tools/architecture/check_components.py --case ${{ matrix.case }}
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: component-${{ matrix.case }}-failure
+          path: build-components/${{ matrix.case }}/validation.log

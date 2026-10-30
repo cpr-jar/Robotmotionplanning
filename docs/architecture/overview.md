@@ -1,4 +1,4 @@
-# Architektur des Stands 0.12.3
+# Architektur des Stands 0.15.0
 
 Die Bibliothek trennt Kinematik, Planung, Programminterpretation und zeitliche
 Ausführung. Der Planungs-/Producerbereich darf dynamische Daten verwenden;
@@ -10,7 +10,10 @@ Einstieg: [Modulkatalog](module_catalog.md), [Klassendiagramme](class_diagrams.m
 Die früheren flachen Header bleiben als Weiterleitungen; `ClockTime` ist der
 allgemeine Uhrtyp und `TrackingTime` ein Alias. `RobotMotion::motion` bildet das
 bevorzugte CMake-Einstiegsziel. Ursprung und Wiederherstellungsgrenzen stehen im
-[historischen Bericht](../history/recovery_status.md). Aktuelle Vertragsgrenzen:
+[historischen Bericht](../history/recovery_status.md). Ab 0.15.0 sind [Komponenten und Schichten](components.md) explizit geprüft;
+gemeinsame Verträge liegen unter `contracts/`, Solver/Import/Programme werden
+getrennt gebaut. Die verwaltete Cache-/Übergabegrundlage stammt aus 0.14.0.
+Aktuelle Vertragsgrenzen:
 
 1. **Daten und Modelle:** C++20, SI-Zustände q/dq/ddq und explizite Grenzen.
    Serielle Kinematik besitzt Basis-/Werkzeugtransformation, feste und bewegliche

@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.15.0 — Component builds and enforced dependency layers, 2026-10-30
+
+- Extracted shared trajectory/program/schedule contracts, geometry values, state checks
+  and numerical helpers without changing the public C++ names or motion laws.
+- Removed the math/kinematics/planning and execution/program include cycles; added
+  conservative layer/file/component checks and pure runtime header-closure gates.
+- Added selectable CMake components with lazy offline dependencies. Solver, inverse
+  differential, calibration, DXF, model import and program processing build separately.
+- Retained legacy selection, facade targets, all flat headers, two relocated contract
+  facades and the real full serial archive, reusing OBJECT files without recompilation.
+- Added 11 independent consumer cases, actual CMake source/archive validation, external
+  sanitizer checks and CI coverage. The viewer now links only the program component.
+- Updated integration/migration documentation, class declarations and a measured
+  module diagram in the offline handbook. Resource budgets remain the next package.
+
 ## 0.14.0 — Managed plan ownership and delivery lifecycle, 2026-10-30
 
 - Added LiveMotionSession and its non-RT LivePlanOwner: retain active/offered

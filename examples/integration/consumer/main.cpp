@@ -2,7 +2,7 @@
 #include "motion/execution/boundary_polynomial_schedule.hpp"
 #include "motion/execution/live_motion_session.hpp"
 #include "motion/planning/joint_trajectory.hpp"
-#ifdef MOTION_WITH_SERIAL
+#ifdef MOTION_WITH_PROGRAM
 #include "motion/program/robot_program.hpp"
 #endif
 #include <iostream>
@@ -30,7 +30,7 @@ int main() {
   if (session.dispatch({.01, 7, 0}, sink) != motion::ExecutionStatus::Inactive ||
       !session.plans().release_after_shutdown())
     return 1;
-#ifdef MOTION_WITH_SERIAL
+#ifdef MOTION_WITH_PROGRAM
   const auto program_source =
       motion::parse_robot_program_yaml("schema_version: 1\nunits: SI\nrobot_profile: example.yaml\n"
                                        "start: {joints: [0]}\nsteps: [{type: WAIT, seconds: 0.01}]\n");

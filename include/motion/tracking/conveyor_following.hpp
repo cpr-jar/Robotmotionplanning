@@ -4,7 +4,7 @@
 #include "motion/planning/pose_path.hpp"
 #include "motion/tracking/conveyor_target_predictor.hpp"
 #include <deque>
-#ifdef MOTION_WITH_SERIAL
+#if defined(MOTION_WITH_SERIAL) || defined(MOTION_WITH_DIFFERENTIAL)
 #include "motion/kinematics/inverse_differential.hpp"
 #include "motion/planning/envelope_constraints.hpp"
 #endif
@@ -215,7 +215,7 @@ private:
   JointLimits limits_;
   std::string frame_;
 };
-#ifdef MOTION_WITH_SERIAL
+#if defined(MOTION_WITH_SERIAL) || defined(MOTION_WITH_DIFFERENTIAL)
 template <std::size_t N> class KinematicConveyorFollower {
 public:
   KinematicConveyorFollower(std::shared_ptr<const IDifferentialKinematics> model, JointLimits limits,

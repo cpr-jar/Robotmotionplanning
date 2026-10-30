@@ -214,7 +214,7 @@
       {
         "id": "trajectory",
         "name": "ITrajectory",
-        "header": "include/motion/planning/joint_trajectory.hpp",
+        "header": "include/motion/contracts/trajectory.hpp",
         "methods": [
           "duration()",
           "sample(time_s)"
@@ -344,7 +344,7 @@
       {
         "id": "joint",
         "name": "IJointProgram",
-        "header": "include/motion/program/joint_program.hpp",
+        "header": "include/motion/contracts/joint_program.hpp",
         "methods": [
           "segment_count()",
           "segment_duration(index)",
@@ -368,7 +368,7 @@
       {
         "id": "schedule",
         "name": "IExecutionSchedule",
-        "header": "include/motion/execution/execution_schedule.hpp",
+        "header": "include/motion/contracts/execution_schedule.hpp",
         "methods": [
           "total_ticks()",
           "tick_time(tick)",
@@ -478,7 +478,7 @@
       {
         "id": "schedule",
         "name": "IExecutionSchedule",
-        "header": "include/motion/execution/execution_schedule.hpp",
+        "header": "include/motion/contracts/execution_schedule.hpp",
         "methods": [
           "sample_tick(tick)",
           "joint_limits()"

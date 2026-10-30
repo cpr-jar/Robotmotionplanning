@@ -1,19 +1,21 @@
-add_library(robot_motion_serial STATIC
-  kinematics/serial_chain_kinematics.cpp
-  kinematics/inverse_differential.cpp
-  calibration/rigid_calibration.cpp
-  io/robot_model_import.cpp
-  io/dxf_path_import.cpp
-  program/program_import.cpp
-  program/prepared_robot_program.cpp
-  program/program_planning.cpp
-  program/program_dxf.cpp
-  program/program_simulation.cpp)
-add_library(RobotMotion::serial ALIAS robot_motion_serial)
-target_include_directories(robot_motion_serial PUBLIC ${PROJECT_SOURCE_DIR}/include)
-FetchContent_GetProperties(motion_xml SOURCE_DIR motion_xml_source)
-FetchContent_GetProperties(motion_yaml SOURCE_DIR motion_yaml_source)
-target_include_directories(robot_motion_serial SYSTEM PRIVATE ${motion_xml_source} ${motion_yaml_source}/include)
-target_compile_definitions(robot_motion_serial PUBLIC MOTION_WITH_SERIAL=1)
-target_link_libraries(robot_motion_serial PRIVATE motion_eigen_headers tinyxml2::tinyxml2 yaml-cpp::yaml-cpp)
-motion_strict_target(robot_motion_serial)
+if("serial_kinematics" IN_LIST MOTION_SELECTED_COMPONENTS OR "differential_kinematics" IN_LIST MOTION_SELECTED_COMPONENTS)
+  add_subdirectory(kinematics)
+endif()
+if("calibration" IN_LIST MOTION_SELECTED_COMPONENTS)
+  add_subdirectory(calibration)
+endif()
+if("dxf_import" IN_LIST MOTION_SELECTED_COMPONENTS OR "model_import" IN_LIST MOTION_SELECTED_COMPONENTS)
+  add_subdirectory(io)
+endif()
+if("program" IN_LIST MOTION_SELECTED_COMPONENTS)
+  add_subdirectory(program)
+endif()
+if("serial" IN_LIST MOTION_SELECTED_COMPONENTS)
+  set(legacy_objects "")
+  foreach(component serial_kinematics differential_kinematics calibration model_import dxf_import program)
+    list(APPEND legacy_objects $<TARGET_OBJECTS:robot_motion_${component}_objects>)
+  endforeach()
+  add_library(robot_motion_serial STATIC ${legacy_objects})
+  add_library(RobotMotion::serial ALIAS robot_motion_serial)
+  motion_link_component_dependencies(robot_motion_serial PUBLIC serial)
+endif()

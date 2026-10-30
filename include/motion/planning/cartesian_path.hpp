@@ -2,7 +2,6 @@
 #include "motion/kinematics/differential_kinematics.hpp"
 #include <memory>
 namespace motion {
-using PathVector3 = std::array<double, 3>;
 struct CartesianPathPoint {
   Pose pose;
   std::array<PathVector3, 3> derivatives{}, angular_derivatives{};

@@ -1,5 +1,5 @@
 #include "motion/tracking/conveyor_following.hpp"
-#ifdef MOTION_WITH_SERIAL
+#ifdef MOTION_WITH_MODEL_IMPORT
 #include "motion/io/robot_model_import.hpp"
 #endif
 #include <cassert>
@@ -9,7 +9,7 @@ namespace {
 ClockTime stamp(double t) {
   return {t, 7, 0};
 }
-#ifdef MOTION_WITH_SERIAL
+#ifdef MOTION_WITH_MODEL_IMPORT
 double displacement(double t) {
   return .002 * t + .0001 * (1 - std::cos(t));
 }
@@ -187,7 +187,7 @@ int main() {
   assert(history.ingest(object, encoder, recalibrated, stamp(10)));
   assert(history.predict(recalibrated, stamp(10), stamp(10.1)));
   assert(!history.predict(frames, stamp(11), stamp(11.4)));
-#ifdef MOTION_WITH_SERIAL
+#ifdef MOTION_WITH_MODEL_IMPORT
   for (const auto *name : {"ur5e", "abb_irb120", "fanuc_lrmate200id"})
     serial_follow(name);
 #endif

@@ -1,5 +1,6 @@
 #pragma once
-#include "motion/planning/cartesian_path.hpp"
+#include "motion/core/geometry_types.hpp"
+#include <cstddef>
 #include <optional>
 #include <stdexcept>
 #include <string>

@@ -1,4 +1,5 @@
 #pragma once
+#include "motion/core/geometry_types.hpp"
 #include <algorithm>
 #include <array>
 #include <cmath>
@@ -15,13 +16,6 @@ struct JointState {
 };
 struct JointLimits {
   Vector min_position, max_position, max_velocity, max_acceleration, max_jerk;
-};
-struct Pose {
-  std::array<double, 3> position{};
-  std::array<double, 4> orientation{1, 0, 0, 0};
-};
-struct Twist {
-  std::array<double, 6> data{};
 };
 struct CartesianLimits {
   double max_linear_velocity{}, max_linear_acceleration{}, max_linear_jerk{};

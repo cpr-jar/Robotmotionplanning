@@ -1,0 +1,60 @@
+UpdateCTestConfiguration  from :/workspace/robot-motion-cpp/build-motion-viewer/DartConfiguration.tcl
+Test project /workspace/robot-motion-cpp/build-motion-viewer
+Constructing a list of tests
+Done constructing a list of tests
+Updating test list for fixtures
+Added 0 tests to meet fixture requirements
+Checking test dependency graph...
+Checking test dependency graph end
+test 1
+    Start 1: motion_viewer_tool_tests
+
+1: Test command: /opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3.12 "-m" "unittest" "discover" "-s" "/workspace/robot-motion-cpp/tools/motion_viewer/tests" "-v"
+1: Working Directory: /workspace/robot-motion-cpp/build-motion-viewer
+1: Environment variables:
+1:  MOTION_VIEWER_EXPORTER=/workspace/robot-motion-cpp/build-motion-viewer/motion_viewer_exporter
+1:  PYTHONPATH=/workspace/robot-motion-cpp/tools/motion_viewer
+1: Test timeout computed to be: 180
+1: test_complete_simulation_and_limits (test_motion_viewer.ViewerTests.test_complete_simulation_and_limits) ... ok
+1: test_cycle_grid_one_and_twenty_ms (test_motion_viewer.ViewerTests.test_cycle_grid_one_and_twenty_ms) ... ok
+1: test_decimation_preserves_boundaries_and_full_statistics (test_motion_viewer.ViewerTests.test_decimation_preserves_boundaries_and_full_statistics) ... ok
+1: test_embedded_labels_remain_inert_json (test_motion_viewer.ViewerTests.test_embedded_labels_remain_inert_json) ... ok
+1: test_invalid_metadata_and_json_rejected (test_motion_viewer.ViewerTests.test_invalid_metadata_and_json_rejected) ... ok
+1: test_late_program_error_preserves_existing_json (test_motion_viewer.ViewerTests.test_late_program_error_preserves_existing_json) ... ok
+1: test_malformed_input_preserves_existing_html (test_motion_viewer.ViewerTests.test_malformed_input_preserves_existing_html) ... ok
+1: test_native_budget_preserves_existing_json (test_motion_viewer.ViewerTests.test_native_budget_preserves_existing_json) ... ok
+1: test_renderer_matches_three_reference_models_and_mixed_chain (test_motion_viewer.ViewerTests.test_renderer_matches_three_reference_models_and_mixed_chain) ... ok
+1: test_source_cannot_be_overwritten (test_motion_viewer.ViewerTests.test_source_cannot_be_overwritten) ... ok
+1: test_visual_selection_is_trusted_and_skeleton_export_is_self_contained (test_motion_viewer.ViewerTests.test_visual_selection_is_trusted_and_skeleton_export_is_self_contained) ... ok
+1: test_http_boundaries_host_origin_token_body_and_static_routes (test_program_editor.EditorHttpTests.test_http_boundaries_host_origin_token_body_and_static_routes) ... ok
+1: test_real_http_round_trip_and_immutable_downloads (test_program_editor.EditorHttpTests.test_real_http_round_trip_and_immutable_downloads) ... ok
+1: test_busy_and_timeout_never_publish_partial_results (test_program_editor.ProgramEditorTests.test_busy_and_timeout_never_publish_partial_results) ... ok
+1: test_dxf_assets_validation_and_native_path_boundaries (test_program_editor.ProgramEditorTests.test_dxf_assets_validation_and_native_path_boundaries) ... ok
+1: test_dxf_command_simulates_and_bundle_retains_exact_assets (test_program_editor.ProgramEditorTests.test_dxf_command_simulates_and_bundle_retains_exact_assets) ... ok
+1: test_dxf_rejected_geometry_keeps_prior_preview_and_reports_cad_location (test_program_editor.ProgramEditorTests.test_dxf_rejected_geometry_keeps_prior_preview_and_reports_cad_location) ... ok
+1: test_examples_have_portable_paths_and_work_with_existing_native_parser (test_program_editor.ProgramEditorTests.test_examples_have_portable_paths_and_work_with_existing_native_parser) ... ok
+1: test_late_error_has_line_and_step_and_preserves_previous_valid_result (test_program_editor.ProgramEditorTests.test_late_error_has_line_and_step_and_preserves_previous_valid_result) ... ok
+1: test_parser_errors_and_model_path_escape_are_rejected (test_program_editor.ProgramEditorTests.test_parser_errors_and_model_path_escape_are_rejected) ... ok
+1: test_request_validation_budgets_and_unicode (test_program_editor.ProgramEditorTests.test_request_validation_budgets_and_unicode) ... ok
+1: test_result_retention_is_bounded_and_old_urls_expire (test_program_editor.ProgramEditorTests.test_result_retention_is_bounded_and_old_urls_expire) ... ok
+1: test_retention_cleanup_failure_does_not_reject_a_committed_result (test_program_editor.ProgramEditorTests.test_retention_cleanup_failure_does_not_reject_a_committed_result) ... ok
+1: test_successful_native_run_preserves_exact_source_snapshot_and_grid (test_program_editor.ProgramEditorTests.test_successful_native_run_preserves_exact_source_snapshot_and_grid) ... ok
+1: test_symlink_cannot_escape_model_folder (test_program_editor.ProgramEditorTests.test_symlink_cannot_escape_model_folder) ... ok
+1: test_write_failure_before_commit_preserves_all_previous_results (test_program_editor.ProgramEditorTests.test_write_failure_before_commit_preserves_all_previous_results) ... ok
+1: test_all_pinned_sources_and_vendor_files_match_checksums (test_visual_assets.VisualAssetTests.test_all_pinned_sources_and_vendor_files_match_checksums) ... ok
+1: test_chain_identity_controls_selection_and_base_tool_are_independent (test_visual_assets.VisualAssetTests.test_chain_identity_controls_selection_and_base_tool_are_independent) ... ok
+1: test_complete_meshes_and_physical_scale (test_visual_assets.VisualAssetTests.test_complete_meshes_and_physical_scale) ... ok
+1: test_converter_preserves_units_scene_offsets_and_inverse_transpose_normals (test_visual_assets.VisualAssetTests.test_converter_preserves_units_scene_offsets_and_inverse_transpose_normals) ... ok
+1: test_html_licenses_include_authors_and_complete_terms (test_visual_assets.VisualAssetTests.test_html_licenses_include_authors_and_complete_terms) ... ok
+1: test_visual_urdf_retains_kinematics_and_resolves_every_mesh (test_visual_assets.VisualAssetTests.test_visual_urdf_retains_kinematics_and_resolves_every_mesh) ... ok
+1:
+1: ----------------------------------------------------------------------
+1: Ran 32 tests in 13.288s
+1:
+1: OK
+1: Renderer FK comparison: {'cases': 6139, 'maxPosition': 4.443364746332835e-16, 'maxRotation': 1.3322676295501878e-15}
+1/1 Test #1: motion_viewer_tool_tests .........   Passed   13.47 sec
+
+100% tests passed out of 1
+
+Total Test time (real) =  13.47 sec

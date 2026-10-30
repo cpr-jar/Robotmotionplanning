@@ -1,6 +1,7 @@
 #pragma once
-#include "motion/execution/execution_schedule.hpp"
-#include "motion/program/joint_program.hpp"
+#include "motion/contracts/execution_schedule.hpp"
+#include "motion/contracts/joint_program.hpp"
+#include "motion/core/joint_state_checks.hpp"
 namespace motion {
 class CycleAlignedProgram;
 struct CycleGridResult {

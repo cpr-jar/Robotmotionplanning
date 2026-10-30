@@ -13,16 +13,17 @@ robot-motion-cpp/
 ├── cmake/                        Abhängigkeiten und gemeinsame Targetregeln
 ├── include/motion/
 │   ├── core/                     Zustände, Grenzen, Uhrdomänen
+│   ├── contracts/                Gemeinsame Trajektorien-, Programm- und Scheduleinterfaces
 │   ├── math/                     Ableitungs-Jets für Kinematik
 │   ├── kinematics/               FK, IK, Jacobian, Referenzmodelle und Hüllen
 │   ├── planning/                 Geometrie, Trajektorien, Zeitplanung und Halteplanung
-│   ├── io/                       Roboter-Modellimport
+│   ├── io/                       Modell- und DXF-Import
 │   ├── program/                  Anwenderprogramme und segmentierte Referenzen
 │   ├── execution/                Zyklusraster, Puffer, Dispatcher und Live-Wechsel
 │   ├── tracking/                 Frames, Beobachtungen, Prognose und Following
 │   ├── calibration/              Starrer Punktkalibrierungs-Fit
 │   └── platform/                 Optionale Linux-Uhr und Thread-Konfiguration
-├── src/{kinematics,io,program,calibration}/
+├── src/{kinematics,io,program,calibration}/  Eigene CMake-Dateien pro Aufgabenbereich
 ├── examples/
 │   ├── integration/              Vertragstest und separates CMake-Anwenderprojekt
 │   ├── programs/                 Programmimport, Simulation und CSV
@@ -49,6 +50,13 @@ in den zyklischen Thread.
 
 | Aufgabe / Header unter `include/motion/` | Wichtige Typen / Funktionen | Zuständigkeit; zyklisch |
 | --- | --- | --- |
+| `core/geometry_types.hpp` | `Pose`, `Twist`, `KinematicDerivatives`, `PathVector3` | Geometrische Grundwerte ohne Solverabhängigkeit |
+| `core/joint_state_checks.hpp` | `is_rest()` | Gemeinsame Zustandsprüfung |
+| `contracts/trajectory.hpp` | `ITrajectory`, `PlanResult`, Planerinterfaces | Gemeinsame Verträge ohne konkrete Planer |
+| `contracts/joint_program.hpp` | `IJointProgram` | Segmentierte Referenz, unabhängig vom Programmcompiler |
+| `contracts/execution_schedule.hpp` | `IExecutionSchedule` | Gemeinsamer Tick-/Zeitvertrag |
+| `math/bernstein_polynomial.hpp` | `polynomial_detail` | Unveränderte Bernsteinoperationen, ohne Planung |
+| `math/rigid_transform.hpp` | `kinematic_detail`, `tracking_detail` | Vektor-/Quaternion-/Transformationshilfen, Namensräume kompatibel |
 | `core/motion_types.hpp` | `JointState`, `JointLimits`, `Pose`, `Twist`, `IKinematics`, `CartesianGantry` | Grunddaten; Vektoren/Modellmethoden außerhalb RT |
 | `core/clock_time.hpp` | `ClockTime`, `ClockId`, Alias `TrackingTime` | Sekunden, Uhrdomäne und Unsicherheit; feste Werttypen |
 | `math/derivative_jets.hpp` | `differential_math` | Interne numerische Ableitungshilfen; kein Controller-Einstieg |
@@ -72,9 +80,9 @@ in den zyklischen Thread.
 | `io/dxf_path_import.hpp` | `DxfDrawing`, `DxfImportOptions`, `parse_dxf_path()`, `load_dxf_path_file()` | Begrenzter Text-DXF-Geometrieimport; ausschließlich Vorbereitung |
 | `program/robot_program.hpp` | `RobotProgramSource`, `RobotProgram`, `PreparedRobotProgram` | Strikter Programmimport, Gesamtplanung und Simulation |
 | `src/program/prepared_robot_program.cpp` | Geprüfte Vorbereitung, Retiming und Paarvalidierung | Bindet Referenzidentität und Zyklusraster; Vorbereitung außerhalb RT |
-| `program/joint_program.hpp` | `IJointProgram` | Segmentierte unveränderliche Referenz; Sampling außerhalb RT |
+| `program/joint_program.hpp` | Kompatibilitätsfassade | Neue Quellen verwenden `contracts/joint_program.hpp` |
 | `execution/execution_types.hpp` | `ExecutionStatus`, `ExecutionFault`, `ExecutionTimingPolicy` | Werttypen und Timingvertrag |
-| `execution/execution_schedule.hpp` | `IExecutionSchedule` | Zeit-/Tickvertrag; Sampling außerhalb RT |
+| `execution/execution_schedule.hpp` | Kompatibilitätsfassade | Neue Quellen verwenden `contracts/execution_schedule.hpp` |
 | `execution/cycle_aligned_program.hpp` | `CycleAlignedProgram`, `align_program_cycles()` | Stillstandsgrenzen auf ganzzahlige Ticks; Vorbereitung |
 | `execution/boundary_polynomial_schedule.hpp` | `BoundaryPolynomialSchedule` | Unveränderte Quintik plus Stillstandspadding |
 | `execution/setpoint_buffer.hpp` | `FixedJointCommand`, `SpscSetpointBuffer`, `BufferedMotionProducer` | `fill()` außerhalb RT; feste Push/Pop-Übergaben zyklisch |
@@ -90,9 +98,9 @@ in den zyklischen Thread.
 | `calibration/rigid_calibration.hpp` | `PointCorrespondence`, `fit_rigid_calibration()` | Gewichteter starrer Fit; außerhalb RT |
 | `platform/linux_realtime.hpp` | `LinuxMonotonicClock`, `configure_realtime_thread()` | Uhr/absolutes Warten im Thread; FIFO/Affinität/mlock nur im Setup |
 
-`MOTION_WITH_SERIAL` aktiviert die kompilierten Modell-, Programm-, seriellen
-Differential- und Kalibrierfunktionen. `MOTION_WITH_RUCKIG` aktiviert die vier
-optionalen Header `joint_stop`, `ruckig_joint_generator`, `stop_schedules` und
-`conveyor_following`; sie verlangen ausdrücklich diese Build-Option. Die
-KDL-Bibliothek erscheint ausschließlich bei aktivierten Tests und KDL-Referenz.
+Die bisherige Auswahl über `MOTION_WITH_SERIAL/RUCKIG` bleibt bei leerer
+Komponentenliste erhalten. Eine nichtleere Liste `MOTION_COMPONENTS` wählt die
+separaten Ziele und deren Abhängigkeiten. Vollständige Targettabelle,
+Makros und Kompatibilitätsgrenzen: [Komponenten](components.md).
+Die KDL-Bibliothek bleibt ausschließlich eine Testreferenz.
 Details zur Quellkompatibilität: [Migration](../development/naming_and_migration.md).

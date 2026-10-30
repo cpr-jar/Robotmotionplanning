@@ -1,0 +1,26 @@
+{
+  "allowed_dependencies": {
+    "core": [],
+    "contracts": ["core"],
+    "math": ["core"],
+    "kinematics": ["core", "math"],
+    "planning": ["core", "contracts", "math", "kinematics"],
+    "execution": ["core", "contracts", "planning"],
+    "calibration": ["core", "math"],
+    "io": ["core", "math", "kinematics"],
+    "program": ["core", "contracts", "math", "kinematics", "planning", "execution", "io"],
+    "tracking": ["core", "contracts", "math", "kinematics", "planning", "execution"],
+    "platform": ["core"]
+  },
+  "compatibility_headers": {
+    "program/joint_program.hpp": "contracts/joint_program.hpp",
+    "execution/execution_schedule.hpp": "contracts/execution_schedule.hpp"
+  },
+  "runtime_entries": [
+    "execution/live_motion_session.hpp",
+    "execution/deadline_motion_executor.hpp",
+    "execution/setpoint_buffer.hpp"
+  ],
+  "runtime_allowed_layers": ["core", "contracts", "execution"],
+  "component_file": "cmake/MotionComponents.cmake"
+}

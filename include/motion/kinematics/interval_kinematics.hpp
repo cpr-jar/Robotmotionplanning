@@ -1,8 +1,8 @@
 #pragma once
 #include "motion/kinematics/reference_kinematics.hpp"
 #include "motion/kinematics/serial_chain_kinematics.hpp"
+#include "motion/math/bernstein_polynomial.hpp"
 #include "motion/math/derivative_jets.hpp"
-#include "motion/planning/boundary_quintic.hpp"
 namespace motion::enclosure {
 inline double down(double x) {
   return std::nextafter(x, -INFINITY);

@@ -1,5 +1,5 @@
 #pragma once
-#include "motion/kinematics/differential_kinematics.hpp"
+#include "motion/math/rigid_transform.hpp"
 namespace motion {
 struct PointCorrespondence {
   std::array<double, 3> source{}, target{};

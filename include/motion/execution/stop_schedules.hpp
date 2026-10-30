@@ -1,5 +1,5 @@
 #pragma once
-#include "motion/execution/execution_schedule.hpp"
+#include "motion/contracts/execution_schedule.hpp"
 #include "motion/planning/joint_stop.hpp"
 namespace motion {
 class JointStopSchedule final : public IExecutionSchedule {

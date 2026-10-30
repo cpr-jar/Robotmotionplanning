@@ -1,6 +1,6 @@
 #pragma once
 #include "motion/core/clock_time.hpp"
-#include "motion/kinematics/differential_kinematics.hpp"
+#include "motion/math/rigid_transform.hpp"
 #include <map>
 #include <set>
 namespace motion {

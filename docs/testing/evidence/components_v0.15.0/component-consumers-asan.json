@@ -1,0 +1,33 @@
+[
+  {
+    "case": "dxf_import",
+    "sanitize": true,
+    "components": [
+      "core",
+      "dxf_import",
+      "math"
+    ],
+    "cpp_sources": [
+      "src/io/dxf_path_import.cpp"
+    ],
+    "archives": [
+      "dxf_import"
+    ],
+    "passed": true
+  },
+  {
+    "case": "execution",
+    "sanitize": true,
+    "components": [
+      "contracts",
+      "core",
+      "execution",
+      "kinematics",
+      "math",
+      "planning"
+    ],
+    "cpp_sources": [],
+    "archives": [],
+    "passed": true
+  }
+]

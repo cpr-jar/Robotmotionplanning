@@ -1,5 +1,6 @@
 #pragma once
-#include "motion/kinematics/differential_kinematics.hpp"
+#include "motion/core/geometry_types.hpp"
+#include <cmath>
 namespace motion::differential_math {
 // Raw derivatives, not Taylor coefficients. Scalar can also be an interval.
 template <class S> struct Jet {

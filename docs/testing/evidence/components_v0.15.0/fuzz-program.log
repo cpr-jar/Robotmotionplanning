@@ -1,0 +1,234 @@
+INFO: Running with entropic power schedule (0xFF, 100).
+INFO: Seed: 4028751910
+INFO: Loaded 1 modules   (53855 inline 8-bit counters): 53855 [0x55e845290720, 0x55e84529d97f),
+INFO: Loaded 1 PC tables (53855 PCs): 53855 [0x55e84529d980,0x55e84536ff70),
+INFO:       10 files found in /tmp/motion-modules/fuzz-program-corpus
+INFO: seed corpus: files: 10 min: 120b max: 2337b total: 3779b rss: 33Mb
+#13	INITED cov: 4112 ft: 8660 corp: 10/3779b exec/s: 0 rss: 47Mb
+#14	NEW    cov: 4112 ft: 8662 corp: 11/3917b lim: 2337 exec/s: 0 rss: 47Mb L: 138/2337 MS: 1 ChangeByte-
+	NEW_FUNC[1/4]: ==57781==WARNING: invalid path to external symbolizer!
+==57781==WARNING: Failed to use and restart external symbolizer!
+0x55e844e8d030  (/workspace/robot-motion-cpp/build-fuzz/program_parser_fuzzer+0x33c030) (BuildId: 7875b40b85e204c3e1ef39e894d17e0e70ae8ed3)
+	NEW_FUNC[2/4]: 0x55e844eb91c0  (/workspace/robot-motion-cpp/build-fuzz/program_parser_fuzzer+0x3681c0) (BuildId: 7875b40b85e204c3e1ef39e894d17e0e70ae8ed3)
+#15	NEW    cov: 4165 ft: 9097 corp: 12/4020b lim: 2337 exec/s: 0 rss: 48Mb L: 103/2337 MS: 1 EraseBytes-
+	NEW_FUNC[1/4]: 0x55e844e99410  (/workspace/robot-motion-cpp/build-fuzz/program_parser_fuzzer+0x348410) (BuildId: 7875b40b85e204c3e1ef39e894d17e0e70ae8ed3)
+	NEW_FUNC[2/4]: 0x55e844ea0158  (/workspace/robot-motion-cpp/build-fuzz/program_parser_fuzzer+0x34f158) (BuildId: 7875b40b85e204c3e1ef39e894d17e0e70ae8ed3)
+#16	NEW    cov: 4186 ft: 9280 corp: 13/4168b lim: 2337 exec/s: 0 rss: 48Mb L: 148/2337 MS: 1 ShuffleBytes-
+#18	NEW    cov: 4190 ft: 9578 corp: 14/4363b lim: 2337 exec/s: 0 rss: 48Mb L: 195/2337 MS: 2 ChangeASCIIInt-ChangeBit-
+#19	NEW    cov: 4209 ft: 9733 corp: 15/4685b lim: 2337 exec/s: 0 rss: 48Mb L: 322/2337 MS: 1 CopyPart-
+#20	NEW    cov: 4209 ft: 9840 corp: 16/4847b lim: 2337 exec/s: 0 rss: 49Mb L: 162/2337 MS: 1 ShuffleBytes-
+#21	NEW    cov: 4231 ft: 9993 corp: 17/5006b lim: 2337 exec/s: 0 rss: 49Mb L: 159/2337 MS: 1 CMP- DE: "\377\377"-
+#22	NEW    cov: 4232 ft: 10008 corp: 18/5165b lim: 2337 exec/s: 0 rss: 49Mb L: 159/2337 MS: 1 ChangeBinInt-
+#23	NEW    cov: 4233 ft: 10052 corp: 19/5360b lim: 2337 exec/s: 0 rss: 49Mb L: 195/2337 MS: 1 ChangeBit-
+	NEW_FUNC[1/1]: 0x55e844eb69d0  (/workspace/robot-motion-cpp/build-fuzz/program_parser_fuzzer+0x3659d0) (BuildId: 7875b40b85e204c3e1ef39e894d17e0e70ae8ed3)
+#25	NEW    cov: 4244 ft: 10110 corp: 20/5522b lim: 2337 exec/s: 0 rss: 49Mb L: 162/2337 MS: 2 ChangeByte-ChangeBit-
+#26	NEW    cov: 4246 ft: 10138 corp: 21/5743b lim: 2337 exec/s: 0 rss: 49Mb L: 221/2337 MS: 1 InsertRepeatedBytes-
+#28	NEW    cov: 4247 ft: 10151 corp: 22/5902b lim: 2337 exec/s: 0 rss: 49Mb L: 159/2337 MS: 2 ChangeASCIIInt-ChangeBinInt-
+#29	NEW    cov: 4252 ft: 10496 corp: 23/7738b lim: 2337 exec/s: 0 rss: 49Mb L: 1836/2337 MS: 1 EraseBytes-
+#30	NEW    cov: 4252 ft: 10531 corp: 24/7908b lim: 2337 exec/s: 0 rss: 50Mb L: 170/2337 MS: 1 CopyPart-
+	NEW_FUNC[1/3]: 0x55e844eb8840  (/workspace/robot-motion-cpp/build-fuzz/program_parser_fuzzer+0x367840) (BuildId: 7875b40b85e204c3e1ef39e894d17e0e70ae8ed3)
+	NEW_FUNC[2/3]: 0x55e844eb8ae8  (/workspace/robot-motion-cpp/build-fuzz/program_parser_fuzzer+0x367ae8) (BuildId: 7875b40b85e204c3e1ef39e894d17e0e70ae8ed3)
+#31	NEW    cov: 4290 ft: 11036 corp: 25/10245b lim: 2337 exec/s: 0 rss: 50Mb L: 2337/2337 MS: 1 ChangeBit-
+#32	NEW    cov: 4297 ft: 11055 corp: 26/10404b lim: 2337 exec/s: 0 rss: 51Mb L: 159/2337 MS: 1 ChangeByte-
+#34	NEW    cov: 4297 ft: 11227 corp: 27/10562b lim: 2337 exec/s: 0 rss: 51Mb L: 158/2337 MS: 2 CMP-EraseBytes- DE: "\020\000\000\000\000\000\000\000"-
+#35	NEW    cov: 4297 ft: 11280 corp: 28/10658b lim: 2337 exec/s: 0 rss: 51Mb L: 96/2337 MS: 1 EraseBytes-
+#36	NEW    cov: 4297 ft: 11388 corp: 29/10806b lim: 2337 exec/s: 0 rss: 51Mb L: 148/2337 MS: 1 ChangeByte-
+	NEW_FUNC[1/1]: 0x55e844eadeb0  (/workspace/robot-motion-cpp/build-fuzz/program_parser_fuzzer+0x35ceb0) (BuildId: 7875b40b85e204c3e1ef39e894d17e0e70ae8ed3)
+#37	NEW    cov: 4301 ft: 11426 corp: 30/10971b lim: 2337 exec/s: 0 rss: 51Mb L: 165/2337 MS: 1 ChangeByte-
+#38	NEW    cov: 4301 ft: 11430 corp: 31/11063b lim: 2337 exec/s: 0 rss: 51Mb L: 92/2337 MS: 1 EraseBytes-
+#44	NEW    cov: 4307 ft: 11458 corp: 32/11228b lim: 2337 exec/s: 0 rss: 51Mb L: 165/2337 MS: 1 CopyPart-
+	NEW_FUNC[1/2]: 0x55e844ebb070  (/workspace/robot-motion-cpp/build-fuzz/program_parser_fuzzer+0x36a070) (BuildId: 7875b40b85e204c3e1ef39e894d17e0e70ae8ed3)
+	NEW_FUNC[2/2]: 0x55e844ebbf28  (/workspace/robot-motion-cpp/build-fuzz/program_parser_fuzzer+0x36af28) (BuildId: 7875b40b85e204c3e1ef39e894d17e0e70ae8ed3)
+#45	NEW    cov: 4341 ft: 11613 corp: 33/11387b lim: 2337 exec/s: 0 rss: 51Mb L: 159/2337 MS: 1 ChangeBinInt-
+#52	NEW    cov: 4341 ft: 11627 corp: 34/11547b lim: 2337 exec/s: 0 rss: 52Mb L: 160/2337 MS: 2 ChangeBit-InsertByte-
+#53	NEW    cov: 4343 ft: 11645 corp: 35/11776b lim: 2337 exec/s: 0 rss: 52Mb L: 229/2337 MS: 1 InsertRepeatedBytes-
+#55	NEW    cov: 4343 ft: 11671 corp: 36/11935b lim: 2337 exec/s: 0 rss: 52Mb L: 159/2337 MS: 2 ShuffleBytes-ShuffleBytes-
+#57	NEW    cov: 4343 ft: 11884 corp: 37/12010b lim: 2337 exec/s: 0 rss: 52Mb L: 75/2337 MS: 2 ChangeBit-CrossOver-
+#58	NEW    cov: 4343 ft: 11885 corp: 38/12170b lim: 2337 exec/s: 0 rss: 52Mb L: 160/2337 MS: 1 InsertByte-
+#59	NEW    cov: 4344 ft: 11894 corp: 39/12332b lim: 2337 exec/s: 0 rss: 52Mb L: 162/2337 MS: 1 ChangeByte-
+#61	NEW    cov: 4350 ft: 11960 corp: 40/12491b lim: 2337 exec/s: 0 rss: 53Mb L: 159/2337 MS: 2 ChangeBinInt-ChangeASCIIInt-
+#62	NEW    cov: 4356 ft: 12032 corp: 41/12587b lim: 2337 exec/s: 0 rss: 53Mb L: 96/2337 MS: 1 CopyPart-
+#64	NEW    cov: 4363 ft: 12096 corp: 42/14924b lim: 2337 exec/s: 0 rss: 54Mb L: 2337/2337 MS: 2 ShuffleBytes-ChangeBinInt-
+	NEW_FUNC[1/2]: 0x55e8451362b0  (/workspace/robot-motion-cpp/build-fuzz/program_parser_fuzzer+0x5e52b0) (BuildId: 7875b40b85e204c3e1ef39e894d17e0e70ae8ed3)
+	NEW_FUNC[2/2]: 0x55e84513a420  (/workspace/robot-motion-cpp/build-fuzz/program_parser_fuzzer+0x5e9420) (BuildId: 7875b40b85e204c3e1ef39e894d17e0e70ae8ed3)
+#65	NEW    cov: 4381 ft: 12140 corp: 43/15076b lim: 2337 exec/s: 0 rss: 54Mb L: 152/2337 MS: 1 EraseBytes-
+#67	NEW    cov: 4385 ft: 12176 corp: 44/15237b lim: 2337 exec/s: 0 rss: 55Mb L: 161/2337 MS: 2 ShuffleBytes-CMP- DE: "\377\020"-
+#68	NEW    cov: 4385 ft: 12214 corp: 45/15530b lim: 2337 exec/s: 0 rss: 55Mb L: 293/2337 MS: 1 CrossOver-
+#74	NEW    cov: 4385 ft: 12215 corp: 46/15766b lim: 2337 exec/s: 0 rss: 55Mb L: 236/2337 MS: 1 InsertRepeatedBytes-
+#75	NEW    cov: 4385 ft: 12226 corp: 47/15966b lim: 2337 exec/s: 0 rss: 55Mb L: 200/2337 MS: 1 CopyPart-
+#76	NEW    cov: 4385 ft: 12230 corp: 48/16061b lim: 2337 exec/s: 0 rss: 55Mb L: 95/2337 MS: 1 EraseBytes-
+#77	NEW    cov: 4385 ft: 12238 corp: 49/16209b lim: 2337 exec/s: 0 rss: 55Mb L: 148/2337 MS: 1 ChangeBinInt-
+#78	NEW    cov: 4386 ft: 12247 corp: 50/16Kb lim: 2337 exec/s: 0 rss: 55Mb L: 192/2337 MS: 1 CopyPart-
+#79	NEW    cov: 4386 ft: 12258 corp: 51/16Kb lim: 2337 exec/s: 0 rss: 55Mb L: 143/2337 MS: 1 EraseBytes-
+#80	NEW    cov: 4386 ft: 12285 corp: 52/16Kb lim: 2337 exec/s: 0 rss: 55Mb L: 337/2337 MS: 1 CrossOver-
+#81	NEW    cov: 4386 ft: 12297 corp: 53/16Kb lim: 2337 exec/s: 0 rss: 55Mb L: 136/2337 MS: 1 CrossOver-
+#83	NEW    cov: 4386 ft: 12305 corp: 54/16Kb lim: 2337 exec/s: 0 rss: 55Mb L: 200/2337 MS: 2 ChangeASCIIInt-CopyPart-
+#102	NEW    cov: 4386 ft: 12646 corp: 55/16Kb lim: 2337 exec/s: 0 rss: 56Mb L: 149/2337 MS: 4 EraseBytes-ChangeASCIIInt-EraseBytes-CrossOver-
+#111	NEW    cov: 4386 ft: 12658 corp: 56/17Kb lim: 2337 exec/s: 0 rss: 56Mb L: 164/2337 MS: 4 PersAutoDict-ShuffleBytes-ChangeBinInt-ChangeBinInt- DE: "\377\020"-
+#112	NEW    cov: 4386 ft: 12660 corp: 57/17Kb lim: 2337 exec/s: 0 rss: 56Mb L: 192/2337 MS: 1 ChangeByte-
+#113	NEW    cov: 4386 ft: 12661 corp: 58/17Kb lim: 2337 exec/s: 0 rss: 56Mb L: 206/2337 MS: 1 InsertRepeatedBytes-
+#114	NEW    cov: 4386 ft: 12679 corp: 59/19Kb lim: 2337 exec/s: 0 rss: 56Mb L: 2337/2337 MS: 1 CrossOver-
+#120	NEW    cov: 4386 ft: 12739 corp: 60/20Kb lim: 2337 exec/s: 0 rss: 57Mb L: 223/2337 MS: 1 CrossOver-
+#122	NEW    cov: 4386 ft: 12762 corp: 61/20Kb lim: 2337 exec/s: 0 rss: 57Mb L: 195/2337 MS: 2 ChangeASCIIInt-ChangeBit-
+#123	NEW    cov: 4386 ft: 12808 corp: 62/20Kb lim: 2337 exec/s: 0 rss: 57Mb L: 175/2337 MS: 1 CopyPart-
+#131	NEW    cov: 4386 ft: 12814 corp: 63/22Kb lim: 2337 exec/s: 0 rss: 58Mb L: 2337/2337 MS: 3 ChangeASCIIInt-ShuffleBytes-ChangeByte-
+	NEW_FUNC[1/2]: 0x55e8450fc340  (/workspace/robot-motion-cpp/build-fuzz/program_parser_fuzzer+0x5ab340) (BuildId: 7875b40b85e204c3e1ef39e894d17e0e70ae8ed3)
+	NEW_FUNC[2/2]: 0x55e84514bf70  (/workspace/robot-motion-cpp/build-fuzz/program_parser_fuzzer+0x5faf70) (BuildId: 7875b40b85e204c3e1ef39e894d17e0e70ae8ed3)
+#142	NEW    cov: 4393 ft: 12827 corp: 64/22Kb lim: 2337 exec/s: 0 rss: 59Mb L: 175/2337 MS: 1 ChangeByte-
+#148	NEW    cov: 4393 ft: 12882 corp: 65/22Kb lim: 2337 exec/s: 0 rss: 59Mb L: 160/2337 MS: 1 InsertByte-
+#152	NEW    cov: 4393 ft: 12904 corp: 66/23Kb lim: 2337 exec/s: 0 rss: 59Mb L: 356/2337 MS: 4 EraseBytes-CopyPart-CopyPart-CrossOver-
+#153	NEW    cov: 4393 ft: 12906 corp: 67/23Kb lim: 2337 exec/s: 0 rss: 59Mb L: 267/2337 MS: 1 CrossOver-
+#158	NEW    cov: 4401 ft: 12918 corp: 68/23Kb lim: 2337 exec/s: 0 rss: 59Mb L: 397/2337 MS: 5 InsertByte-PersAutoDict-InsertByte-ChangeBinInt-CopyPart- DE: "\377\377"-
+#164	NEW    cov: 4401 ft: 12941 corp: 69/24Kb lim: 2337 exec/s: 0 rss: 59Mb L: 221/2337 MS: 1 ShuffleBytes-
+#165	NEW    cov: 4401 ft: 13116 corp: 70/24Kb lim: 2337 exec/s: 0 rss: 60Mb L: 210/2337 MS: 1 CopyPart-
+#166	NEW    cov: 4402 ft: 13185 corp: 71/26Kb lim: 2337 exec/s: 0 rss: 60Mb L: 2337/2337 MS: 1 ChangeBinInt-
+#167	NEW    cov: 4406 ft: 13418 corp: 72/26Kb lim: 2337 exec/s: 0 rss: 60Mb L: 68/2337 MS: 1 EraseBytes-
+#168	NEW    cov: 4416 ft: 13432 corp: 73/27Kb lim: 2337 exec/s: 0 rss: 61Mb L: 370/2337 MS: 1 CrossOver-
+#170	NEW    cov: 4416 ft: 13497 corp: 74/28Kb lim: 2337 exec/s: 0 rss: 61Mb L: 1427/2337 MS: 2 ChangeByte-CrossOver-
+#176	REDUCE cov: 4416 ft: 13497 corp: 74/28Kb lim: 2337 exec/s: 0 rss: 61Mb L: 154/2337 MS: 1 EraseBytes-
+#177	NEW    cov: 4416 ft: 13500 corp: 75/28Kb lim: 2337 exec/s: 0 rss: 61Mb L: 155/2337 MS: 1 EraseBytes-
+#178	NEW    cov: 4416 ft: 13501 corp: 76/28Kb lim: 2337 exec/s: 0 rss: 61Mb L: 192/2337 MS: 1 ShuffleBytes-
+#179	NEW    cov: 4417 ft: 13502 corp: 77/29Kb lim: 2337 exec/s: 0 rss: 61Mb L: 195/2337 MS: 1 ChangeBinInt-
+#185	NEW    cov: 4417 ft: 13550 corp: 78/29Kb lim: 2337 exec/s: 0 rss: 61Mb L: 165/2337 MS: 1 ChangeByte-
+#200	NEW    cov: 4418 ft: 13555 corp: 79/29Kb lim: 2337 exec/s: 0 rss: 62Mb L: 295/2337 MS: 5 ChangeASCIIInt-ChangeBit-CopyPart-ChangeByte-EraseBytes-
+#206	NEW    cov: 4426 ft: 13596 corp: 80/29Kb lim: 2337 exec/s: 0 rss: 62Mb L: 177/2337 MS: 1 PersAutoDict- DE: "\377\377"-
+#215	NEW    cov: 4426 ft: 13604 corp: 81/29Kb lim: 2337 exec/s: 0 rss: 62Mb L: 159/2337 MS: 4 CMP-CMP-ChangeASCIIInt-CrossOver- DE: "\000\000\000\000\000\000\000\007"-"\377\377\377\020"-
+#225	NEW    cov: 4426 ft: 13608 corp: 82/29Kb lim: 2337 exec/s: 0 rss: 62Mb L: 200/2337 MS: 5 ChangeBinInt-CopyPart-CMP-ChangeBit-CrossOver- DE: "robot_profile"-
+#226	NEW    cov: 4426 ft: 13609 corp: 83/30Kb lim: 2337 exec/s: 0 rss: 62Mb L: 202/2337 MS: 1 CrossOver-
+#227	NEW    cov: 4426 ft: 13610 corp: 84/30Kb lim: 2337 exec/s: 0 rss: 62Mb L: 149/2337 MS: 1 InsertByte-
+#228	NEW    cov: 4426 ft: 13803 corp: 85/32Kb lim: 2337 exec/s: 0 rss: 63Mb L: 2337/2337 MS: 1 ChangeBinInt-
+#230	NEW    cov: 4426 ft: 13899 corp: 86/32Kb lim: 2337 exec/s: 0 rss: 63Mb L: 107/2337 MS: 2 ChangeByte-EraseBytes-
+#236	NEW    cov: 4426 ft: 13907 corp: 87/34Kb lim: 2337 exec/s: 0 rss: 63Mb L: 1569/2337 MS: 1 EraseBytes-
+#237	NEW    cov: 4426 ft: 13928 corp: 88/36Kb lim: 2337 exec/s: 0 rss: 63Mb L: 2337/2337 MS: 1 CrossOver-
+#244	NEW    cov: 4426 ft: 13934 corp: 89/36Kb lim: 2337 exec/s: 0 rss: 63Mb L: 195/2337 MS: 2 ChangeByte-InsertRepeatedBytes-
+#246	NEW    cov: 4427 ft: 13960 corp: 90/36Kb lim: 2337 exec/s: 0 rss: 63Mb L: 74/2337 MS: 2 CMP-EraseBytes- DE: "\377\377"-
+#251	NEW    cov: 4427 ft: 14015 corp: 91/36Kb lim: 2337 exec/s: 0 rss: 63Mb L: 145/2337 MS: 5 ChangeByte-InsertByte-InsertByte-ChangeASCIIInt-CrossOver-
+#252	NEW    cov: 4427 ft: 14025 corp: 92/37Kb lim: 2337 exec/s: 0 rss: 63Mb L: 153/2337 MS: 1 EraseBytes-
+#253	NEW    cov: 4428 ft: 14028 corp: 93/37Kb lim: 2337 exec/s: 0 rss: 63Mb L: 165/2337 MS: 1 CopyPart-
+#254	NEW    cov: 4428 ft: 14029 corp: 94/37Kb lim: 2337 exec/s: 0 rss: 63Mb L: 426/2337 MS: 1 CrossOver-
+#260	NEW    cov: 4428 ft: 14037 corp: 95/37Kb lim: 2337 exec/s: 0 rss: 64Mb L: 162/2337 MS: 1 ChangeByte-
+#266	NEW    cov: 4428 ft: 14039 corp: 96/38Kb lim: 2337 exec/s: 0 rss: 64Mb L: 283/2337 MS: 1 InsertRepeatedBytes-
+#267	NEW    cov: 4428 ft: 14044 corp: 97/38Kb lim: 2337 exec/s: 0 rss: 64Mb L: 176/2337 MS: 1 EraseBytes-
+#268	REDUCE cov: 4428 ft: 14049 corp: 98/38Kb lim: 2337 exec/s: 0 rss: 64Mb L: 524/2337 MS: 1 CrossOver-
+#271	NEW    cov: 4428 ft: 14051 corp: 99/39Kb lim: 2337 exec/s: 0 rss: 64Mb L: 238/2337 MS: 3 ShuffleBytes-InsertRepeatedBytes-ChangeByte-
+#278	NEW    cov: 4428 ft: 14052 corp: 100/39Kb lim: 2337 exec/s: 0 rss: 64Mb L: 161/2337 MS: 2 InsertByte-CMP- DE: "\377\377\377\377\377\377\377\377"-
+#283	NEW    cov: 4428 ft: 14054 corp: 101/39Kb lim: 2337 exec/s: 0 rss: 64Mb L: 193/2337 MS: 5 InsertRepeatedBytes-CMP-ChangeASCIIInt-ShuffleBytes-PersAutoDict- DE: "referenec"-"\377\377\377\377\377\377\377\377"-
+#286	NEW    cov: 4428 ft: 14057 corp: 102/41Kb lim: 2337 exec/s: 0 rss: 66Mb L: 2337/2337 MS: 3 ChangeBinInt-ShuffleBytes-ShuffleBytes-
+#288	NEW    cov: 4428 ft: 14058 corp: 103/43Kb lim: 2337 exec/s: 0 rss: 66Mb L: 1555/2337 MS: 2 InsertRepeatedBytes-InsertByte-
+#299	NEW    cov: 4437 ft: 14071 corp: 104/43Kb lim: 2337 exec/s: 0 rss: 66Mb L: 175/2337 MS: 1 CMP- DE: "N6motion17RobotProgramEr"-
+#305	NEW    cov: 4437 ft: 14120 corp: 105/45Kb lim: 2337 exec/s: 0 rss: 66Mb L: 2337/2337 MS: 1 CrossOver-
+#328	NEW    cov: 4437 ft: 14126 corp: 106/45Kb lim: 2337 exec/s: 0 rss: 67Mb L: 108/2337 MS: 3 CMP-ShuffleBytes-EraseBytes- DE: "\353\377\377\377\377\377\377\177"-
+#332	NEW    cov: 4437 ft: 14128 corp: 107/45Kb lim: 2337 exec/s: 0 rss: 67Mb L: 228/2337 MS: 4 InsertRepeatedBytes-PersAutoDict-PersAutoDict-InsertRepeatedBytes- DE: "\377\377"-"\353\377\377\377\377\377\377\177"-
+#333	NEW    cov: 4437 ft: 14131 corp: 108/46Kb lim: 2337 exec/s: 0 rss: 67Mb L: 919/2337 MS: 1 CrossOver-
+#339	NEW    cov: 4437 ft: 14135 corp: 109/47Kb lim: 2337 exec/s: 0 rss: 67Mb L: 637/2337 MS: 1 CrossOver-
+#340	NEW    cov: 4437 ft: 14136 corp: 110/47Kb lim: 2337 exec/s: 0 rss: 67Mb L: 155/2337 MS: 1 CrossOver-
+#343	REDUCE cov: 4437 ft: 14136 corp: 110/47Kb lim: 2337 exec/s: 0 rss: 67Mb L: 264/2337 MS: 3 ChangeBinInt-PersAutoDict-EraseBytes- DE: "\377\020"-
+#356	NEW    cov: 4446 ft: 14149 corp: 111/47Kb lim: 2337 exec/s: 0 rss: 68Mb L: 319/2337 MS: 3 ChangeByte-ChangeBinInt-CrossOver-
+#361	NEW    cov: 4446 ft: 14166 corp: 112/47Kb lim: 2337 exec/s: 0 rss: 68Mb L: 137/2337 MS: 5 InsertByte-ShuffleBytes-CMP-ChangeBit-EraseBytes- DE: "\377\377\377\377\377\377\377\377"-
+#362	NEW    cov: 4446 ft: 14168 corp: 113/48Kb lim: 2337 exec/s: 0 rss: 68Mb L: 155/2337 MS: 1 ChangeBit-
+#368	NEW    cov: 4446 ft: 14173 corp: 114/50Kb lim: 2337 exec/s: 0 rss: 69Mb L: 2337/2337 MS: 1 ChangeASCIIInt-
+#373	NEW    cov: 4446 ft: 14175 corp: 115/50Kb lim: 2337 exec/s: 0 rss: 69Mb L: 222/2337 MS: 5 InsertRepeatedBytes-ChangeBit-ChangeBinInt-ChangeByte-CrossOver-
+#374	NEW    cov: 4446 ft: 14178 corp: 116/50Kb lim: 2337 exec/s: 0 rss: 69Mb L: 92/2337 MS: 1 CMP- DE: "p7"-
+#380	NEW    cov: 4447 ft: 14179 corp: 117/50Kb lim: 2337 exec/s: 0 rss: 69Mb L: 160/2337 MS: 1 InsertByte-
+#381	NEW    cov: 4450 ft: 14192 corp: 118/50Kb lim: 2337 exec/s: 0 rss: 69Mb L: 136/2337 MS: 1 EraseBytes-
+#386	NEW    cov: 4450 ft: 14193 corp: 119/51Kb lim: 2337 exec/s: 0 rss: 70Mb L: 204/2337 MS: 5 PersAutoDict-CopyPart-EraseBytes-PersAutoDict-CMP- DE: "\377\377\377\377\377\377\377\377"-"\353\377\377\377\377\377\377\177"-"p3"-
+#393	NEW    cov: 4451 ft: 14194 corp: 120/51Kb lim: 2337 exec/s: 0 rss: 70Mb L: 206/2337 MS: 2 CopyPart-PersAutoDict- DE: "referenec"-
+#404	NEW    cov: 4451 ft: 14196 corp: 121/51Kb lim: 2337 exec/s: 0 rss: 70Mb L: 145/2337 MS: 1 CrossOver-
+#416	NEW    cov: 4451 ft: 14198 corp: 122/51Kb lim: 2337 exec/s: 0 rss: 70Mb L: 237/2337 MS: 2 ChangeBinInt-InsertByte-
+#429	NEW    cov: 4451 ft: 14205 corp: 123/52Kb lim: 2337 exec/s: 0 rss: 71Mb L: 638/2337 MS: 3 ChangeASCIIInt-InsertByte-ShuffleBytes-
+#445	NEW    cov: 4451 ft: 14282 corp: 124/54Kb lim: 2337 exec/s: 0 rss: 71Mb L: 2337/2337 MS: 1 ChangeBinInt-
+#446	NEW    cov: 4451 ft: 14291 corp: 125/54Kb lim: 2337 exec/s: 0 rss: 71Mb L: 165/2337 MS: 1 InsertByte-
+#452	NEW    cov: 4451 ft: 14292 corp: 126/54Kb lim: 2337 exec/s: 0 rss: 71Mb L: 160/2337 MS: 1 InsertByte-
+#468	NEW    cov: 4451 ft: 14293 corp: 127/55Kb lim: 2337 exec/s: 0 rss: 72Mb L: 233/2337 MS: 1 InsertRepeatedBytes-
+#470	NEW    cov: 4451 ft: 14294 corp: 128/55Kb lim: 2337 exec/s: 0 rss: 72Mb L: 259/2337 MS: 2 InsertRepeatedBytes-EraseBytes-
+#472	NEW    cov: 4451 ft: 14295 corp: 129/57Kb lim: 2337 exec/s: 0 rss: 72Mb L: 2337/2337 MS: 2 ChangeBit-ShuffleBytes-
+#476	NEW    cov: 4451 ft: 14298 corp: 130/57Kb lim: 2337 exec/s: 0 rss: 73Mb L: 291/2337 MS: 4 ShuffleBytes-InsertByte-CopyPart-InsertRepeatedBytes-
+#477	NEW    cov: 4451 ft: 14338 corp: 131/58Kb lim: 2337 exec/s: 0 rss: 73Mb L: 148/2337 MS: 1 CopyPart-
+#478	REDUCE cov: 4451 ft: 14338 corp: 131/58Kb lim: 2337 exec/s: 0 rss: 73Mb L: 139/2337 MS: 1 EraseBytes-
+#480	NEW    cov: 4451 ft: 14461 corp: 132/60Kb lim: 2337 exec/s: 0 rss: 74Mb L: 2011/2337 MS: 2 ChangeBit-EraseBytes-
+#482	NEW    cov: 4451 ft: 14468 corp: 133/60Kb lim: 2337 exec/s: 0 rss: 74Mb L: 230/2337 MS: 2 InsertByte-InsertRepeatedBytes-
+#484	NEW    cov: 4451 ft: 14478 corp: 134/60Kb lim: 2337 exec/s: 0 rss: 74Mb L: 137/2337 MS: 2 ChangeASCIIInt-CrossOver-
+#485	NEW    cov: 4451 ft: 14479 corp: 135/60Kb lim: 2337 exec/s: 0 rss: 74Mb L: 239/2337 MS: 1 InsertRepeatedBytes-
+#493	NEW    cov: 4451 ft: 14482 corp: 136/60Kb lim: 2337 exec/s: 0 rss: 75Mb L: 281/2337 MS: 3 CopyPart-CrossOver-CrossOver-
+#501	NEW    cov: 4451 ft: 14483 corp: 137/61Kb lim: 2337 exec/s: 0 rss: 75Mb L: 147/2337 MS: 3 EraseBytes-ShuffleBytes-ChangeByte-
+#507	NEW    cov: 4451 ft: 14486 corp: 138/61Kb lim: 2337 exec/s: 0 rss: 75Mb L: 159/2337 MS: 1 InsertByte-
+#514	REDUCE cov: 4451 ft: 14486 corp: 138/61Kb lim: 2337 exec/s: 0 rss: 75Mb L: 76/2337 MS: 2 PersAutoDict-EraseBytes- DE: "\377\020"-
+#539	REDUCE cov: 4451 ft: 14486 corp: 138/60Kb lim: 2337 exec/s: 0 rss: 76Mb L: 1845/2337 MS: 5 ChangeASCIIInt-CopyPart-PersAutoDict-EraseBytes-CopyPart- DE: "\020\000\000\000\000\000\000\000"-
+#550	NEW    cov: 4453 ft: 14488 corp: 139/61Kb lim: 2337 exec/s: 0 rss: 76Mb L: 449/2337 MS: 1 InsertRepeatedBytes-
+#556	NEW    cov: 4453 ft: 14491 corp: 140/61Kb lim: 2337 exec/s: 0 rss: 76Mb L: 203/2337 MS: 1 InsertByte-
+#559	NEW    cov: 4453 ft: 14493 corp: 141/61Kb lim: 2337 exec/s: 0 rss: 76Mb L: 186/2337 MS: 3 CrossOver-ShuffleBytes-EraseBytes-
+#563	NEW    cov: 4453 ft: 14494 corp: 142/61Kb lim: 2337 exec/s: 0 rss: 76Mb L: 207/2337 MS: 4 ShuffleBytes-InsertRepeatedBytes-EraseBytes-CrossOver-
+#564	NEW    cov: 4453 ft: 14539 corp: 143/63Kb lim: 2337 exec/s: 0 rss: 77Mb L: 1461/2337 MS: 1 EraseBytes-
+#570	NEW    cov: 4453 ft: 14540 corp: 144/63Kb lim: 2337 exec/s: 0 rss: 77Mb L: 446/2337 MS: 1 InsertRepeatedBytes-
+#571	NEW    cov: 4453 ft: 14551 corp: 145/64Kb lim: 2337 exec/s: 0 rss: 77Mb L: 1201/2337 MS: 1 EraseBytes-
+#582	NEW    cov: 4453 ft: 14553 corp: 146/65Kb lim: 2337 exec/s: 0 rss: 77Mb L: 383/2337 MS: 1 CrossOver-
+#604	NEW    cov: 4458 ft: 14559 corp: 147/65Kb lim: 2337 exec/s: 0 rss: 77Mb L: 175/2337 MS: 2 ChangeByte-CrossOver-
+#607	REDUCE cov: 4458 ft: 14559 corp: 147/65Kb lim: 2337 exec/s: 0 rss: 77Mb L: 183/2337 MS: 3 ChangeBit-CMP-EraseBytes- DE: "N4YAML11InvalidNodeE"-
+#616	NEW    cov: 4459 ft: 14560 corp: 148/65Kb lim: 2337 exec/s: 0 rss: 78Mb L: 397/2337 MS: 4 ChangeBit-ChangeASCIIInt-ChangeByte-CrossOver-
+#620	NEW    cov: 4459 ft: 14562 corp: 149/65Kb lim: 2337 exec/s: 0 rss: 78Mb L: 229/2337 MS: 4 CMP-CMP-InsertByte-CrossOver- DE: "$1\015\000`P\000\000"-"N4YAML15ParserExceptionE"-
+#621	NEW    cov: 4459 ft: 14565 corp: 150/66Kb lim: 2337 exec/s: 0 rss: 78Mb L: 542/2337 MS: 1 CrossOver-
+#624	NEW    cov: 4459 ft: 14636 corp: 151/66Kb lim: 2337 exec/s: 0 rss: 78Mb L: 70/2337 MS: 3 ChangeASCIIInt-ShuffleBytes-EraseBytes-
+#637	NEW    cov: 4472 ft: 14977 corp: 152/66Kb lim: 2337 exec/s: 0 rss: 78Mb L: 51/2337 MS: 3 InsertByte-EraseBytes-EraseBytes-
+#638	NEW    cov: 4472 ft: 14978 corp: 153/67Kb lim: 2337 exec/s: 0 rss: 78Mb L: 1272/2337 MS: 1 CrossOver-
+#649	NEW    cov: 4472 ft: 14980 corp: 154/67Kb lim: 2337 exec/s: 0 rss: 79Mb L: 168/2337 MS: 1 EraseBytes-
+#655	REDUCE cov: 4472 ft: 14980 corp: 154/66Kb lim: 2337 exec/s: 0 rss: 79Mb L: 927/2337 MS: 1 CrossOver-
+#671	NEW    cov: 4472 ft: 14981 corp: 155/66Kb lim: 2337 exec/s: 0 rss: 79Mb L: 364/2337 MS: 1 InsertRepeatedBytes-
+#679	NEW    cov: 4478 ft: 14988 corp: 156/67Kb lim: 2337 exec/s: 0 rss: 80Mb L: 286/2337 MS: 3 InsertRepeatedBytes-ChangeBit-CMP- DE: "frame"-
+#680	NEW    cov: 4478 ft: 14989 corp: 157/69Kb lim: 2337 exec/s: 0 rss: 80Mb L: 2337/2337 MS: 1 CopyPart-
+#709	NEW    cov: 4478 ft: 14991 corp: 158/69Kb lim: 2337 exec/s: 0 rss: 81Mb L: 140/2337 MS: 4 CMP-ShuffleBytes-PersAutoDict-EraseBytes- DE: "robot_profileW"-"referenec"-
+#710	NEW    cov: 4478 ft: 14992 corp: 159/69Kb lim: 2337 exec/s: 0 rss: 81Mb L: 195/2337 MS: 1 ChangeBinInt-
+#711	NEW    cov: 4478 ft: 14993 corp: 160/69Kb lim: 2337 exec/s: 0 rss: 81Mb L: 222/2337 MS: 1 ShuffleBytes-
+#714	NEW    cov: 4478 ft: 15007 corp: 161/70Kb lim: 2337 exec/s: 0 rss: 81Mb L: 398/2337 MS: 3 CrossOver-InsertByte-ChangeByte-
+#737	REDUCE cov: 4478 ft: 15007 corp: 161/70Kb lim: 2337 exec/s: 0 rss: 82Mb L: 158/2337 MS: 3 ShuffleBytes-PersAutoDict-EraseBytes- DE: "\377\020"-
+#740	NEW    cov: 4478 ft: 15008 corp: 162/70Kb lim: 2337 exec/s: 0 rss: 82Mb L: 70/2337 MS: 3 ChangeBinInt-ShuffleBytes-EraseBytes-
+#752	NEW    cov: 4488 ft: 15018 corp: 163/70Kb lim: 2337 exec/s: 0 rss: 82Mb L: 594/2337 MS: 2 ChangeASCIIInt-CrossOver-
+#780	NEW    cov: 4488 ft: 15019 corp: 164/71Kb lim: 2337 exec/s: 0 rss: 83Mb L: 144/2337 MS: 3 ChangeBit-ChangeBinInt-InsertByte-
+#786	NEW    cov: 4488 ft: 15020 corp: 165/71Kb lim: 2337 exec/s: 0 rss: 83Mb L: 114/2337 MS: 1 EraseBytes-
+#789	NEW    cov: 4488 ft: 15025 corp: 166/71Kb lim: 2337 exec/s: 0 rss: 83Mb L: 209/2337 MS: 3 ChangeASCIIInt-PersAutoDict-ShuffleBytes- DE: "p7"-
+#800	NEW    cov: 4494 ft: 15266 corp: 167/71Kb lim: 2337 exec/s: 0 rss: 83Mb L: 41/2337 MS: 1 EraseBytes-
+#816	NEW    cov: 4494 ft: 15267 corp: 168/71Kb lim: 2337 exec/s: 0 rss: 84Mb L: 447/2337 MS: 1 InsertByte-
+#828	NEW    cov: 4494 ft: 15270 corp: 169/72Kb lim: 2337 exec/s: 0 rss: 84Mb L: 220/2337 MS: 2 EraseBytes-PersAutoDict- DE: "N4YAML11InvalidNodeE"-
+#839	NEW    cov: 4497 ft: 15273 corp: 170/72Kb lim: 2337 exec/s: 0 rss: 84Mb L: 138/2337 MS: 1 ChangeByte-
+#847	NEW    cov: 4497 ft: 15276 corp: 171/72Kb lim: 2337 exec/s: 0 rss: 85Mb L: 231/2337 MS: 3 ChangeBit-PersAutoDict-PersAutoDict- DE: "p3"-"\377\377"-
+#853	NEW    cov: 4500 ft: 15279 corp: 172/72Kb lim: 2337 exec/s: 0 rss: 85Mb L: 159/2337 MS: 1 ChangeBinInt-
+#867	NEW    cov: 4500 ft: 15290 corp: 173/72Kb lim: 2337 exec/s: 0 rss: 85Mb L: 359/2337 MS: 4 ChangeASCIIInt-InsertByte-InsertRepeatedBytes-InsertByte-
+	NEW_FUNC[1/4]: 0x55e845130c00  (/workspace/robot-motion-cpp/build-fuzz/program_parser_fuzzer+0x5dfc00) (BuildId: 7875b40b85e204c3e1ef39e894d17e0e70ae8ed3)
+	NEW_FUNC[2/4]: 0x55e8451311c0  (/workspace/robot-motion-cpp/build-fuzz/program_parser_fuzzer+0x5e01c0) (BuildId: 7875b40b85e204c3e1ef39e894d17e0e70ae8ed3)
+#879	NEW    cov: 4541 ft: 15339 corp: 174/73Kb lim: 2337 exec/s: 0 rss: 86Mb L: 255/2337 MS: 2 InsertRepeatedBytes-InsertRepeatedBytes-
+#892	NEW    cov: 4541 ft: 15340 corp: 175/73Kb lim: 2337 exec/s: 0 rss: 86Mb L: 309/2337 MS: 3 ChangeBinInt-InsertRepeatedBytes-CrossOver-
+#893	NEW    cov: 4541 ft: 15403 corp: 176/73Kb lim: 2337 exec/s: 0 rss: 86Mb L: 42/2337 MS: 1 EraseBytes-
+#894	NEW    cov: 4549 ft: 15414 corp: 177/74Kb lim: 2337 exec/s: 0 rss: 86Mb L: 546/2337 MS: 1 CopyPart-
+#911	NEW    cov: 4553 ft: 15425 corp: 178/74Kb lim: 2337 exec/s: 0 rss: 87Mb L: 239/2337 MS: 2 InsertByte-CopyPart-
+#913	NEW    cov: 4553 ft: 15451 corp: 179/76Kb lim: 2337 exec/s: 0 rss: 87Mb L: 2337/2337 MS: 2 CMP-CopyPart- DE: "\000\000\000\000\000\000\000\001"-
+#930	NEW    cov: 4553 ft: 15467 corp: 180/76Kb lim: 2337 exec/s: 0 rss: 87Mb L: 207/2337 MS: 2 ChangeASCIIInt-CopyPart-
+#936	NEW    cov: 4553 ft: 15469 corp: 181/79Kb lim: 2337 exec/s: 0 rss: 87Mb L: 2337/2337 MS: 1 ChangeBit-
+#942	NEW    cov: 4553 ft: 15472 corp: 182/79Kb lim: 2337 exec/s: 0 rss: 88Mb L: 195/2337 MS: 1 CopyPart-
+#955	NEW    cov: 4553 ft: 15474 corp: 183/79Kb lim: 2337 exec/s: 0 rss: 88Mb L: 297/2337 MS: 3 InsertByte-PersAutoDict-InsertByte- DE: "p7"-
+#982	NEW    cov: 4553 ft: 15476 corp: 184/79Kb lim: 2337 exec/s: 0 rss: 88Mb L: 212/2337 MS: 2 ChangeASCIIInt-CMP- DE: "start"-
+#983	NEW    cov: 4553 ft: 15479 corp: 185/79Kb lim: 2337 exec/s: 0 rss: 88Mb L: 223/2337 MS: 1 PersAutoDict- DE: "N4YAML15ParserExceptionE"-
+#990	NEW    cov: 4553 ft: 15507 corp: 186/80Kb lim: 2337 exec/s: 0 rss: 89Mb L: 256/2337 MS: 2 InsertRepeatedBytes-CMP- DE: "units"-
+#999	REDUCE cov: 4553 ft: 15507 corp: 186/79Kb lim: 2337 exec/s: 0 rss: 89Mb L: 1054/2337 MS: 4 CrossOver-PersAutoDict-ChangeBit-EraseBytes- DE: "\377\020"-
+#1000	DONE   cov: 4553 ft: 15507 corp: 186/79Kb lim: 2337 exec/s: 0 rss: 89Mb
+###### Recommended dictionary. ######
+"\377\377" # Uses: 10
+"\020\000\000\000\000\000\000\000" # Uses: 6
+"\377\020" # Uses: 8
+"\000\000\000\000\000\000\000\007" # Uses: 3
+"\377\377\377\020" # Uses: 3
+"robot_profile" # Uses: 1
+"\377\377\377\377\377\377\377\377" # Uses: 5
+"referenec" # Uses: 5
+"N6motion17RobotProgramEr" # Uses: 1
+"\353\377\377\377\377\377\377\177" # Uses: 4
+"p7" # Uses: 5
+"p3" # Uses: 3
+"N4YAML11InvalidNodeE" # Uses: 2
+"$1\015\000`P\000\000" # Uses: 2
+"N4YAML15ParserExceptionE" # Uses: 6
+"frame" # Uses: 1
+"robot_profileW" # Uses: 0
+"\000\000\000\000\000\000\000\001" # Uses: 1
+"start" # Uses: 0
+"units" # Uses: 0
+###### End of recommended dictionary. ######
+Done 1000 runs in 0 second(s)

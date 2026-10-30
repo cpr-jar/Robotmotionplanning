@@ -24,6 +24,7 @@ CHAPTERS = [
     'docs/architecture/class_diagrams.md',
     'docs/architecture/runtime_flows.md',
     'docs/architecture/module_catalog.md',
+    'docs/architecture/components.md',
     'docs/development/naming_and_migration.md',
     'docs/integration/acceptance_plan.md',
     'docs/formats/robot_model_yaml.md',

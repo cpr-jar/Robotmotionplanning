@@ -2,7 +2,7 @@
 
 ## Zweck und Geltungsbereich
 
-Dieses Handbuch beschreibt **Robot Motion C++ 0.14.0** als einbettbare C++20-
+Dieses Handbuch beschreibt **Robot Motion C++ 0.15.0** als einbettbare C++20-
 Bibliothek. Eure Steuerung ist selbst entwickelt; konkrete Adapter, Prozesse,
 Feldbuszuordnung und Freigabelogik werden später festgelegt. Der betrachtete
 Zyklustakt liegt zwischen **1 und 20 ms**. Die Bibliothek plant Sollbewegungen
@@ -69,7 +69,9 @@ target_link_libraries(eure_steuerung PRIVATE RobotMotion::motion)
 `RobotMotion::motion` liefert Include-Pfade, C++20 und die ausgewählten
 Bibliotheksabhängigkeiten transitiv. Eigene Include-Pfade für Eigen/yaml-cpp sind
 nicht erforderlich. Bestehende Targets `robot_motion` und `robot_motion_serial`
-bleiben vorhanden; `RobotMotion::serial` benennt die kompilierte Teilbibliothek.
+bleiben vorhanden; `RobotMotion::serial` benennt das kompatible vollständige Sammelarchiv.
+Für eine selektive Einbindung ab 0.15.0 `MOTION_COMPONENTS` und beispielsweise
+`RobotMotion::execution` verwenden: [Auswahl und Migration](../architecture/components.md).
 Ein installierbares `find_package(RobotMotion)`-Paket und eine C-ABI sind derzeit
 nicht enthalten. Für eine andere Host-Sprache muss später ein Adapter festgelegt
 werden; C++-Objektlayout oder `std::vector` nicht als Drahtformat verwenden.

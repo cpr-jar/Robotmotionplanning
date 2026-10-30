@@ -1,5 +1,6 @@
 #pragma once
-#include "motion/execution/cycle_aligned_program.hpp"
+#include "motion/contracts/execution_schedule.hpp"
+#include "motion/core/joint_state_checks.hpp"
 #include <atomic>
 #include <exception>
 namespace motion {

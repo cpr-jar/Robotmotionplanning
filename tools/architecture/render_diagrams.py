@@ -57,6 +57,23 @@ def main():
         dot = DIAGRAMS / (spec["id"] + ".dot")
         dot.write_text(graph(spec))
         subprocess.run(["dot", "-T" + args.format, str(dot), "-o", str(dot.with_suffix("." + args.format))], check=True)
+    # The module diagram is measured from the same dependency policy used in CI.
+    from check_layers import inspect
+    policy = json.loads((ROOT / 'docs/architecture/layers.json').read_text())
+    report = inspect(ROOT, policy)
+    if report['errors']:
+        raise ValueError('\n'.join(report['errors']))
+    lines = ['digraph modules {', 'rankdir=BT;',
+             'node [shape=box, style="rounded,filled", fillcolor="#dbeafe", fontname="DejaVu Sans"];',
+             'edge [color="#64748b"];']
+    for name, dependencies in report['layers'].items():
+        lines.append(json.dumps(name) + ';')
+        for dependency in dependencies:
+            lines.append(json.dumps(name) + ' -> ' + json.dumps(dependency) + ';')
+    lines.append('}')
+    module_dot = DIAGRAMS / 'modules.dot'
+    module_dot.write_text('\n'.join(lines) + '\n')
+    subprocess.run(['dot', '-T' + args.format, str(module_dot), '-o', str(module_dot.with_suffix('.' + args.format))], check=True)
     print(f"Validated declarations and rendered {len(specs)} UML diagrams ({args.format})")
 
 

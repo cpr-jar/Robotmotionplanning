@@ -1,4 +1,16 @@
-# Aktuelle Ergänzung — Planbesitz und Übergabe 0.14.0, 30.10.2026
+# Aktuelle Ergänzung — Komponenten und Schichten 0.15.0, 30.10.2026
+
+Die bisherigen Modulzyklen sind aufgelöst. **11/11** unabhängige Komponenten-
+Verbraucher und zwei direkte externe Sanitizer-Verbraucher bestehen. Runtime-
+Header ziehen nur Core, Verträge und Ausführung ein; reine Ausführung benötigt
+keine Solver-/Parserbibliothek. Schichten- und CMake-Graph werden in CI geprüft.
+Die Legacy-Suiten bestehen mit **32/32** (Release und ASan/UBSan), **30/30**
+(Serial ohne Ruckig), **12/12** (minimal), **14/14** (Ruckig ohne Serial).
+46 Header, 32 Tool-Tests, fokussiertes TSan und beide Fuzzer-Smokes bestehen;
+sechs vollständige Exporthashes sind unverändert.
+[Details und Grenzen](components_validation.md).
+
+## Planbesitz und Übergabe 0.14.0, 30.10.2026
 
 Die neue verwaltete Sitzung besteht Lebensdauer-, Annahme-/Commit-, Rücknahme-
 und Shutdown-Tests. **32/32** CTests bestehen in Release und ASan/UBSan,

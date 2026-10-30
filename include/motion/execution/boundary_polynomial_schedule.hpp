@@ -1,5 +1,5 @@
 #pragma once
-#include "motion/execution/execution_schedule.hpp"
+#include "motion/contracts/execution_schedule.hpp"
 #include "motion/planning/boundary_quintic.hpp"
 namespace motion {
 // A checked polynomial with a rest endpoint; preserve its time law and pad only rest.

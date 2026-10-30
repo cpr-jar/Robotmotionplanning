@@ -1,0 +1,50 @@
+-- Motion components: core;contracts;math;kinematics;planning;execution;tracking;platform;serial;serial_kinematics;differential_kinematics;calibration;model_import;dxf_import;program
+CMake Warning (deprecated) at /workspace/robot-motion-cpp/build-consumer/_deps/motion_yaml-src/CMakeLists.txt:2 (cmake_minimum_required):
+  Compatibility with CMake < 3.10 will be removed from a future version of
+  CMake.
+
+  Update the VERSION argument <min> value.  Or, use the <min>...<max> syntax
+  to tell CMake that the project requires at least <min> but has been updated
+  to work with policies introduced by <max> or earlier.
+This warning is for project developers.  Use -Wno-author or -Wno-deprecated
+to suppress it.
+
+-- Configuring done (0.2s)
+-- Generating done (0.1s)
+-- Build files have been written to: /workspace/robot-motion-cpp/build-consumer
+[  3%] Built target tinyxml2
+[  5%] Building CXX object robot_motion/src/kinematics/CMakeFiles/robot_motion_serial_kinematics_objects.dir/serial_chain_kinematics.cpp.o
+[  7%] Building CXX object robot_motion/src/io/CMakeFiles/robot_motion_dxf_import_objects.dir/dxf_path_import.cpp.o
+[  7%] Built target robot_motion_dxf_import_objects
+[ 67%] Built target yaml-cpp
+[ 69%] Building CXX object robot_motion/src/kinematics/CMakeFiles/robot_motion_differential_kinematics_objects.dir/inverse_differential.cpp.o
+[ 69%] Built target robot_motion_differential_kinematics_objects
+[ 71%] Building CXX object robot_motion/src/calibration/CMakeFiles/robot_motion_calibration_objects.dir/rigid_calibration.cpp.o
+[ 71%] Built target robot_motion_serial_kinematics_objects
+[ 73%] Linking CXX static library librobot_motion_dxf_import.a
+[ 73%] Built target robot_motion_dxf_import
+[ 75%] Linking CXX static library librobot_motion_differential_kinematics.a
+[ 75%] Built target robot_motion_differential_kinematics
+[ 77%] Linking CXX static library librobot_motion_serial_kinematics.a
+[ 77%] Built target robot_motion_serial_kinematics
+[ 79%] Building CXX object robot_motion/src/io/CMakeFiles/robot_motion_model_import_objects.dir/robot_model_import.cpp.o
+[ 79%] Built target robot_motion_calibration_objects
+[ 81%] Linking CXX static library librobot_motion_calibration.a
+[ 81%] Built target robot_motion_calibration
+[ 81%] Built target robot_motion_model_import_objects
+[ 83%] Linking CXX static library librobot_motion_model_import.a
+[ 83%] Built target robot_motion_model_import
+[ 84%] Building CXX object robot_motion/src/program/CMakeFiles/robot_motion_program_objects.dir/program_import.cpp.o
+[ 86%] Building CXX object robot_motion/src/program/CMakeFiles/robot_motion_program_objects.dir/prepared_robot_program.cpp.o
+[ 88%] Building CXX object robot_motion/src/program/CMakeFiles/robot_motion_program_objects.dir/program_planning.cpp.o
+[ 90%] Building CXX object robot_motion/src/program/CMakeFiles/robot_motion_program_objects.dir/program_dxf.cpp.o
+[ 92%] Building CXX object robot_motion/src/program/CMakeFiles/robot_motion_program_objects.dir/program_simulation.cpp.o
+[ 92%] Built target robot_motion_program_objects
+[ 94%] Linking CXX static library librobot_motion_program.a
+[ 94%] Built target robot_motion_program
+[ 96%] Linking CXX static library librobot_motion_serial.a
+[ 96%] Built target robot_motion_serial
+[ 98%] Building CXX object CMakeFiles/controller_consumer.dir/main.cpp.o
+[100%] Linking CXX executable controller_consumer
+[100%] Built target controller_consumer
+External CMake consumer: library link and public API passed

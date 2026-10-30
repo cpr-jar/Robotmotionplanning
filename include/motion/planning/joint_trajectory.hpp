@@ -1,43 +1,11 @@
 #pragma once
-#include "motion/core/motion_types.hpp"
+#include "motion/contracts/trajectory.hpp"
+#include "motion/core/joint_state_checks.hpp"
 #include <limits>
 #include <memory>
 #include <utility>
 
 namespace motion {
-// A trajectory is immutable once published. sample() may allocate and throw:
-// sample in a preparation/producer thread, then dispatch fixed-size commands.
-// Immutability alone does not make a trajectory suitable for a realtime callback.
-class ITrajectory {
-public:
-  virtual ~ITrajectory() = default;
-  virtual double duration() const noexcept = 0;
-  virtual JointState sample(double time_s) const = 0;
-};
-using TrajectoryPtr = std::shared_ptr<const ITrajectory>;
-
-enum class PlanStatus { Ready, InvalidInput, Unsupported, Infeasible };
-struct PlanResult {
-  PlanStatus status{PlanStatus::InvalidInput};
-  TrajectoryPtr trajectory;
-  std::string diagnostic;
-  explicit operator bool() const noexcept { return status == PlanStatus::Ready && trajectory != nullptr; }
-};
-class IJointTrajectoryPlanner {
-public:
-  virtual ~IJointTrajectoryPlanner() = default;
-  virtual PlanResult plan(const JointState &initial, const JointTarget &target) const = 0;
-};
-struct CartesianRequest {
-  Pose start, goal;
-  CartesianLimits limits;
-};
-class ICartesianPathPlanner {
-public:
-  virtual ~ICartesianPathPlanner() = default;
-  virtual PlanResult plan(const CartesianRequest &request, const JointState &initial) const = 0;
-};
-
 // Closed-form rest-to-rest minimum-jerk polynomial. This is NOT a general
 // online replanner: nonzero boundary velocity/acceleration is explicitly rejected.
 // For a linear joint-space path q=q0+(q1-q0)*s, analytic global bounds:
@@ -85,25 +53,6 @@ private:
   Vector initial_position_, position_delta_;
   double duration_s_, start_timestamp_s_;
 };
-inline bool is_rest(const JointState &s, double tolerance = 1e-10) {
-  for (double x : s.dq)
-    if (!std::isfinite(x) || std::abs(x) > tolerance)
-      return false;
-  for (double x : s.ddq)
-    if (!std::isfinite(x) || std::abs(x) > tolerance)
-      return false;
-  return true;
-}
-inline bool is_rest(const JointTarget &s, double tolerance = 1e-10) {
-  for (double x : s.dq)
-    if (!std::isfinite(x) || std::abs(x) > tolerance)
-      return false;
-  for (double x : s.ddq)
-    if (!std::isfinite(x) || std::abs(x) > tolerance)
-      return false;
-  return true;
-}
-
 // Conservative, analytic bound on an entire rest-to-rest straight joint segment.
 class QuinticJointPlanner final : public IJointTrajectoryPlanner {
 public:

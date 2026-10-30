@@ -24,7 +24,9 @@ def main():
     if args.ruckig_include:
         flags += ['-DMOTION_WITH_RUCKIG=1', '-isystem', str(args.ruckig_include)]
     headers = []
-    for header in sorted((ROOT / 'include/motion').glob('*/*.hpp')):
+    for header in sorted((ROOT / 'include/motion').rglob('*.hpp')):
+        if header.parent == ROOT / 'include/motion':
+            continue
         relative = header.relative_to(ROOT / 'include/motion').as_posix()
         if relative in OPTIONAL_RUCKIG and not args.ruckig_include:
             continue
@@ -44,7 +46,7 @@ def main():
             print(header + '\n' + result.stderr, file=sys.stderr)
     if failed:
         return 1
-    print(f'Compiled {len(headers)} canonical headers individually with {args.compiler}')
+    print(f'Compiled {len(headers)} public task headers individually with {args.compiler}')
     return 0
 
 
