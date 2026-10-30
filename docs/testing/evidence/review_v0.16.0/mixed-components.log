@@ -1,0 +1,4 @@
+gantry_first: gantry=1, serial=Serial enclosure support disabled in this build
+serial_first: gantry=1, serial=ready: 0.100000
+gantry_user: CXX_DEFINES =
+serial_user: CXX_DEFINES = -DMOTION_WITH_SERIAL=1

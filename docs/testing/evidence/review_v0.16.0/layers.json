@@ -1,0 +1,180 @@
+{
+  "layers": {
+    "calibration": [
+      "math"
+    ],
+    "contracts": [
+      "core"
+    ],
+    "core": [],
+    "execution": [
+      "contracts",
+      "core",
+      "planning"
+    ],
+    "io": [
+      "core",
+      "kinematics",
+      "math"
+    ],
+    "kinematics": [
+      "core",
+      "math"
+    ],
+    "math": [
+      "core"
+    ],
+    "planning": [
+      "contracts",
+      "core",
+      "kinematics",
+      "math"
+    ],
+    "platform": [
+      "core"
+    ],
+    "program": [
+      "core",
+      "execution",
+      "io",
+      "planning"
+    ],
+    "tracking": [
+      "core",
+      "execution",
+      "kinematics",
+      "math",
+      "planning"
+    ]
+  },
+  "components": {
+    "core": [],
+    "contracts": [
+      "core"
+    ],
+    "math": [
+      "core"
+    ],
+    "kinematics": [
+      "core",
+      "math"
+    ],
+    "planning": [
+      "contracts",
+      "math",
+      "kinematics"
+    ],
+    "execution": [
+      "contracts",
+      "planning"
+    ],
+    "tracking": [
+      "math",
+      "execution",
+      "planning"
+    ],
+    "platform": [
+      "core"
+    ],
+    "serial_kinematics": [
+      "kinematics"
+    ],
+    "differential_kinematics": [
+      "kinematics"
+    ],
+    "calibration": [
+      "math"
+    ],
+    "dxf_import": [
+      "math"
+    ],
+    "model_import": [
+      "serial_kinematics"
+    ],
+    "program": [
+      "model_import",
+      "dxf_import",
+      "planning",
+      "execution"
+    ],
+    "ruckig": [
+      "planning"
+    ],
+    "following": [
+      "tracking",
+      "ruckig",
+      "differential_kinematics"
+    ],
+    "serial": [
+      "serial_kinematics",
+      "differential_kinematics",
+      "calibration",
+      "model_import",
+      "dxf_import",
+      "program"
+    ]
+  },
+  "canonical_files": 56,
+  "compatibility_facades": [
+    "execution/execution_schedule.hpp",
+    "program/joint_program.hpp"
+  ],
+  "runtime": {
+    "execution/live_motion_session.hpp": {
+      "layers": [
+        "contracts",
+        "core",
+        "execution"
+      ],
+      "headers": [
+        "include/motion/contracts/execution_schedule.hpp",
+        "include/motion/contracts/trajectory.hpp",
+        "include/motion/core/clock_time.hpp",
+        "include/motion/core/geometry_types.hpp",
+        "include/motion/core/joint_state_checks.hpp",
+        "include/motion/core/motion_types.hpp",
+        "include/motion/core/preparation_context.hpp",
+        "include/motion/execution/deadline_motion_executor.hpp",
+        "include/motion/execution/execution_types.hpp",
+        "include/motion/execution/live_motion_executor.hpp",
+        "include/motion/execution/live_motion_session.hpp",
+        "include/motion/execution/live_plan_owner.hpp",
+        "include/motion/execution/setpoint_buffer.hpp"
+      ]
+    },
+    "execution/deadline_motion_executor.hpp": {
+      "layers": [
+        "contracts",
+        "core",
+        "execution"
+      ],
+      "headers": [
+        "include/motion/contracts/execution_schedule.hpp",
+        "include/motion/contracts/trajectory.hpp",
+        "include/motion/core/clock_time.hpp",
+        "include/motion/core/geometry_types.hpp",
+        "include/motion/core/joint_state_checks.hpp",
+        "include/motion/core/motion_types.hpp",
+        "include/motion/execution/deadline_motion_executor.hpp",
+        "include/motion/execution/execution_types.hpp",
+        "include/motion/execution/setpoint_buffer.hpp"
+      ]
+    },
+    "execution/setpoint_buffer.hpp": {
+      "layers": [
+        "contracts",
+        "core",
+        "execution"
+      ],
+      "headers": [
+        "include/motion/contracts/execution_schedule.hpp",
+        "include/motion/contracts/trajectory.hpp",
+        "include/motion/core/geometry_types.hpp",
+        "include/motion/core/joint_state_checks.hpp",
+        "include/motion/core/motion_types.hpp",
+        "include/motion/execution/setpoint_buffer.hpp"
+      ]
+    }
+  },
+  "errors": []
+}

@@ -1,0 +1,24 @@
+Expired simulation cleanup deferred until next run.
+Expired simulation cleanup deferred until next run.
+Expired simulation cleanup deferred until next run.
+Expired simulation cleanup deferred until next run.
+Expired simulation cleanup deferred until next run.
+Expired simulation cleanup deferred until next run.
+{
+  "trace": {
+    "accepted": true,
+    "defined_segments": 5,
+    "reported_segments": [
+      1.0
+    ],
+    "reported_source_steps": [
+      999.0
+    ],
+    "limit_violations": []
+  },
+  "cleanup": {
+    "published_results": 3,
+    "pending_cleanup": 3,
+    "result_directories": 6
+  }
+}

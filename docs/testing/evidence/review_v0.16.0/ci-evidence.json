@@ -1,0 +1,1026 @@
+{
+  "runs": [
+    {
+      "id": 41037626654,
+      "status": "completed",
+      "conclusion": "success",
+      "head_branch": "recovery/reconstructed-v0.12.1",
+      "html_url": "https://github.com/cpr-jar/Robotmotionplanning/actions/runs/41037626654",
+      "head_sha": "5493c3a0d12229372663c73e93c7deec1ce3d79e"
+    },
+    {
+      "id": 41037626471,
+      "status": "completed",
+      "conclusion": "success",
+      "head_branch": "v0.16.0",
+      "html_url": "https://github.com/cpr-jar/Robotmotionplanning/actions/runs/41037626471",
+      "head_sha": "5493c3a0d12229372663c73e93c7deec1ce3d79e"
+    }
+  ],
+  "jobs": [
+    {
+      "id": 124002266907,
+      "name": "structure-and-consumer",
+      "status": "completed",
+      "conclusion": "success",
+      "runner_name": "GitHub Actions 1000000203",
+      "labels": [
+        "ubuntu-latest"
+      ],
+      "html_url": "https://github.com/cpr-jar/Robotmotionplanning/actions/runs/41037626654/job/124002266907",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Check layout, diagram declarations and standalone public headers",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Check reproducible offline handbook",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Build separate controller consumer with library defaults",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Check sanitizer propagation to an external minimal consumer",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Post Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success"
+        }
+      ]
+    },
+    {
+      "id": 124002267178,
+      "name": "component-consumers (differential_kinematics)",
+      "status": "completed",
+      "conclusion": "success",
+      "runner_name": "GitHub Actions 1000000228",
+      "labels": [
+        "ubuntu-latest"
+      ],
+      "html_url": "https://github.com/cpr-jar/Robotmotionplanning/actions/runs/41037626654/job/124002267178",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Build independent consumer and inspect actual CMake source graph",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run actions/upload-artifact@v4",
+          "status": "completed",
+          "conclusion": "skipped"
+        },
+        {
+          "name": "Post Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success"
+        }
+      ]
+    },
+    {
+      "id": 124002267257,
+      "name": "build (ON, ON, Release, OFF)",
+      "status": "completed",
+      "conclusion": "success",
+      "runner_name": "GitHub Actions 1000000206",
+      "labels": [
+        "ubuntu-latest"
+      ],
+      "html_url": "https://github.com/cpr-jar/Robotmotionplanning/actions/runs/41037626654/job/124002267257",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Configure from bundled sources",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run cmake --build build --parallel 2",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run ctest --test-dir build --output-on-failure",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Import, check and export user program",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Post Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success"
+        }
+      ]
+    },
+    {
+      "id": 124002267266,
+      "name": "thread-sanitizer",
+      "status": "completed",
+      "conclusion": "success",
+      "runner_name": "GitHub Actions 1000000205",
+      "labels": [
+        "ubuntu-24.04"
+      ],
+      "html_url": "https://github.com/cpr-jar/Robotmotionplanning/actions/runs/41037626654/job/124002267266",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Configure isolated runner address layout for ThreadSanitizer",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Build instrumented preparation and execution protocols",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Post Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success"
+        }
+      ]
+    },
+    {
+      "id": 124002267351,
+      "name": "parser-fuzz",
+      "status": "completed",
+      "conclusion": "success",
+      "runner_name": "GitHub Actions 1000000207",
+      "labels": [
+        "ubuntu-latest"
+      ],
+      "html_url": "https://github.com/cpr-jar/Robotmotionplanning/actions/runs/41037626654/job/124002267351",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Build instrumented parser and dependencies",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Bounded coverage-guided fuzz run",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run actions/upload-artifact@v4",
+          "status": "completed",
+          "conclusion": "skipped"
+        },
+        {
+          "name": "Post Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success"
+        }
+      ]
+    },
+    {
+      "id": 124002267361,
+      "name": "viewer-tool",
+      "status": "completed",
+      "conclusion": "success",
+      "runner_name": "GitHub Actions 1000000208",
+      "labels": [
+        "ubuntu-latest"
+      ],
+      "html_url": "https://github.com/cpr-jar/Robotmotionplanning/actions/runs/41037626654/job/124002267361",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run cmake -S tools/motion_viewer -B build-motion-viewer -DCMAKE_BUILD_TYPE=Release",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run cmake --build build-motion-viewer --parallel 2",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run ctest --test-dir build-motion-viewer --output-on-failure",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Install browser test dependencies",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Exercise offline viewer, editor cancellation and DXF in Chromium",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Post Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success"
+        }
+      ]
+    },
+    {
+      "id": 124002267425,
+      "name": "arm64",
+      "status": "completed",
+      "conclusion": "success",
+      "runner_name": "GitHub Actions 1000000221",
+      "labels": [
+        "ubuntu-24.04-arm"
+      ],
+      "html_url": "https://github.com/cpr-jar/Robotmotionplanning/actions/runs/41037626654/job/124002267425",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Native ARM64 build and software tests",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Post Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success"
+        }
+      ]
+    },
+    {
+      "id": 124002267476,
+      "name": "build (ON, ON, Debug, ON)",
+      "status": "completed",
+      "conclusion": "success",
+      "runner_name": "GitHub Actions 1000000212",
+      "labels": [
+        "ubuntu-latest"
+      ],
+      "html_url": "https://github.com/cpr-jar/Robotmotionplanning/actions/runs/41037626654/job/124002267476",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Configure from bundled sources",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run cmake --build build --parallel 2",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run ctest --test-dir build --output-on-failure",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Import, check and export user program",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Post Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success"
+        }
+      ]
+    },
+    {
+      "id": 124002267483,
+      "name": "build (OFF, OFF, Release, OFF)",
+      "status": "completed",
+      "conclusion": "success",
+      "runner_name": "GitHub Actions 1000000210",
+      "labels": [
+        "ubuntu-latest"
+      ],
+      "html_url": "https://github.com/cpr-jar/Robotmotionplanning/actions/runs/41037626654/job/124002267483",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Configure from bundled sources",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run cmake --build build --parallel 2",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run ctest --test-dir build --output-on-failure",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Import, check and export user program",
+          "status": "completed",
+          "conclusion": "skipped"
+        },
+        {
+          "name": "Post Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success"
+        }
+      ]
+    },
+    {
+      "id": 124002267518,
+      "name": "build (OFF, ON, Release, OFF)",
+      "status": "completed",
+      "conclusion": "success",
+      "runner_name": "GitHub Actions 1000000211",
+      "labels": [
+        "ubuntu-latest"
+      ],
+      "html_url": "https://github.com/cpr-jar/Robotmotionplanning/actions/runs/41037626654/job/124002267518",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Configure from bundled sources",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run cmake --build build --parallel 2",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run ctest --test-dir build --output-on-failure",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Import, check and export user program",
+          "status": "completed",
+          "conclusion": "skipped"
+        },
+        {
+          "name": "Post Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success"
+        }
+      ]
+    },
+    {
+      "id": 124002267533,
+      "name": "component-consumers (model_import)",
+      "status": "completed",
+      "conclusion": "success",
+      "runner_name": "GitHub Actions 1000000231",
+      "labels": [
+        "ubuntu-latest"
+      ],
+      "html_url": "https://github.com/cpr-jar/Robotmotionplanning/actions/runs/41037626654/job/124002267533",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Build independent consumer and inspect actual CMake source graph",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run actions/upload-artifact@v4",
+          "status": "completed",
+          "conclusion": "skipped"
+        },
+        {
+          "name": "Post Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success"
+        }
+      ]
+    },
+    {
+      "id": 124002267637,
+      "name": "component-consumers (serial_planning)",
+      "status": "completed",
+      "conclusion": "success",
+      "runner_name": "GitHub Actions 1000000215",
+      "labels": [
+        "ubuntu-latest"
+      ],
+      "html_url": "https://github.com/cpr-jar/Robotmotionplanning/actions/runs/41037626654/job/124002267637",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Build independent consumer and inspect actual CMake source graph",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run actions/upload-artifact@v4",
+          "status": "completed",
+          "conclusion": "skipped"
+        },
+        {
+          "name": "Post Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success"
+        }
+      ]
+    },
+    {
+      "id": 124002267640,
+      "name": "component-consumers (serial)",
+      "status": "completed",
+      "conclusion": "success",
+      "runner_name": "GitHub Actions 1000000236",
+      "labels": [
+        "ubuntu-latest"
+      ],
+      "html_url": "https://github.com/cpr-jar/Robotmotionplanning/actions/runs/41037626654/job/124002267640",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Build independent consumer and inspect actual CMake source graph",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run actions/upload-artifact@v4",
+          "status": "completed",
+          "conclusion": "skipped"
+        },
+        {
+          "name": "Post Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success"
+        }
+      ]
+    },
+    {
+      "id": 124002267668,
+      "name": "component-consumers (execution)",
+      "status": "completed",
+      "conclusion": "success",
+      "runner_name": "GitHub Actions 1000000213",
+      "labels": [
+        "ubuntu-latest"
+      ],
+      "html_url": "https://github.com/cpr-jar/Robotmotionplanning/actions/runs/41037626654/job/124002267668",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Build independent consumer and inspect actual CMake source graph",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run actions/upload-artifact@v4",
+          "status": "completed",
+          "conclusion": "skipped"
+        },
+        {
+          "name": "Post Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success"
+        }
+      ]
+    },
+    {
+      "id": 124002267691,
+      "name": "component-consumers (calibration)",
+      "status": "completed",
+      "conclusion": "success",
+      "runner_name": "GitHub Actions 1000000229",
+      "labels": [
+        "ubuntu-latest"
+      ],
+      "html_url": "https://github.com/cpr-jar/Robotmotionplanning/actions/runs/41037626654/job/124002267691",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Build independent consumer and inspect actual CMake source graph",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run actions/upload-artifact@v4",
+          "status": "completed",
+          "conclusion": "skipped"
+        },
+        {
+          "name": "Post Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success"
+        }
+      ]
+    },
+    {
+      "id": 124002267702,
+      "name": "component-consumers (planning)",
+      "status": "completed",
+      "conclusion": "success",
+      "runner_name": "GitHub Actions 1000000209",
+      "labels": [
+        "ubuntu-latest"
+      ],
+      "html_url": "https://github.com/cpr-jar/Robotmotionplanning/actions/runs/41037626654/job/124002267702",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Build independent consumer and inspect actual CMake source graph",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run actions/upload-artifact@v4",
+          "status": "completed",
+          "conclusion": "skipped"
+        },
+        {
+          "name": "Post Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success"
+        }
+      ]
+    },
+    {
+      "id": 124002267739,
+      "name": "component-consumers (program)",
+      "status": "completed",
+      "conclusion": "success",
+      "runner_name": "GitHub Actions 1000000233",
+      "labels": [
+        "ubuntu-latest"
+      ],
+      "html_url": "https://github.com/cpr-jar/Robotmotionplanning/actions/runs/41037626654/job/124002267739",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Build independent consumer and inspect actual CMake source graph",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run actions/upload-artifact@v4",
+          "status": "completed",
+          "conclusion": "skipped"
+        },
+        {
+          "name": "Post Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success"
+        }
+      ]
+    },
+    {
+      "id": 124002267744,
+      "name": "build (ON, OFF, Release, OFF)",
+      "status": "completed",
+      "conclusion": "success",
+      "runner_name": "GitHub Actions 1000000216",
+      "labels": [
+        "ubuntu-latest"
+      ],
+      "html_url": "https://github.com/cpr-jar/Robotmotionplanning/actions/runs/41037626654/job/124002267744",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Configure from bundled sources",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run cmake --build build --parallel 2",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run ctest --test-dir build --output-on-failure",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Import, check and export user program",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Post Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success"
+        }
+      ]
+    },
+    {
+      "id": 124002267800,
+      "name": "component-consumers (following)",
+      "status": "completed",
+      "conclusion": "success",
+      "runner_name": "GitHub Actions 1000000238",
+      "labels": [
+        "ubuntu-latest"
+      ],
+      "html_url": "https://github.com/cpr-jar/Robotmotionplanning/actions/runs/41037626654/job/124002267800",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Build independent consumer and inspect actual CMake source graph",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run actions/upload-artifact@v4",
+          "status": "completed",
+          "conclusion": "skipped"
+        },
+        {
+          "name": "Post Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success"
+        }
+      ]
+    },
+    {
+      "id": 124002267809,
+      "name": "component-consumers (dxf_import)",
+      "status": "completed",
+      "conclusion": "success",
+      "runner_name": "GitHub Actions 1000000230",
+      "labels": [
+        "ubuntu-latest"
+      ],
+      "html_url": "https://github.com/cpr-jar/Robotmotionplanning/actions/runs/41037626654/job/124002267809",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Build independent consumer and inspect actual CMake source graph",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run actions/upload-artifact@v4",
+          "status": "completed",
+          "conclusion": "skipped"
+        },
+        {
+          "name": "Post Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success"
+        }
+      ]
+    },
+    {
+      "id": 124002267856,
+      "name": "component-consumers (serial_kinematics)",
+      "status": "completed",
+      "conclusion": "success",
+      "runner_name": "GitHub Actions 1000000214",
+      "labels": [
+        "ubuntu-latest"
+      ],
+      "html_url": "https://github.com/cpr-jar/Robotmotionplanning/actions/runs/41037626654/job/124002267856",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Build independent consumer and inspect actual CMake source graph",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run actions/upload-artifact@v4",
+          "status": "completed",
+          "conclusion": "skipped"
+        },
+        {
+          "name": "Post Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success"
+        }
+      ]
+    }
+  ],
+  "log_excerpts": [
+    {
+      "id": 124002267425,
+      "lines": [
+        "2026-10-30T10:01:33.3949383Z -- The CXX compiler identification is GNU 13.3.0",
+        "2026-10-30T10:03:33.7757686Z 100% tests passed, 0 tests failed out of 34"
+      ]
+    },
+    {
+      "id": 124002267266,
+      "lines": [
+        "2026-10-30T10:01:22.4593063Z -- The CXX compiler identification is Clang 18.1.3",
+        "2026-10-30T10:01:36.6013933Z 100% tests passed, 0 tests failed out of 3"
+      ]
+    },
+    {
+      "id": 124002267361,
+      "lines": [
+        "2026-10-30T10:01:19.5943192Z -- The CXX compiler identification is GNU 13.3.0",
+        "2026-10-30T10:05:22.0957245Z 100% tests passed, 0 tests failed out of 1",
+        "2026-10-30T10:06:28.2150962Z {\"state\": \"ready\", \"browser_errors\": [], \"network_requests\": [], \"mesh_transforms\": {\"cases\": 42, \"maximum\": 0}, \"checks\": [\"7 complete mesh links\", \"121789 triangles\", \"42 independent link matrices\", \"mesh/skeleton switch\", \"missing WebGL fallback\", \"context loss fallback\", \"FK\", \"step\", \"play/pause\", \"axis selection\", \"units\", \"charts\", \"segment jump\", \"camera drag/zoom/reset\", \"terminal frame\", \"restart\", \"mobile layout\"]}",
+        "2026-10-30T10:06:48.1023680Z {\"state\": \"ready\", \"browser_errors\": [], \"external_requests\": [], \"checks\": [\"native simulation\", \"complete UR model\", \"viewer playback\", \"YAML/HTML downloads\", \"late error preserves viewer\", \"error line\", \"local draft restore\", \"YAML import\", \"edit during simulation\", \"second robot\", \"cancel during Python processing preserves preview\", \"20 ms grid\", \"mobile layout\"]}",
+        "2026-10-30T10:06:57.8190987Z {\"state\": \"ready\", \"browser_errors\": [], \"external_requests\": [], \"checks\": [\"DXF upload\", \"one inserted command\", \"indentless steps before points\", \"native LIN/CIRC\", \"CAD provenance\", \"mesh playback\", \"path focus\", \"exact YAML+DXF bundle\", \"draft restore with DXF\", \"replaced asset invalidates preview\", \"bad geometry preserves previous preview\", \"missing asset\", \"mobile layout\"]}"
+      ]
+    }
+  ]
+}
