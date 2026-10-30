@@ -2,7 +2,7 @@
 
 ## Zweck und Geltungsbereich
 
-Dieses Handbuch beschreibt **Robot Motion C++ 0.15.0** als einbettbare C++20-
+Dieses Handbuch beschreibt **Robot Motion C++ 0.16.0** als einbettbare C++20-
 Bibliothek. Eure Steuerung ist selbst entwickelt; konkrete Adapter, Prozesse,
 Feldbuszuordnung und Freigabelogik werden später festgelegt. Der betrachtete
 Zyklustakt liegt zwischen **1 und 20 ms**. Die Bibliothek plant Sollbewegungen
@@ -357,3 +357,9 @@ Die eigene Steuerungssoftware wird durch dieses Beispiel nicht verändert.
 
 Nächster Schritt für die spätere konkrete Integration ist die Auswahl der noch
 offenen Verträge im [Abnahme- und Integrationsplan](acceptance_plan.md).
+
+## Ressourcen und Auftragsabbruch
+
+Für begrenzte Vorbereitung einen `PreparationContext` über Import, Kompilierung,
+Rasterung, Simulation und Cachebau weitergeben. Der zyklische Dispatcher ist davon
+unabhängig. [Budgetvertrag, Beispiel und Abbruchgrenzen](preparation_resources.md).

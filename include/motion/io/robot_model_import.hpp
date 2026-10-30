@@ -26,6 +26,9 @@ struct ImportedSerialRobot {
   CartesianLimits tcp_limits;
 };
 SerialRobotProfile parse_serial_profile_yaml(std::string_view);
+SerialRobotProfile parse_serial_profile_yaml(std::string_view, PreparationContext *);
 ImportedSerialRobot import_serial_urdf(std::string_view, const SerialRobotProfile &);
+ImportedSerialRobot import_serial_urdf(std::string_view, const SerialRobotProfile &, PreparationContext *);
 ImportedSerialRobot load_serial_robot_files(const std::string &, const std::string &);
+ImportedSerialRobot load_serial_robot_files(const std::string &, const std::string &, PreparationContext *);
 } // namespace motion

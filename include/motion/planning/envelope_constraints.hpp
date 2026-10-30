@@ -10,6 +10,7 @@ public:
 };
 struct EnvelopeCheckOptions {
   std::size_t max_depth{16}, max_intervals{100000};
+  PreparationContext *preparation{};
 };
 struct EnvelopeCheckResult {
   bool admitted{};
@@ -40,6 +41,7 @@ EnvelopeCheckResult check(const IKinematics &model, double T, const CartesianLim
       return r;
     }
   const auto recurse = [&](auto &&self, double lo, double hi, std::size_t depth) -> bool {
+    preparation_consume(options.preparation, PreparationResource::Work, 1, "envelope");
     if (++r.intervals > options.max_intervals)
       return false;
     try {

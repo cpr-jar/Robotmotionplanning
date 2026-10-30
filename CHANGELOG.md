@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.16.0 — Shared preparation budgets and cancellation, 2026-10-30
+
+- Added explicit per-job PreparationContext with cumulative work/input/cache limits,
+  stop-token cancellation, steady-clock deadlines and typed, sticky failures.
+- Propagated it through program/model import, DXF processing, serial IK, spline and
+  envelope admission, cycle alignment, simulation and fixed-command cache creation.
+- Reuse immutable DXF parses per filename/unit/layer during one compilation; keep
+  placement and motion expansion specific to each command.
+- Spool native CSV to a bounded temporary file; validate every Python trace row in
+  two passes, retaining only display samples without a full Unicode-buffer copy.
+- Added editor job IDs, authenticated cancellation, worker termination/reaping,
+  whole-job deadlines and cancellation/publication ordering. Prior results survive.
+- Added budget/cancellation/100k-row regressions and browser/TSan/native-ARM64 CI
+  jobs. Document accounting, cooperative interruption and remaining platform limits.
+
 ## 0.15.0 — Component builds and enforced dependency layers, 2026-10-30
 
 - Extracted shared trajectory/program/schedule contracts, geometry values, state checks

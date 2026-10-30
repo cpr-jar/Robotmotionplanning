@@ -1,11 +1,20 @@
 # UML-Klassendiagramme
 
-Die folgenden acht Sichten beschreiben vorhandene Typen. Eine leere
+Die folgenden neun Sichten beschreiben vorhandene Typen. Eine leere
 Dreieckspitze bezeichnet Vererbung; eine ausgefüllte Raute den Besitzer der
 enthaltenen Werte oder `shared_ptr`. Gestrichelte Pfeile zeigen Nutzung bzw.
 geliehene Referenzen. Geteiltes Eigentum ist zusätzlich beschriftet.
 Funktionen, die Objekte erzeugen, stehen an den Pfeilen; ausgewählte Methoden
 sind verkürzt dargestellt. Vollständige Signaturen stehen in den Headern.
+
+## Vorbereitung und Ressourcen (ab 0.16.0)
+
+![Vorbereitungsbudget](diagrams/preparation.svg)
+
+Ein Worker teilt seinen Kontext über alle Phasen. Fertige Programme und Caches
+speichern ihn nicht. Der Abbruch wird außerhalb des zyklischen Dispatchers
+bearbeitet. [Vertrag und Ablauf](../integration/preparation_resources.md),
+[DOT-Quelle](diagrams/preparation.dot).
 
 ## DXF-Geometrie und Befehlsvorbereitung (ab 0.13.0)
 

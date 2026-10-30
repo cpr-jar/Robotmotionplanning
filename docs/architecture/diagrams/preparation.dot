@@ -1,0 +1,18 @@
+digraph uml {
+graph [rankdir=LR, bgcolor="white", pad="0.25", nodesep="0.35", ranksep="0.8"];
+node [shape=plain, fontname="DejaVu Sans", fontsize=10];
+edge [fontname="DejaVu Sans", fontsize=9, color="#475569"];
+budget [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5"><TR><TD BGCOLOR="#dbeafe"><B>PreparationBudget</B></TD></TR><TR><TD ALIGN="LEFT">input_bytes, assets, drawings, instructions</TD></TR><TR><TD ALIGN="LEFT">work, simulation_ticks, cache_bytes</TD></TR><TR><TD ALIGN="LEFT">limits()</TD></TR></TABLE>>];
+context [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5"><TR><TD BGCOLOR="#dbeafe"><B>PreparationContext</B></TD></TR><TR><TD ALIGN="LEFT">single worker; cumulative counters</TD></TR><TR><TD ALIGN="LEFT">stop_token, steady_clock deadline</TD></TR><TR><TD ALIGN="LEFT">checkpoint(phase)</TD></TR><TR><TD ALIGN="LEFT">consume(resource, amount, phase)</TD></TR><TR><TD ALIGN="LEFT">used(resource)</TD></TR><TR><TD ALIGN="LEFT">failure()</TD></TR></TABLE>>];
+error [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5"><TR><TD BGCOLOR="#dbeafe"><B>PreparationError</B></TD></TR><TR><TD ALIGN="LEFT">code()</TD></TR><TR><TD ALIGN="LEFT">resource()</TD></TR><TR><TD ALIGN="LEFT">phase()</TD></TR></TABLE>>];
+source [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5"><TR><TD BGCOLOR="#dbeafe"><B>RobotProgramSource</B></TD></TR><TR><TD ALIGN="LEFT">instructions()</TD></TR></TABLE>>];
+program [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5"><TR><TD BGCOLOR="#dbeafe"><B>PreparedRobotProgram</B></TD></TR><TR><TD ALIGN="LEFT">validate()</TD></TR></TABLE>>];
+options [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5"><TR><TD BGCOLOR="#dbeafe"><B>ProgramSimulationOptions</B></TD></TR><TR><TD ALIGN="LEFT">max_ticks; preparation (borrowed)</TD></TR></TABLE>>];
+live [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5"><TR><TD BGCOLOR="#dbeafe"><B>PreparedLivePlan&lt;N&gt;</B></TD></TR><TR><TD ALIGN="LEFT">command(tick)</TD></TR><TR><TD ALIGN="LEFT">end_tick()</TD></TR></TABLE>>];
+context -> budget [style=dashed, arrowhead=vee, label="copies limits"];
+context -> error [style=dashed, arrowhead=vee, label="throws typed failure"];
+source -> context [style=dashed, arrowhead=vee, label="parse / compile; no retained pointer"];
+program -> context [style=dashed, arrowhead=vee, label="align / simulate; Non-RT"];
+options -> context [style=dashed, arrowhead=vee, label="one preparation job"];
+live -> context [style=dashed, arrowhead=vee, label="prepare_live_plan(); no retained pointer"];
+}

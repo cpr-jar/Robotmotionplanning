@@ -69,6 +69,14 @@ jobs:
       - run: cmake -S tools/motion_viewer -B build-motion-viewer -DCMAKE_BUILD_TYPE=Release
       - run: cmake --build build-motion-viewer --parallel 2
       - run: ctest --test-dir build-motion-viewer --output-on-failure
+      - name: Install browser test dependencies
+        run: |
+          python3 -m venv build-browser-venv
+          build-browser-venv/bin/python -m pip install -r tools/motion_viewer/requirements-browser.txt
+          build-browser-venv/bin/python -m playwright install --with-deps chromium
+      - name: Exercise offline viewer, editor cancellation and DXF in Chromium
+        run: build-browser-venv/bin/python tools/motion_viewer/tests/run_browser_checks.py --exporter build-motion-viewer/motion_viewer_exporter
+
   structure-and-consumer:
     runs-on: ubuntu-latest
     steps:
@@ -109,3 +117,26 @@ jobs:
         with:
           name: component-${{ matrix.case }}-failure
           path: build-components/${{ matrix.case }}/validation.log
+
+  thread-sanitizer:
+    runs-on: ubuntu-24.04
+    env:
+      TSAN_OPTIONS: halt_on_error=1
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configure isolated runner address layout for ThreadSanitizer
+        run: sudo sysctl vm.mmap_rnd_bits=28
+      - name: Build instrumented preparation and execution protocols
+        run: |
+          cmake -S . -B build-tsan -DCMAKE_CXX_COMPILER=clang++-18 -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS_DEBUG="-O1 -g1 -fsanitize=thread -fno-omit-frame-pointer" -DCMAKE_EXE_LINKER_FLAGS=-fsanitize=thread -DMOTION_WITH_SERIAL=OFF -DMOTION_WITH_RUCKIG=OFF
+          cmake --build build-tsan --target preparation_context_tests live_session_tests execution_faults_tests --parallel 2
+          ctest --test-dir build-tsan -R '^(preparation_context_tests|live_session_tests|execution_faults_tests)$' --output-on-failure
+  arm64:
+    runs-on: ubuntu-24.04-arm
+    steps:
+      - uses: actions/checkout@v4
+      - name: Native ARM64 build and software tests
+        run: |
+          cmake -S . -B build-arm -DCMAKE_BUILD_TYPE=Release -DMOTION_WITH_RUCKIG=ON
+          cmake --build build-arm --parallel 2
+          ctest --test-dir build-arm --output-on-failure

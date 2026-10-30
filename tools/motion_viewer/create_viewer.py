@@ -7,13 +7,14 @@ in this directory; it links the public library without changing its implementati
 from pathlib import Path
 import argparse
 import csv
-import io
 import json
 import math
 import os
+import re
 import subprocess
 import tempfile
 from visual_assets import select_visual_model, license_text
+from job_budget import JobBudget
 
 TOOL_DIR = Path(__file__).resolve().parent
 ROOT = TOOL_DIR.parents[1]
@@ -56,14 +57,31 @@ def unique_object(pairs):
     return result
 
 
-def load_export(filename):
+def load_export(filename, budget=None):
+    if budget:
+        budget.checkpoint()
     filename = Path(filename)
     require(filename.stat().st_size <= MAX_BYTES, "Export exceeds 128 MiB")
     with filename.open(encoding="utf-8") as source:
-        return json.load(source, parse_constant=reject_constant, object_pairs_hook=unique_object)
+        result = json.load(source, parse_constant=reject_constant, object_pairs_hook=unique_object)
+    if budget:
+        budget.checkpoint()
+    return result
 
 
-def prepare_data(exported, max_frames=4000, visuals="auto"):
+def trace_lines(text):
+    """Yield CSV physical lines without StringIO's full Unicode buffer copy."""
+    # Match physical lines lazily, preserving LF, CRLF and legacy CR input.
+    # csv.reader may combine these lines for quoted fields before validation.
+    for match in re.finditer(r"[^\r\n]*(?:\r\n|[\r\n]|$)", text):
+        line = match.group()
+        if line:
+            yield line
+
+
+def prepare_data(exported, max_frames=4000, visuals="auto", budget=None):
+    if budget:
+        budget.checkpoint()
     require(2 <= max_frames <= 20000, "max_frames must be 2..20000")
     require(
         isinstance(exported, dict)
@@ -145,7 +163,7 @@ def prepare_data(exported, max_frames=4000, visuals="auto"):
     require(previous_end == program["duration_s"], "Segment duration mismatch")
     trace = exported["trace_csv"]
     require(isinstance(trace, str) and len(trace) <= 64 * 1024 * 1024, "Invalid CSV payload size")
-    reader = csv.reader(io.StringIO(trace, newline=""))
+    reader = csv.reader(trace_lines(trace))
     columns = next(reader, [])
     require(columns and len(columns) == len(set(columns)), "Missing or duplicate CSV columns")
     lookup = {name: index for index, name in enumerate(columns)}
@@ -166,7 +184,11 @@ def prepare_data(exported, max_frames=4000, visuals="auto"):
     required += [prefix + str(axis) for prefix in ("q", "dq", "ddq", "jerk") for axis in range(len(names))]
     required += [prefix + str(axis) for prefix in ("tcp_v", "tcp_a", "tcp_j") for axis in range(6)]
     require(all(key in lookup for key in required), "Missing required CSV columns")
-    frames = []
+    # First pass validates EVERY row, retaining only scalar state and boundary indices.
+    sample_count = 0
+    previous_time = None
+    previous_segment = None
+    mandatory = {0, program["total_ticks"]}
     violations = []
     peak_ratios = {
         "joint_velocity": 0.0,
@@ -176,10 +198,12 @@ def prepare_data(exported, max_frames=4000, visuals="auto"):
         "tcp_angular": [0.0, 0.0, 0.0],
     }
     for row in reader:
-        require(len(frames) < MAX_SAMPLES and len(row) == len(columns), "CSV row/sample budget mismatch")
+        if budget:
+            budget.checkpoint()
+        require(sample_count < MAX_SAMPLES and len(row) == len(columns), "CSV row/sample budget mismatch")
         values = [float(value) for value in row]
         require(all(math.isfinite(value) for value in values), "Nonfinite trace value")
-        sample_index = len(frames)
+        sample_index = sample_count
         get = lambda name: values[lookup[name]]
         require(get("tick") == sample_index, "Missing or duplicate tick")
         require(get("segment").is_integer() and 1 <= get("segment") <= len(segments), "Invalid segment index")
@@ -188,8 +212,8 @@ def prepare_data(exported, max_frames=4000, visuals="auto"):
             math.isclose(get("time_s"), sample_index * program["cycle_s"], rel_tol=1e-12, abs_tol=1e-10),
             "Tick time mismatch",
         )
-        if frames:
-            require(get("time_s") > frames[-1][lookup["time_s"]], "Time must increase")
+        if previous_time is not None:
+            require(get("time_s") > previous_time, "Time must increase")
         else:
             epoch_s = get("timestamp_s")
         require(
@@ -225,30 +249,45 @@ def prepare_data(exported, max_frames=4000, visuals="auto"):
                 peak_ratios["tcp_" + group][order] = max(peak_ratios["tcp_" + group][order], magnitude / cap)
                 if magnitude > cap + 1e-8 and len(violations) < 20:
                     violations.append({"tick": sample_index, "channel": prefix + "_" + group})
-        frames.append(values)
-    require(len(frames) == program["total_ticks"] + 1 == program["commands"], "Incomplete trace")
+        current_segment = get("segment")
+        if previous_segment is not None and current_segment != previous_segment:
+            mandatory.update((sample_index - 1, sample_index))
+        previous_segment = current_segment
+        previous_time = get("time_s")
+        sample_count += 1
+    require(sample_count == program["total_ticks"] + 1 == program["commands"], "Incomplete trace")
     require(
-        math.isclose(frames[-1][lookup["time_s"]], program["duration_s"], abs_tol=1e-10), "End time mismatch"
+        math.isclose(previous_time, program["duration_s"], abs_tol=1e-10), "End time mismatch"
     )
-    mandatory = {0, len(frames) - 1}
-    for index in range(1, len(frames)):
-        if frames[index][lookup["segment"]] != frames[index - 1][lookup["segment"]]:
-            mandatory.update((index - 1, index))
-    if len(frames) <= max_frames:
-        chosen = list(range(len(frames)))
+    if sample_count <= max_frames:
+        chosen = set(range(sample_count))
     else:
         require(len(mandatory) < max_frames, "Too many boundaries; increase --max-frames")
-        stride = math.ceil(len(frames) / (max_frames - len(mandatory)))
-        chosen = sorted(mandatory | set(range(0, len(frames), stride)))
+        stride = math.ceil(sample_count / (max_frames - len(mandatory)))
+        chosen = mandatory | set(range(0, sample_count, stride))
+    # Second pass keeps only selected display rows and reuses the immutable
+    # CSV string. Neither pass copies the full payload into StringIO.
+    reader = csv.reader(trace_lines(trace))
+    next(reader)
+    frames = []
+    for index, row in enumerate(reader):
+        if budget:
+            budget.checkpoint()
+        if index in chosen:
+            frames.append([float(value) for value in row])
     result = {key: exported[key] for key in ("format", "schema_version", "robot", "program")}
+    if budget:
+        budget.checkpoint()
     visual_model = select_visual_model(robot, visuals)
+    if budget:
+        budget.checkpoint()
     if visual_model is not None:
         result["visual_model"] = visual_model
         result["legal_notices"] = license_text()
     result.update(
         columns=columns,
-        frames=[frames[index] for index in chosen],
-        original_frame_count=len(frames),
+        frames=frames,
+        original_frame_count=sample_count,
         display_frame_count=len(chosen),
         sample_limit_violations=violations,
         peak_ratios=peak_ratios,
@@ -307,14 +346,19 @@ def export_and_render(
     require(Path(destination).resolve() != Path(program).resolve(), "Input and output must differ")
     require(Path(exporter).is_file(), "Exporter missing; first build tools/motion_viewer")
     with tempfile.TemporaryDirectory(prefix="robot-motion-viewer-") as directory:
+        budget = JobBudget(timeout_s)
         exported = Path(directory) / "scene.json"
+        environment = os.environ.copy()
+        environment["MOTION_PREPARATION_TIMEOUT_MS"] = str(max(1, int(budget.remaining() * 1000)))
         subprocess.run(
             [str(Path(exporter).resolve()), str(Path(program).resolve()), str(exported), str(cycle_ms)],
             check=True,
-            timeout=timeout_s,
+            timeout=budget.remaining(), env=environment,
         )
-        data = prepare_data(load_export(exported), max_frames, visuals)
-        atomic_write(destination, render_html(data))
+        data = prepare_data(load_export(exported, budget=budget), max_frames, visuals, budget=budget)
+        html = render_html(data)
+        budget.checkpoint()
+        atomic_write(destination, html)
     return data
 
 
@@ -341,8 +385,11 @@ def main():
     try:
         if options.from_export:
             require(options.from_export.resolve() != options.output.resolve(), "Input and output must differ")
-            data = prepare_data(load_export(options.from_export), options.max_frames, options.visuals)
-            atomic_write(options.output, render_html(data))
+            budget = JobBudget(180)
+            data = prepare_data(load_export(options.from_export, budget=budget), options.max_frames, options.visuals, budget=budget)
+            html = render_html(data)
+            budget.checkpoint()
+            atomic_write(options.output, html)
         else:
             data = export_and_render(
                 options.program,

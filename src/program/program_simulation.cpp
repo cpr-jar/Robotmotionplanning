@@ -6,7 +6,8 @@
 namespace motion {
 namespace {
 template <std::size_t N>
-ProgramSimulationReport simulate(const PreparedRobotProgram &prepared, std::ostream *csv) {
+ProgramSimulationReport simulate(const PreparedRobotProgram &prepared, std::ostream *csv,
+                                 PreparationContext *context) {
   const auto &program = *prepared.reference;
   const auto &grid = *prepared.schedule;
   BufferedMotionProducer<N> producer(prepared.schedule, grid.cycle_s());
@@ -32,6 +33,7 @@ ProgramSimulationReport simulate(const PreparedRobotProgram &prepared, std::ostr
   }
   std::size_t segment = 0, boundary = 0;
   for (std::uint64_t tick = 0; tick <= grid.total_ticks(); ++tick) {
+    preparation_consume(context, PreparationResource::SimulationTicks, 1, "program.simulate");
     if (producer.fill(buffer, 32).status == BufferFillStatus::Error)
       throw std::runtime_error("Simulation producer error");
     const double due = grid.initial_state().timestamp_s + grid.tick_time(tick);
@@ -95,19 +97,22 @@ ProgramSimulationReport simulate(const PreparedRobotProgram &prepared, std::ostr
   }
   if (!is_rest(result.final_state, 0) || result.rest_boundaries != grid.segment_count())
     throw std::runtime_error("Missing terminal rest");
+  preparation_checkpoint(context, "program.simulate.finish");
   return result;
 }
 template <std::size_t N = 1>
-ProgramSimulationReport select(std::size_t n, const PreparedRobotProgram &p, std::ostream *csv) {
+ProgramSimulationReport select(std::size_t n, const PreparedRobotProgram &p, std::ostream *csv,
+                               PreparationContext *context) {
   if (n == N)
-    return simulate<N>(p, csv);
+    return simulate<N>(p, csv, context);
   if constexpr (N < 12)
-    return select<N + 1>(n, p, csv);
+    return select<N + 1>(n, p, csv, context);
   throw std::invalid_argument("Simulation supports 1..12 axes");
 }
 } // namespace
 ProgramSimulationReport simulate_robot_program(const PreparedRobotProgram &p, std::ostream *csv,
                                                ProgramSimulationOptions options) {
+  preparation_checkpoint(options.preparation, "program.simulate");
   p.validate(); // Reject mismatched legacy pairs before writing any CSV or sampling.
   if (!options.max_ticks || p.schedule->total_ticks() > options.max_ticks)
     throw std::invalid_argument("Invalid program or simulation tick budget exceeded");
@@ -139,6 +144,6 @@ ProgramSimulationReport simulate_robot_program(const PreparedRobotProgram &p, st
       }
     }
   } format(csv);
-  return select(p.reference->robot().kinematics->dof(), p, csv);
+  return select(p.reference->robot().kinematics->dof(), p, csv, options.preparation);
 }
 } // namespace motion

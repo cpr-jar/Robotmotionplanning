@@ -1,4 +1,5 @@
 #pragma once
+#include "motion/core/preparation_context.hpp"
 #include "motion/execution/cycle_aligned_program.hpp"
 #include "motion/io/dxf_path_import.hpp"
 #include "motion/io/robot_model_import.hpp"
@@ -57,7 +58,8 @@ public:
   const ProgramLocation &robot_location() const { return robot_location_; }
 
 private:
-  friend RobotProgramSource parse_robot_program_yaml(std::string_view, const std::string &);
+  friend RobotProgramSource parse_robot_program_yaml(std::string_view, const std::string &,
+                                                     PreparationContext *);
   RobotProgramSource() = default;
   std::string profile_, urdf_, filename_;
   Vector start_;
@@ -66,7 +68,9 @@ private:
   ProgramLocation start_location_, robot_location_;
 };
 RobotProgramSource parse_robot_program_yaml(std::string_view, const std::string &filename = "<memory>");
+RobotProgramSource parse_robot_program_yaml(std::string_view, const std::string &, PreparationContext *);
 RobotProgramSource load_robot_program_source(const std::string &);
+RobotProgramSource load_robot_program_source(const std::string &, PreparationContext *);
 class RobotProgram;
 struct PreparedRobotProgram {
   // Public fields are retained for source compatibility. Prefer the checked
@@ -78,13 +82,18 @@ struct PreparedRobotProgram {
 /// Preparation-thread operations; throw invalid_argument without publishing a partial result.
 PreparedRobotProgram prepare_robot_program(std::shared_ptr<const RobotProgram>, double cycle_s);
 PreparedRobotProgram retime_robot_program(const PreparedRobotProgram &, double cycle_s);
+PreparedRobotProgram prepare_robot_program(std::shared_ptr<const RobotProgram>, double, PreparationContext *);
+PreparedRobotProgram retime_robot_program(const PreparedRobotProgram &, double, PreparationContext *);
 PreparedRobotProgram compile_robot_program(const RobotProgramSource &, ImportedSerialRobot);
 // Optional asset loader snapshots external DXF text during preparation. No IO
 // happens when the finished program is sampled or executed.
 using ProgramAssetLoader = std::function<std::string(const std::string &)>;
 PreparedRobotProgram compile_robot_program(const RobotProgramSource &, ImportedSerialRobot,
                                            const ProgramAssetLoader &);
+PreparedRobotProgram compile_robot_program(const RobotProgramSource &, ImportedSerialRobot,
+                                           const ProgramAssetLoader &, PreparationContext *);
 PreparedRobotProgram load_robot_program(const std::string &);
+PreparedRobotProgram load_robot_program(const std::string &, PreparationContext *);
 class RobotProgram final : public IJointProgram {
 public:
   double duration() const noexcept override { return ends_.back(); }
@@ -102,7 +111,7 @@ public:
 private:
   friend PreparedRobotProgram compile_robot_program(const RobotProgramSource &, ImportedSerialRobot);
   friend PreparedRobotProgram compile_robot_program(const RobotProgramSource &, ImportedSerialRobot,
-                                                    const ProgramAssetLoader &);
+                                                    const ProgramAssetLoader &, PreparationContext *);
   explicit RobotProgram(ImportedSerialRobot robot) : robot_(std::move(robot)) {}
   ImportedSerialRobot robot_;
   JointState initial_;
@@ -112,6 +121,7 @@ private:
 };
 struct ProgramSimulationOptions {
   std::uint64_t max_ticks{1000000};
+  PreparationContext *preparation{};
 };
 struct ProgramSimulationReport {
   double duration_s{};

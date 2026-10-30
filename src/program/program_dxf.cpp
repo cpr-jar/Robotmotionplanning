@@ -2,7 +2,7 @@
 
 namespace motion::program_detail {
 std::vector<ProgramInstruction> expand_dxf(const ProgramInstruction &source, const DxfDrawing &drawing,
-                                           const Pose &first) {
+                                           const Pose &first, PreparationContext *context) {
   if (!source.dxf)
     throw std::invalid_argument("DXF command is missing configuration");
   const auto &command = *source.dxf;
@@ -15,6 +15,7 @@ std::vector<ProgramInstruction> expand_dxf(const ProgramInstruction &source, con
   std::vector<ProgramInstruction> steps;
   Pose expected = first;
   const auto append = [&](ProgramInstruction step) {
+    preparation_consume(context, PreparationResource::Work, 1, "dxf.expand");
     if (steps.size() >= 10000)
       throw std::invalid_argument("Expanded DXF instruction budget exceeded");
     steps.push_back(std::move(step));

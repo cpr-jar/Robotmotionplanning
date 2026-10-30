@@ -1,0 +1,89 @@
+[
+  {
+    "case": "execution",
+    "sanitize": false,
+    "components": [
+      "contracts",
+      "core",
+      "execution",
+      "kinematics",
+      "math",
+      "planning"
+    ],
+    "cpp_sources": [],
+    "archives": [],
+    "passed": true
+  },
+  {
+    "case": "dxf_import",
+    "sanitize": false,
+    "components": [
+      "core",
+      "dxf_import",
+      "math"
+    ],
+    "cpp_sources": [
+      "src/io/dxf_path_import.cpp"
+    ],
+    "archives": [
+      "dxf_import"
+    ],
+    "passed": true
+  },
+  {
+    "case": "program",
+    "sanitize": false,
+    "components": [
+      "contracts",
+      "core",
+      "dxf_import",
+      "execution",
+      "kinematics",
+      "math",
+      "model_import",
+      "planning",
+      "program",
+      "serial_kinematics"
+    ],
+    "cpp_sources": [
+      "src/io/dxf_path_import.cpp",
+      "src/io/robot_model_import.cpp",
+      "src/kinematics/serial_chain_kinematics.cpp",
+      "src/program/prepared_robot_program.cpp",
+      "src/program/program_dxf.cpp",
+      "src/program/program_import.cpp",
+      "src/program/program_planning.cpp",
+      "src/program/program_simulation.cpp"
+    ],
+    "archives": [
+      "dxf_import",
+      "model_import",
+      "program",
+      "serial_kinematics"
+    ],
+    "passed": true
+  },
+  {
+    "case": "following",
+    "sanitize": false,
+    "components": [
+      "contracts",
+      "core",
+      "differential_kinematics",
+      "execution",
+      "following",
+      "kinematics",
+      "math",
+      "planning",
+      "ruckig",
+      "tracking"
+    ],
+    "cpp_sources": [
+      "src/kinematics/inverse_differential.cpp"
+    ],
+    "archives": [
+      "differential_kinematics"
+    ],
+    "passed": true
+  }
+]

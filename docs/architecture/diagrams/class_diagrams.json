@@ -1086,5 +1086,119 @@
         "expand_dxf(); LIN/CIRC/PTP"
       ]
     ]
+  },
+  {
+    "id": "preparation",
+    "nodes": [
+      {
+        "id": "budget",
+        "name": "PreparationBudget",
+        "header": "include/motion/core/preparation_context.hpp",
+        "fields": [
+          "input_bytes, assets, drawings, instructions",
+          "work, simulation_ticks, cache_bytes"
+        ],
+        "methods": [
+          "limits()"
+        ]
+      },
+      {
+        "id": "context",
+        "name": "PreparationContext",
+        "header": "include/motion/core/preparation_context.hpp",
+        "fields": [
+          "single worker; cumulative counters",
+          "stop_token, steady_clock deadline"
+        ],
+        "methods": [
+          "checkpoint(phase)",
+          "consume(resource, amount, phase)",
+          "used(resource)",
+          "failure()"
+        ]
+      },
+      {
+        "id": "error",
+        "name": "PreparationError",
+        "header": "include/motion/core/preparation_context.hpp",
+        "fields": [],
+        "methods": [
+          "code()",
+          "resource()",
+          "phase()"
+        ]
+      },
+      {
+        "id": "source",
+        "name": "RobotProgramSource",
+        "header": "include/motion/program/robot_program.hpp",
+        "methods": [
+          "instructions()"
+        ]
+      },
+      {
+        "id": "program",
+        "name": "PreparedRobotProgram",
+        "header": "include/motion/program/robot_program.hpp",
+        "methods": [
+          "validate()"
+        ]
+      },
+      {
+        "id": "options",
+        "name": "ProgramSimulationOptions",
+        "header": "include/motion/program/robot_program.hpp",
+        "fields": [
+          "max_ticks; preparation (borrowed)"
+        ]
+      },
+      {
+        "id": "live",
+        "name": "PreparedLivePlan<N>",
+        "header": "include/motion/execution/live_motion_executor.hpp",
+        "methods": [
+          "command(tick)",
+          "end_tick()"
+        ]
+      }
+    ],
+    "edges": [
+      [
+        "context",
+        "budget",
+        "uses",
+        "copies limits"
+      ],
+      [
+        "context",
+        "error",
+        "uses",
+        "throws typed failure"
+      ],
+      [
+        "source",
+        "context",
+        "uses",
+        "parse / compile; no retained pointer"
+      ],
+      [
+        "program",
+        "context",
+        "uses",
+        "align / simulate; Non-RT"
+      ],
+      [
+        "options",
+        "context",
+        "borrows",
+        "one preparation job"
+      ],
+      [
+        "live",
+        "context",
+        "uses",
+        "prepare_live_plan(); no retained pointer"
+      ]
+    ]
   }
 ]

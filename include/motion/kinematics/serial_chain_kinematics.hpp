@@ -1,4 +1,5 @@
 #pragma once
+#include "motion/core/preparation_context.hpp"
 #include "motion/kinematics/differential_kinematics.hpp"
 namespace motion {
 enum class SerialJointType { Fixed, Revolute, Continuous, Prismatic };
@@ -47,6 +48,7 @@ public:
   KinematicDerivatives differentiate(const Vector &, const Vector &, const Vector &,
                                      const Vector &) const override;
   SerialIKResult ik_detailed(const Pose &, const Vector &) const;
+  SerialIKResult ik_detailed(const Pose &, const Vector &, PreparationContext *) const;
   std::optional<Vector> ik(const Pose &p, const Vector &seed) const override {
     auto r = ik_detailed(p, seed);
     return r ? std::optional<Vector>(r.solution) : std::nullopt;

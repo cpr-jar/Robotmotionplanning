@@ -14,7 +14,7 @@ def main():
     parser.add_argument("--build-dir", type=Path, default=ROOT / "build-motion-viewer")
     parser.add_argument("--cmake", default="cmake")
     parser.add_argument("--exporter", type=Path, help="Use an already built exporter; skip the build")
-    parser.add_argument("--timeout-s", type=int, default=120, help="Native planning/simulation time budget")
+    parser.add_argument("--timeout-s", type=int, default=120, help="Total planning, simulation and viewer preparation time budget")
     parser.add_argument("--open", action="store_true", help="Open the local editor in the default browser")
     options = parser.parse_args()
     if not 0 <= options.port <= 65535 or not 1 <= options.timeout_s <= 600:

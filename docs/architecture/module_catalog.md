@@ -104,3 +104,9 @@ separaten Ziele und deren Abhängigkeiten. Vollständige Targettabelle,
 Makros und Kompatibilitätsgrenzen: [Komponenten](components.md).
 Die KDL-Bibliothek bleibt ausschließlich eine Testreferenz.
 Details zur Quellkompatibilität: [Migration](../development/naming_and_migration.md).
+
+Ab **0.16.0** liegt der gemeinsame Nicht-RT-Vorbereitungskontext unter
+`core/preparation_context.hpp`. Import, Planung und Cachebau erhalten ihn explizit;
+die fertigen Ergebnisse halten keine Referenz darauf. Werkzeugseitige Jobdeadline
+und Abbruch stehen getrennt in `tools/motion_viewer/job_budget.py`.
+[Budgetvertrag und Grenzen](../integration/preparation_resources.md).

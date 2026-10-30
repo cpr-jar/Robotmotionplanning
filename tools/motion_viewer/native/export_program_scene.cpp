@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <charconv>
 #include <chrono>
+#include <cstdlib>
 #include <filesystem>
 #include <fstream>
 #include <iomanip>
@@ -15,16 +16,34 @@
 namespace {
 class BudgetedTraceBuffer final : public std::streambuf {
 public:
-  const std::string &data() const { return data_; }
+  explicit BudgetedTraceBuffer(std::filesystem::path path)
+      : path_(std::move(path)), file_(path_, std::ios::binary) {
+    if (!file_)
+      throw std::runtime_error("Cannot create temporary trace spool");
+  }
+  ~BudgetedTraceBuffer() override {
+    file_.close();
+    std::error_code ignored;
+    std::filesystem::remove(path_, ignored);
+  }
+  std::ifstream input() {
+    file_.flush();
+    if (!file_)
+      throw std::runtime_error("Cannot finish temporary trace spool");
+    return std::ifstream(path_, std::ios::binary);
+  }
   bool exceeded() const { return exceeded_; }
 
 protected:
   std::streamsize xsputn(const char *text, std::streamsize count) override {
-    if (count < 0 || std::size_t(count) > byte_limit - data_.size()) {
+    if (count < 0 || std::size_t(count) > byte_limit - bytes_) {
       exceeded_ = true;
       return 0;
     }
-    data_.append(text, std::size_t(count));
+    file_.write(text, count);
+    if (!file_)
+      return 0;
+    bytes_ += std::size_t(count);
     return count;
   }
   int_type overflow(int_type value) override {
@@ -36,13 +55,14 @@ protected:
 
 private:
   static constexpr std::size_t byte_limit = 64 * 1024 * 1024;
-  std::string data_;
+  std::filesystem::path path_;
+  std::ofstream file_;
+  std::size_t bytes_{};
   bool exceeded_{};
 };
 
-void text(std::ostream &output, std::string_view value) {
+void escaped(std::ostream &output, std::string_view value) {
   constexpr char hex[] = "0123456789abcdef";
-  output << '"';
   for (const unsigned char character : value) {
     if (character == '"' || character == '\\')
       output << '\\' << char(character);
@@ -51,6 +71,10 @@ void text(std::ostream &output, std::string_view value) {
     else
       output << char(character);
   }
+}
+void text(std::ostream &output, std::string_view value) {
+  output << '"';
+  escaped(output, value);
   output << '"';
 }
 template <class Range> void numbers(std::ostream &output, const Range &values) {
@@ -103,8 +127,8 @@ const char *operation(motion::ProgramOperation value) {
   }
   throw std::logic_error("Unknown program operation");
 }
-void write_scene(const motion::PreparedRobotProgram &prepared, std::ostream &output, const std::string &csv,
-                 const motion::ProgramSimulationReport &report) {
+void write_scene(const motion::PreparedRobotProgram &prepared, std::ostream &output, std::istream &csv,
+                 const motion::ProgramSimulationReport &report, motion::PreparationContext &context) {
   const auto &program = *prepared.reference;
   const auto &schedule = *prepared.schedule;
   const auto &robot = program.robot();
@@ -194,8 +218,15 @@ void write_scene(const motion::PreparedRobotProgram &prepared, std::ostream &out
     output << '}';
   }
   output << "],\"commands\":" << report.commands << "},\"trace_csv\":";
-  text(output, csv);
-  output << "}\n";
+  output << '"';
+  std::array<char, 8192> chunk;
+  while (csv.read(chunk.data(), chunk.size()) || csv.gcount()) {
+    context.checkpoint("viewer.trace");
+    escaped(output, std::string_view(chunk.data(), std::size_t(csv.gcount())));
+  }
+  if (!csv.eof())
+    throw std::runtime_error("Cannot read trace spool");
+  output << "\"}\n";
   if (!output)
     throw std::runtime_error("Cannot finish visualization export");
 }
@@ -203,8 +234,9 @@ void write_scene(const motion::PreparedRobotProgram &prepared, std::ostream &out
 // Local editor programs resolve paths from the project root, never from a
 // temporary run folder. Only actual files below models/ may be imported.
 motion::PreparedRobotProgram prepare_editor_program(const std::filesystem::path &filename,
-                                                    const std::filesystem::path &workspace) {
-  const auto source = motion::load_robot_program_source(filename.string());
+                                                    const std::filesystem::path &workspace,
+                                                    motion::PreparationContext *context) {
+  const auto source = motion::load_robot_program_source(filename.string(), context);
   const auto root = std::filesystem::canonical(workspace);
   const auto models = std::filesystem::canonical(root / "models");
   const auto model_file = [&](const std::filesystem::path &relative) {
@@ -224,9 +256,12 @@ motion::PreparedRobotProgram prepare_editor_program(const std::filesystem::path 
   const auto urdf = source.robot_urdf().empty()
                         ? model_file(std::filesystem::relative(profile.parent_path() / "robot.urdf", root))
                         : model_file(source.robot_urdf());
+  context->checkpoint("model.import");
   auto robot = [&]() {
     try {
-      return motion::load_serial_robot_files(urdf.string(), profile.string());
+      return motion::load_serial_robot_files(urdf.string(), profile.string(), context);
+    } catch (const motion::PreparationError &) {
+      throw;
     } catch (const std::exception &error) {
       throw motion::RobotProgramError(source.robot_location(), error.what());
     }
@@ -241,12 +276,24 @@ motion::PreparedRobotProgram prepare_editor_program(const std::filesystem::path 
       throw std::invalid_argument("DXF attachment is missing; open the referenced DXF file in the editor");
     return motion::read_dxf_text_file(path.string());
   };
-  return motion::compile_robot_program(source, std::move(robot), loader);
+  return motion::compile_robot_program(source, std::move(robot), loader, context);
 }
 
 void editor_diagnostic(const std::exception &error, const motion::ProgramLocation *location = nullptr) {
   std::cerr << "{\"message\":";
   text(std::cerr, error.what());
+  if (const auto *failure = dynamic_cast<const motion::PreparationError *>(&error)) {
+    std::cerr << ",\"code\":";
+    text(std::cerr, failure->code() == motion::PreparationFailure::Cancelled          ? "cancelled"
+                    : failure->code() == motion::PreparationFailure::DeadlineExceeded ? "deadline_exceeded"
+                                                                                      : "budget_exceeded");
+    std::cerr << ",\"phase\":";
+    text(std::cerr, failure->phase());
+    if (failure->resource() != motion::PreparationResource::Count) {
+      std::cerr << ",\"resource\":";
+      text(std::cerr, motion::preparation_resource_names.at(std::size_t(failure->resource())));
+    }
+  }
   if (location) {
     std::cerr << ",\"filename\":";
     text(std::cerr, std::filesystem::path(location->file).filename().string());
@@ -274,8 +321,6 @@ int main(int argc, char **argv) {
             std::filesystem::absolute(destination).lexically_normal() ||
         std::filesystem::equivalent(source, destination, equivalence_error))
       throw std::invalid_argument("Input and output must differ");
-    auto prepared =
-        editor_mode ? prepare_editor_program(source, argv[6]) : motion::load_robot_program(argv[1]);
     const auto integer = [](const char *value, unsigned lower, unsigned upper) {
       const std::string_view input(value);
       unsigned result = 0;
@@ -285,27 +330,36 @@ int main(int argc, char **argv) {
         throw std::invalid_argument("Integer argument outside permitted range");
       return result;
     };
+    const char *timeout = std::getenv("MOTION_PREPARATION_TIMEOUT_MS");
+    const auto timeout_ms = timeout ? integer(timeout, 1, 3600000) : 120000;
+    motion::PreparationContext context(
+        {}, {}, motion::PreparationContext::Clock::now() + std::chrono::milliseconds(timeout_ms));
+    auto prepared = editor_mode ? prepare_editor_program(source, argv[6], &context)
+                                : motion::load_robot_program(argv[1], &context);
     if (argc >= 4)
-      prepared = motion::retime_robot_program(prepared, integer(argv[3], 1, 20) * .001);
+      prepared = motion::retime_robot_program(prepared, integer(argv[3], 1, 20) * .001, &context);
     const unsigned max_ticks = argc >= 5 ? integer(argv[4], 1, 99999) : 99999;
-    BudgetedTraceBuffer trace_buffer;
+    temporary = destination;
+    temporary += ".tmp-" + std::to_string(std::chrono::steady_clock::now().time_since_epoch().count());
+    BudgetedTraceBuffer trace_buffer(temporary.string() + ".csv");
     std::ostream trace_stream(&trace_buffer);
     motion::ProgramSimulationReport report;
     try {
-      report = motion::simulate_robot_program(prepared, &trace_stream, {max_ticks});
+      report = motion::simulate_robot_program(prepared, &trace_stream, {max_ticks, &context});
     } catch (const std::exception &) {
       if (trace_buffer.exceeded())
         throw std::runtime_error("Viewer CSV budget of 64 MiB exceeded");
       throw;
     }
-    temporary = destination;
-    temporary += ".tmp-" + std::to_string(std::chrono::steady_clock::now().time_since_epoch().count());
+    context.checkpoint("viewer.export");
     if (std::filesystem::exists(temporary))
       throw std::runtime_error("Temporary filename exists");
     std::ofstream file(temporary, std::ios::binary);
     if (!file)
       throw std::runtime_error("Cannot create visualization output");
-    write_scene(prepared, file, trace_buffer.data(), report);
+    auto trace = trace_buffer.input();
+    write_scene(prepared, file, trace, report, context);
+    context.checkpoint("viewer.publish");
     file.close();
     if (!file)
       throw std::runtime_error("Cannot close visualization output");

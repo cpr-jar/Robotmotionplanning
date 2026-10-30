@@ -2,6 +2,7 @@
 #include "motion/contracts/execution_schedule.hpp"
 #include "motion/contracts/joint_program.hpp"
 #include "motion/core/joint_state_checks.hpp"
+#include "motion/core/preparation_context.hpp"
 namespace motion {
 class CycleAlignedProgram;
 struct CycleGridResult {
@@ -11,6 +12,7 @@ struct CycleGridResult {
   explicit operator bool() const { return status == PlanStatus::Ready && bool(program); }
 };
 CycleGridResult align_program_cycles(std::shared_ptr<const IJointProgram>, double);
+CycleGridResult align_program_cycles(std::shared_ptr<const IJointProgram>, double, PreparationContext *);
 class CycleAlignedProgram final : public IJointProgram, public IExecutionSchedule {
 public:
   /// Object identity of the immutable reference used to construct this grid.
@@ -61,13 +63,19 @@ public:
   }
 
 private:
-  friend CycleGridResult align_program_cycles(std::shared_ptr<const IJointProgram>, double);
+  friend CycleGridResult align_program_cycles(std::shared_ptr<const IJointProgram>, double,
+                                              PreparationContext *);
   std::shared_ptr<const IJointProgram> source_;
   double cycle_{};
   Vector ends_, scales_;
   std::vector<std::uint64_t> ticks_;
 };
 inline CycleGridResult align_program_cycles(std::shared_ptr<const IJointProgram> source, double cycle) {
+  return align_program_cycles(std::move(source), cycle, nullptr);
+}
+inline CycleGridResult align_program_cycles(std::shared_ptr<const IJointProgram> source, double cycle,
+                                            PreparationContext *context) {
+  preparation_checkpoint(context, "program.align");
   const auto fail = [](const char *d) { return CycleGridResult{PlanStatus::InvalidInput, {}, d}; };
   if (!source || !source->segment_count() || !std::isfinite(cycle) || cycle <= 0)
     return fail("Invalid execution source/cycle");
@@ -82,6 +90,7 @@ inline CycleGridResult align_program_cycles(std::shared_ptr<const IJointProgram>
     std::uint64_t total = 0;
     auto previous = initial;
     for (std::size_t i = 0; i < source->segment_count(); ++i) {
+      preparation_consume(context, PreparationResource::Work, 1, "program.align");
       const double duration = source->segment_duration(i);
       if (!std::isfinite(duration) || duration <= 0)
         return fail("Invalid segment duration");
@@ -112,7 +121,10 @@ inline CycleGridResult align_program_cycles(std::shared_ptr<const IJointProgram>
     }
     if (!schedule_detail::valid_clock(initial.timestamp_s, cycle, total))
       return fail("Insufficient grid clock resolution");
+    preparation_checkpoint(context, "program.align.finish");
     return {PlanStatus::Ready, std::move(grid), "Non-shortened exact-stop cycle grid"};
+  } catch (const PreparationError &) {
+    throw;
   } catch (const std::exception &e) {
     return {PlanStatus::InvalidInput, {}, e.what()};
   }

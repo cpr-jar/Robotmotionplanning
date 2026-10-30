@@ -1,4 +1,5 @@
 #pragma once
+#include "motion/core/preparation_context.hpp"
 #include "motion/execution/deadline_motion_executor.hpp"
 #include <atomic>
 namespace motion {
@@ -19,6 +20,9 @@ template <std::size_t N> struct LivePlanResult {
 template <std::size_t N>
 LivePlanResult<N> prepare_live_plan(std::shared_ptr<const IExecutionSchedule>, double, LivePlanStamp,
                                     std::size_t = 200000);
+template <std::size_t N>
+LivePlanResult<N> prepare_live_plan(std::shared_ptr<const IExecutionSchedule>, double, LivePlanStamp,
+                                    std::size_t, PreparationContext *);
 /// Immutable cache owned by the application; the executor borrows its address.
 template <std::size_t N> class PreparedLivePlan {
 public:
@@ -35,7 +39,7 @@ public:
 private:
   template <std::size_t M>
   friend LivePlanResult<M> prepare_live_plan(std::shared_ptr<const IExecutionSchedule>, double, LivePlanStamp,
-                                             std::size_t);
+                                             std::size_t, PreparationContext *);
   PreparedLivePlan() = default;
   LivePlanStamp stamp_;
   double execution_epoch_s_{}, cycle_period_s_{};
@@ -45,6 +49,12 @@ private:
 template <std::size_t N>
 LivePlanResult<N> prepare_live_plan(std::shared_ptr<const IExecutionSchedule> schedule, double epoch,
                                     LivePlanStamp stamp, std::size_t capacity) {
+  return prepare_live_plan<N>(std::move(schedule), epoch, stamp, capacity, nullptr);
+}
+template <std::size_t N>
+LivePlanResult<N> prepare_live_plan(std::shared_ptr<const IExecutionSchedule> schedule, double epoch,
+                                    LivePlanStamp stamp, std::size_t capacity, PreparationContext *context) {
+  preparation_checkpoint(context, "live.prepare");
   try {
     if (!schedule || !stamp.clock || !stamp.generation || stamp.generation <= stamp.parent_generation ||
         schedule->total_ticks() >= capacity || schedule->total_ticks() > schedule_detail::max_ticks ||
@@ -72,8 +82,13 @@ LivePlanResult<N> prepare_live_plan(std::shared_ptr<const IExecutionSchedule> sc
     p->execution_epoch_s_ = epoch;
     p->cycle_period_s_ = cycle;
     p->joint_limits_ = limits;
-    p->cached_commands_.reserve(ticks + 1);
+    if (ticks + 1 > std::numeric_limits<std::size_t>::max() / sizeof(FixedJointCommand<N>))
+      return {{}, "Live cache byte size overflow"};
+    preparation_consume(context, PreparationResource::CacheBytes, (ticks + 1) * sizeof(FixedJointCommand<N>),
+                        "live.reserve");
+    p->cached_commands_.reserve(std::size_t(ticks + 1));
     for (std::uint64_t tick = 0; tick <= ticks; ++tick) {
+      preparation_consume(context, PreparationResource::Work, 1, "live.sample");
       const auto state = schedule->sample_tick(tick);
       check_state(state, N); // Validate the provider before copying to fixed-size arrays.
       const double local_time = schedule_detail::tick_time(tick, cycle);
@@ -94,7 +109,10 @@ LivePlanResult<N> prepare_live_plan(std::shared_ptr<const IExecutionSchedule> sc
         return {{}, "Live plans need terminal rest"};
       p->cached_commands_.push_back(c);
     }
+    preparation_checkpoint(context, "live.finish");
     return {std::move(p), "Immutable admitted-reference cache prepared"};
+  } catch (const PreparationError &) {
+    throw;
   } catch (const std::exception &e) {
     return {{}, e.what()};
   }
