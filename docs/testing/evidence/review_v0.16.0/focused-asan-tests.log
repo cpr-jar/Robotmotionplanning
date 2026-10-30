@@ -1,0 +1,17 @@
+Test project /workspace/robot-motion-cpp/build-sanitize
+    Start  2: preparation_context_tests
+1/6 Test  #2: preparation_context_tests ........   Passed    0.01 sec
+    Start  6: live_session_tests
+2/6 Test  #6: live_session_tests ...............   Passed    0.31 sec
+    Start  7: provider_contracts_tests
+3/6 Test  #7: provider_contracts_tests .........   Passed    0.02 sec
+    Start  9: allocations_tests
+4/6 Test  #9: allocations_tests ................   Passed    0.01 sec
+    Start 19: robot_program_tests
+5/6 Test #19: robot_program_tests ..............   Passed    5.51 sec
+    Start 20: preparation_budget_tests
+6/6 Test #20: preparation_budget_tests .........   Passed    0.29 sec
+
+100% tests passed out of 6
+
+Total Test time (real) =   6.15 sec

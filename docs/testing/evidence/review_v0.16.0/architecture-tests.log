@@ -1,0 +1,11 @@
+test_cmake_component_cycle_is_rejected_even_without_header_cycles (test_layers.LayerTests.test_cmake_component_cycle_is_rejected_even_without_header_cycles) ... ok
+test_compatibility_facade_cannot_bypass_layer_rules (test_layers.LayerTests.test_compatibility_facade_cannot_bypass_layer_rules) ... ok
+test_inactive_preprocessor_branch_does_not_hide_a_reverse_dependency (test_layers.LayerTests.test_inactive_preprocessor_branch_does_not_hide_a_reverse_dependency) ... ok
+test_runtime_closure_rejects_a_transitive_planning_dependency (test_layers.LayerTests.test_runtime_closure_rejects_a_transitive_planning_dependency) ... ok
+test_same_layer_include_cycle_is_rejected (test_layers.LayerTests.test_same_layer_include_cycle_is_rejected) ... ok
+test_valid_lower_dependency (test_layers.LayerTests.test_valid_lower_dependency) ... ok
+
+----------------------------------------------------------------------
+Ran 6 tests in 0.004s
+
+OK

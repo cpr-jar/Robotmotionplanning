@@ -1,0 +1,12 @@
+test_all_pinned_sources_and_vendor_files_match_checksums (test_visual_assets.VisualAssetTests.test_all_pinned_sources_and_vendor_files_match_checksums) ... ok
+test_chain_identity_controls_selection_and_base_tool_are_independent (test_visual_assets.VisualAssetTests.test_chain_identity_controls_selection_and_base_tool_are_independent) ... ok
+test_complete_meshes_and_physical_scale (test_visual_assets.VisualAssetTests.test_complete_meshes_and_physical_scale) ... ok
+test_converter_preserves_units_scene_offsets_and_inverse_transpose_normals (test_visual_assets.VisualAssetTests.test_converter_preserves_units_scene_offsets_and_inverse_transpose_normals) ... ok
+test_html_licenses_include_authors_and_complete_terms (test_visual_assets.VisualAssetTests.test_html_licenses_include_authors_and_complete_terms) ... ok
+test_visual_pack_accepts_lf_and_crlf_but_rejects_content_changes (test_visual_assets.VisualAssetTests.test_visual_pack_accepts_lf_and_crlf_but_rejects_content_changes) ... ok
+test_visual_urdf_retains_kinematics_and_resolves_every_mesh (test_visual_assets.VisualAssetTests.test_visual_urdf_retains_kinematics_and_resolves_every_mesh) ... ok
+
+----------------------------------------------------------------------
+Ran 7 tests in 0.569s
+
+OK
