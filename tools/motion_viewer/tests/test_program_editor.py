@@ -51,6 +51,11 @@ class ProgramEditorTests(unittest.TestCase):
             with self.subTest(cycle=cycle):
                 result = self.service.simulate(request_for(cycle=cycle))
                 self.assertEqual(result["cycle_ms"], cycle)
+                metrics = result["preparation"]
+                for field in ("planning_s", "simulation_s", "native_process_s", "postprocess_s", "total_s"):
+                    self.assertGreaterEqual(metrics[field], 0)
+                self.assertGreaterEqual(metrics["total_s"], metrics["native_process_s"])
+                self.assertIsInstance(metrics["build_configuration"], str)
                 self.assertEqual(result["segments"], 1)
                 self.assertEqual(result["commands"], round(result["duration_s"] / (cycle * 0.001)) + 1)
                 self.assertTrue(result["full_model"])

@@ -69,6 +69,18 @@ jobs:
       - run: cmake -S tools/motion_viewer -B build-motion-viewer -DCMAKE_BUILD_TYPE=Release
       - run: cmake --build build-motion-viewer --parallel 2
       - run: ctest --test-dir build-motion-viewer --output-on-failure
+      - name: Record preparation phases without a timing threshold
+        run: python3 tools/motion_viewer/benchmark.py --exporter build-motion-viewer/motion_viewer_exporter --cycle-ms 1 10 20 --repeats 3 --output build-motion-viewer/benchmark.json
+      - name: Check Release launcher with Ninja Multi-Config
+        env:
+          CMAKE_GENERATOR: Ninja Multi-Config
+        run: python3 tools/motion_viewer/benchmark.py --build-dir build-viewer-multiconfig --repeats 1 --program programs/examples/ur5e_pick_place.yaml --output build-viewer-multiconfig/benchmark.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: preparation-benchmarks
+          path: |
+            build-motion-viewer/benchmark.json
+            build-viewer-multiconfig/benchmark.json
       - name: Install browser test dependencies
         run: |
           python3 -m venv build-browser-venv

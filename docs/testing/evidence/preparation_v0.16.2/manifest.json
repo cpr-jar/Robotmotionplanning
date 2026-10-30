@@ -1,0 +1,63 @@
+{
+  "version": "0.16.2",
+  "baseline": "0dd8e02 / v0.16.1",
+  "compiler": "GCC 14.2.0, -O3 -DNDEBUG",
+  "status": "Local checks complete; CI not claimed for this revision",
+  "commands": {
+    "release": "cmake --build build-all --parallel 2; ctest --test-dir build-all --output-on-failure --parallel 2",
+    "sanitize": "cmake --build build-sanitize --parallel 2; ASAN_OPTIONS=detect_leaks=0 ctest --test-dir build-sanitize --output-on-failure --parallel 2",
+    "python": "PYTHONPATH=tools/motion_viewer python3 -m unittest discover -s tools/motion_viewer/tests -v",
+    "http_retry": "PYTHONPATH=tools/motion_viewer:tools/motion_viewer/tests python3 -m unittest test_program_editor.EditorHttpTests -v",
+    "browsers": "python3 tools/motion_viewer/tests/run_browser_checks.py --exporter build-motion-viewer/motion_viewer_exporter --chromium /usr/bin/chromium",
+    "benchmark": "python3 tools/motion_viewer/benchmark.py --exporter build-motion-viewer/motion_viewer_exporter --cycle-ms 1 10 20 --repeats 3",
+    "multiconfig": "cmake -G \"Ninja Multi-Config\" -S tools/motion_viewer -B build-viewer-multiconfig; build_exporter(build_dir) then benchmark_program(...)",
+    "structure": "python3 tools/architecture/check_structure.py; python3 tools/architecture/check_layers.py --json layers.json",
+    "headers": "python3 tools/architecture/check_public_headers.py --with-serial --ruckig-include build-all/_deps/ruckig-src/include",
+    "handbook": "python3 tools/documentation/build_handbook.py; python3 tools/documentation/build_handbook.py --check"
+  },
+  "environment_notes": [
+    "The initial Python suite ran 42 tests successfully, but EditorHttpTests setup was blocked by the network sandbox. Both HTTP tests passed in the separate loopback-enabled retry.",
+    "Comparison timings exclude import; product planning_s includes import and optional retiming.",
+    "Comparisons ran after the concurrent browser/build tasks ended.",
+    "These are Linux x86_64 measurements, not Windows PC or Raspberry Pi timing guarantees.",
+    "Windows executable suffix selection is covered by platform-dependent launcher logic; no native Windows run was performed."
+  ],
+  "results": {
+    "release": "36/36 passed",
+    "asan_ubsan": "36/36 passed, detect_leaks=0",
+    "python": "42 passed in initial suite; 2 HTTP tests passed in loopback-enabled retry; 44 distinct tests covered",
+    "focused": "3 metric/launcher tests plus 1 editor timing/snapshot test passed after final tool edits",
+    "browsers": "3/3 scripts passed, including timing labels",
+    "headers": "47/47 passed",
+    "layers": "11 layers, 17 components, 56 files; 3 pure runtime closures",
+    "handbook": "17 chapters generated and reproducibility check passed",
+    "multiconfig": "Ninja Multi-Config: Release exporter selected and 4629-command pick-and-place simulated"
+  },
+  "source_sha256": {
+    "include/motion/kinematics/interval_kinematics.hpp": "65f35b9e48075567da67516932dc3686c66ab8407904e4a49dcc87afee0b7829",
+    "include/motion/planning/cartesian_spline.hpp": "1c388fbab973e9d6044adfee307835cda00b187c32d6223811f38eb15432dc32",
+    "tools/motion_viewer/benchmark.py": "d2161253ac6cc240e161190cdaf3831dbae1f29523710f1b7eaf0cc5d83de862",
+    "tools/motion_viewer/editor_server.py": "768b7e4c5fa112de9ad6c6ec229f5f7eac4cc78a86cadee40986cc97c28bc2ce",
+    "tools/motion_viewer/tool_build.py": "8bd90f97c9c3d80f36028533b56a026e7c4061916233b0f625f96295a2147cd7",
+    "tools/motion_viewer/native/export_program_scene.cpp": "7a0b69b448683050c78186f0c5ab8b70b5bdc081281ee65d2afd2235e5b991d8"
+  },
+  "evidence_sha256": {
+    "benchmark.json": "e02394fa8163e8db47a163f2791826319f30306ef1714b19ba93df3e97f4fe14",
+    "browser-tests.log": "d0326bf79f7be10dbea6f04d39c4aabe0750349b4845d91edf79126c708c364c",
+    "cli-smoke.log": "d460e5ff77ba4ab52f0346b00d971fc19960287bff395fd97def3f083bf4a26e",
+    "comparison.json": "6076799e9b16995af4a07ee91861425b43c49654a4da812b61d121d5545590e6",
+    "comparison_probe.cpp": "67427bc430ce1d0a256276543f0bd2ea3aa5a07284b0cd3d4bd004b29f876506",
+    "editor-pick-place.json": "704ca6df054312c4e00781232f0109c5bdd5a9ac3891ca3d26fafd0269f0d766",
+    "handbook.log": "bec74cced75085eb356a4df384589ab526d3ebcf442a51bb7dd682df94f28be6",
+    "headers.log": "30fb0329f05e0430629f0abbb4f2045ec8b4fe5f0919eab14c4a1fea86ac4ae6",
+    "http-tests.log": "41af9a68d025c0a820bf006a29c3837075db5796a1b586cb86a8e295c6e9d346",
+    "layers.json": "cd4f2193b5c9de65390fd51a4ebe20272cd99268788c24bafffff2fbe5e80d19",
+    "layers.log": "579b0d7bd0bea1bd4cac63bf59057b4d34621da452a93181df029026b5a5080c",
+    "multiconfig.json": "f515e4142c71cad4944cecec1c5856b558c83437f6fd31e94b1a19514367865f",
+    "sanitize-tests.log": "7dece0f89d2372941614adaae6d5b6ed0dd2593a7c253f67c66a838ab3c257c8",
+    "structure.log": "78a923ed0f2428cd76737dff4c1fa5e638f575473be66734fee2b7510b0d17c4",
+    "tests-release.log": "b0e3ee1d305d1605813a88ad7150dbcd50981d84c691705caa4be38329a29326",
+    "tool-focused.log": "28ad216f67651b7f7dfe6130208ef3ead28a671a08911e0a5f4ba04f56617300",
+    "tool-tests.log": "19362b9d13030bb7eeee0fa2677268cea1123b48753d3e15889a7ed6da49f8c0"
+  }
+}

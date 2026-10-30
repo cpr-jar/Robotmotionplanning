@@ -16,8 +16,8 @@ figure{margin:24px 0;overflow:auto}figure svg{max-width:100%;height:auto}figcapt
 Diese Datei enthält Texte, UML- und Tutorial-Ablaufdiagramme sowie die Lehrkurve offline.
 Weitere Mermaid-Ablaufquellen sind als Code erhalten;
 GitHub rendert sie in der Markdown-Ausgabe. Druck/PDF ist über die Druckfunktion des Browsers möglich.</p>
-<nav><ol><li><a href="#chapter-readme">Dokumentation für Entwicklung und Steuerungseinbindung</a></li><li><a href="#chapter-motion_planning_basics">Bewegungsplanung verstehen – ein kleines Tutorial</a></li><li><a href="#chapter-controller_integration">Integrationshandbuch für die eigene Steuerung</a></li><li><a href="#chapter-interface_contracts">Daten- und Schnittstellenverträge</a></li><li><a href="#chapter-live_motion_session">Verwaltete Pläne, Befehlsannahme und Shutdown</a></li><li><a href="#chapter-preparation_resources">Ressourcen und Abbruch der Vorbereitung — ab 0.16.0</a></li><li><a href="#chapter-class_diagrams">UML-Klassendiagramme</a></li><li><a href="#chapter-runtime_flows">Laufzeitabläufe und Zustände</a></li><li><a href="#chapter-module_catalog">Ordner und Modulzuständigkeiten</a></li><li><a href="#chapter-components">Modulgrenzen und CMake-Komponenten — 0.15.0</a></li><li><a href="#chapter-naming_and_migration">Benennung und Migration ab 0.12.3</a></li><li><a href="#chapter-acceptance_plan">Test- und Abnahmeplan für die spätere Integration</a></li><li><a href="#chapter-robot_model_yaml">Kinematikbeschreibung und SI-Motion-Profil</a></li><li><a href="#chapter-robot_program_yaml">Eigene Roboterprogramme importieren</a></li><li><a href="#chapter-dxf_program_command">DXF als Programmbefehl</a></li><li><a href="#chapter-validation">Prüfberichte — aktueller Stand 0.16.1, 30.10.2026</a></li></ol></nav><section id="chapter-readme"><h1 id="chapter-readme--dokumentation-für-entwicklung-und-steuerungseinbindung">Dokumentation für Entwicklung und Steuerungseinbindung</h1>
-<p>Stand: <strong>0.16.1</strong>. Die Zielsteuerung ist eine Eigenentwicklung; die konkrete
+<nav><ol><li><a href="#chapter-readme">Dokumentation für Entwicklung und Steuerungseinbindung</a></li><li><a href="#chapter-motion_planning_basics">Bewegungsplanung verstehen – ein kleines Tutorial</a></li><li><a href="#chapter-controller_integration">Integrationshandbuch für die eigene Steuerung</a></li><li><a href="#chapter-interface_contracts">Daten- und Schnittstellenverträge</a></li><li><a href="#chapter-live_motion_session">Verwaltete Pläne, Befehlsannahme und Shutdown</a></li><li><a href="#chapter-preparation_resources">Ressourcen und Abbruch der Vorbereitung — ab 0.16.0</a></li><li><a href="#chapter-planning_performance">Planungszeit und vorausschauende Onlineplanung</a></li><li><a href="#chapter-class_diagrams">UML-Klassendiagramme</a></li><li><a href="#chapter-runtime_flows">Laufzeitabläufe und Zustände</a></li><li><a href="#chapter-module_catalog">Ordner und Modulzuständigkeiten</a></li><li><a href="#chapter-components">Modulgrenzen und CMake-Komponenten — 0.15.0</a></li><li><a href="#chapter-naming_and_migration">Benennung und Migration ab 0.12.3</a></li><li><a href="#chapter-acceptance_plan">Test- und Abnahmeplan für die spätere Integration</a></li><li><a href="#chapter-robot_model_yaml">Kinematikbeschreibung und SI-Motion-Profil</a></li><li><a href="#chapter-robot_program_yaml">Eigene Roboterprogramme importieren</a></li><li><a href="#chapter-dxf_program_command">DXF als Programmbefehl</a></li><li><a href="#chapter-validation">Prüfberichte — aktueller Stand 0.16.1, 30.10.2026</a></li></ol></nav><section id="chapter-readme"><h1 id="chapter-readme--dokumentation-für-entwicklung-und-steuerungseinbindung">Dokumentation für Entwicklung und Steuerungseinbindung</h1>
+<p>Stand: <strong>0.16.2</strong>. Die Zielsteuerung ist eine Eigenentwicklung; die konkrete
 Adapterplanung folgt später. Der betrachtete Zyklusbereich beträgt <strong>1–20 ms</strong>.
 Die Dokumente beschreiben die vorhandene Bibliothek und benennen noch offene
 Integrationsaufgaben ausdrücklich.</p>
@@ -104,6 +104,11 @@ Integrationsaufgaben ausdrücklich.</p>
 <td>15</td>
 <td><a href="#chapter-preparation_resources">Vorbereitungsbudgets und Abbruch</a> / <a href="testing/resources_validation.md">Prüfbericht</a></td>
 <td>Gemeinsame Limits, DXF-Cache, Editorabbruch und speichersparende Spuren</td>
+</tr>
+<tr>
+<td>16</td>
+<td><a href="#chapter-planning_performance">Planungszeit und Online-Ausbau</a> / <a href="testing/planning_performance_validation.md">Prüfbericht</a></td>
+<td>Beschleunigte Intervallrechnung, Release-Build, Phasenmessung und noch fehlender inkrementeller Planer</td>
 </tr>
 </tbody>
 </table>
@@ -2888,7 +2893,136 @@ Parser. Python-Schritte prüfen zwischen Zeilen und vor/nach begrenzten größer
 Operationen; während eines einzelnen <code>json.load</code>/<code>render_html</code> gibt es keine harte
 Präemption. Vor der Veröffentlichung wird das Gesamtzeitbudget erneut geprüft.</p>
 <p><a href="architecture/diagrams/preparation.svg">Klassendiagramm</a> ·
-<a href="testing/resources_validation.md">Prüfnachweise und Reproduktion</a>.</p></section><section id="chapter-class_diagrams"><h1 id="chapter-class_diagrams--uml-klassendiagramme">UML-Klassendiagramme</h1>
+<a href="testing/resources_validation.md">Prüfnachweise und Reproduktion</a>.</p></section><section id="chapter-planning_performance"><h1 id="chapter-planning_performance--planungszeit-und-vorausschauende-onlineplanung">Planungszeit und vorausschauende Onlineplanung</h1>
+<p>Stand: <strong>0.16.2</strong>, Testwerkzeug <strong>0.5.2</strong>. Ausgangspunkt ist die lange
+Vorbereitung des UR5e-Pick-and-Place-Programms auf dem Anwender-PC.</p>
+<h2 id="chapter-planning_performance--was-aktuell-während-der-wartezeit-passiert">Was aktuell während der Wartezeit passiert</h2>
+<p>Der Editor lädt das Modell, plant und prüft <strong>das vollständige Programm</strong>,
+rastert es auf den gewählten Takt, simuliert jeden Sollwert und erzeugt danach
+die Ansicht. Erst nach erfolgreichem Abschluss wird ein neues Ergebnis sichtbar.
+Die Abspielzeit ist die simulierte Bewegungsdauer; die Vorbereitung findet davor
+statt. Das Bibliotheks-API <code>load_robot_program</code> macht ebenfalls eine vollständige
+Vorbereitung. Ein schneller Executor allein macht diesen Import nicht onlinefähig.</p>
+<pre><code class="language-mermaid">flowchart LR
+  A[YAML und Modell] --&gt; B[Alle Segmente planen und zulassen]
+  B --&gt; C[Zyklusraster]
+  C --&gt; D[Alle Sollwerte virtuell ausgeben und prüfen]
+  D --&gt; E[HTML und Robotergeometrie]
+  E --&gt; F[Abspielen]
+</code></pre>
+<p>Für eine spätere Steuerung gehören Planung und Prüfung auf einen Worker. Der
+zyklische Ausführungspfad übernimmt bereits vorbereitete Befehle. Der gewünschte
+Takt von <strong>1–20 ms</strong> ist kein Zeitbudget, in dem derzeit ein beliebiger LIN- oder
+CIRC-Auftrag vollständig berechnet werden könnte.</p>
+<h2 id="chapter-planning_performance--konkrete-beschleunigung">Konkrete Beschleunigung</h2>
+<p>Die numerische Intervall-FK war beim untersuchten Programm der Hauptaufwand:
+Sie multiplizierte auch zeitlich konstante Frames als dichte 4×4-Matrizen mit
+Ableitungen bis zur dritten Ordnung. Damit wurden zahlreiche bekannte Nullterme
+wiederholt multipliziert, addiert und nach außen gerundet.</p>
+<p>Ab 0.16.2 verwendet diese Rechnung die Struktur starrer Transformationen:
+konstante Frames werden ordnungsweise angewendet, die homogene letzte Zeile
+bleibt exakt <code>[0,0,0,1]</code>, Drehgelenke verändern nur den Rotationsblock und
+Schubgelenke nur die Translation. Exakte Intervallidentitäten für 0 und ±1
+vermeiden weitere Arbeit. Alle verbleibenden Intervalloperationen verwenden die
+bisherige Rundung nach außen. Die unveränderte dichte Double-Rechnung bleibt ein
+separater Vergleich für die Ableitungen.</p>
+<p>Bei der Spline-Zulassung wird am Mittelpunkt außerdem nur die benötigte FK-Pose
+berechnet. Die dort früher zusätzlich ausgewerteten TCP-Ableitungen wurden
+verworfen; die Hüllenrechnung stellt die benötigten Schranken bereits bereit.
+Positionstoleranz, Orientierungstoleranz, Gelenk- und TCP-Grenzen sowie
+Unterteilungsbudgets werden für die Beschleunigung nicht gelockert.</p>
+<p>Unter Windows wählen die Python-Starter nun auch bei Visual Studio und anderen
+Multi-Config-Generatoren ausdrücklich <code>--config Release</code> und dessen ausführbare
+Datei. <code>CMAKE_BUILD_TYPE=Release</code> allein hatte diese Konfiguration nicht festgelegt.
+Die Konfiguration des tatsächlich gestarteten Exporters wird im Ergebnis genannt.
+Das kann zusätzliche Unterschiede auf einem Anwender-PC erklären; dessen
+bisheriger Build wurde hier nicht untersucht.</p>
+<h2 id="chapter-planning_performance--auf-dem-eigenen-rechner-messen">Auf dem eigenen Rechner messen</h2>
+<p>Editor neu starten und das Programm erneut simulieren:</p>
+<pre><code class="language-sh">python tools/motion_viewer/run_editor.py
+</code></pre>
+<p>Die Ergebniszeile nennt nun Planung, Simulation, Gesamtzeit und Build-Konfiguration.
+Vorhandene HTML-Dateien und mit <code>--exporter</code> übergebene ältere Binärdateien werden
+nicht automatisch aktualisiert. Für letztere den aktuellen Exporter neu bauen.</p>
+<p>Eine wiederholbare Messung ohne Browser liefert:</p>
+<pre><code class="language-sh">python tools/motion_viewer/benchmark.py --cycle-ms 1 10 20 --repeats 3
+</code></pre>
+<p>Standardmäßig werden Pick-and-Place und das Beispiel mit konstanter
+LIN-Orientierung gemessen. Eigenes Programm:</p>
+<pre><code class="language-sh">python tools/motion_viewer/benchmark.py --program mein_programm.yaml --cycle-ms 10 --repeats 3 --output benchmark.json
+</code></pre>
+<p>Buildzeit und JSON-Einlesen im Benchmark liegen außerhalb der gemessenen nativen
+Prozesszeit. Wiederholte Läufe müssen identische Bewegungsdauer, Sollwertzahl,
+Arbeitszähler und CSV-SHA256 liefern; sonst bricht der Vergleich ab. Der Bericht
+enthält alle Einzelwerte, Median und größte beobachtete Planungszeit. Ein Maximum
+aus wenigen Läufen ist <strong>keine obere Laufzeitschranke</strong>.</p>
+<table>
+<thead>
+<tr>
+<th>Messwert</th>
+<th>Enthalten</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>planning_s</code></td>
+<td>Modell-/Programmimport, vollständige Planung/Zulassung, Zyklusraster und gegebenenfalls erneutes Rastern</td>
+</tr>
+<tr>
+<td><code>simulation_s</code></td>
+<td>Virtuelle Ausführung jedes Ticks einschließlich CSV-Spooling</td>
+</tr>
+<tr>
+<td><code>native_process_s</code></td>
+<td>Aufruf des nativen Werkzeugs einschließlich JSON-Ausgabe und Prozessstart/-ende</td>
+</tr>
+<tr>
+<td><code>postprocess_s</code></td>
+<td>Im Editor: JSON-/CSV-Prüfung, Modellansicht, HTML und Programm-Bündel</td>
+</tr>
+<tr>
+<td><code>total_s</code></td>
+<td>Im Editor: Bearbeitung nach Request-Validierung bis unmittelbar vor Veröffentlichung, ohne nachgelagerte Altdatei-Bereinigung</td>
+</tr>
+<tr>
+<td><code>work_units</code></td>
+<td>Vorbereitungszähler; weder CPU-Instruktionen noch Echtzeitnachweis</td>
+</tr>
+</tbody>
+</table>
+<p>Bericht und Grenzen der lokalen Messung: <a href="testing/planning_performance_validation.md">Prüfnachweis</a>.</p>
+<h2 id="chapter-planning_performance--was-für-echte-vorausschauende-planung-noch-fehlt">Was für echte vorausschauende Planung noch fehlt</h2>
+<p>Diese Optimierung reduziert die Vorbereitung. Der Programmcompiler erstellt
+weiterhin den ganzen Auftrag. Die vorhandenen Live-Planwechsel und bewegten
+Horizonte sind Bausteine; ein inkrementeller YAML-Programmplaner ist damit noch
+nicht implementiert.</p>
+<p>Die nächsten Pakete sind in dieser Reihenfolge sinnvoll:</p>
+<ol>
+<li><strong>Begrenzte Segmentvorbereitung:</strong> Compiler-Cursor mit definiertem Eingangs-
+   und Endzustand; höchstens eine begrenzte Zahl an Bewegungen beziehungsweise
+   DXF-Teilstücken pro Job. Gemeinsame Arbeits-/Speicherbudgets, Abbruch und
+   Quellorte gelten auch für dieses Fenster. Die vorhandenen Ruhegrenzen
+   ermöglichen zunächst Übergaben ohne zusätzliche Blend-Semantik.</li>
+<li><strong>Lookahead-Worker und begrenzte Übergabe:</strong> Zugelassene Fenster im Hintergrund
+   erzeugen, Besitz über die bestehende Live-Session verwalten und ausreichend
+   Vorlauf vor dem Start füllen. Modell-, Kalibrierungs-, Programm- und
+   Grenzversion gehören zur Fensteridentität. Veraltete Ergebnisse verwerfen.
+   Simulation, CSV und Rendering liegen außerhalb dieses Produktionspfads.</li>
+<li><strong>Definiertes Verhalten bei zu wenig Vorlauf:</strong> Vorab zugelassene Haltstrategie,
+   keine Fortsetzung mit ungeprüften Daten und kein Warten im zyklischen Thread.
+   Verzögerung, Abbruch, Pufferfüllstand, Grenzfall-IK und Versionswechsel unter
+   Last prüfen. Die Reserve muss die Laufzeit des Halts berücksichtigen.</li>
+<li><strong>Abnahme auf dem Pi 4B:</strong> Laufzeiten pro Fenster, schlechteste beobachtete
+   Verzögerung, Speicherspitzen und Reserve unter realistischer Konkurrenzlast
+   messen; daraus die zulässigen Fenster-/Startbedingungen ableiten. Erst das
+   erlaubt eine belastbare Aussage zur Zielplattform. CANopen bleibt vorerst
+   zurückgestellt.</li>
+</ol>
+<p>Ein Verhältnis Planungszeit/Bewegungsdauer unter 1 ist eine notwendige
+Durchsatzbetrachtung für einen dauerhaften Betrieb, aber allein unzureichend:
+Ein einzelnes schwieriges Fenster kann seinen Vorlauf trotzdem aufbrauchen.
+Gemessene PC-Durchschnittswerte werden deshalb nicht als garantierte Online-
+oder Echtzeitfähigkeit ausgewiesen.</p></section><section id="chapter-class_diagrams"><h1 id="chapter-class_diagrams--uml-klassendiagramme">UML-Klassendiagramme</h1>
 <p>Die folgenden neun Sichten beschreiben vorhandene Typen. Eine leere
 Dreieckspitze bezeichnet Vererbung; eine ausgefüllte Raute den Besitzer der
 enthaltenen Werte oder <code>shared_ptr</code>. Gestrichelte Pfeile zeigen Nutzung bzw.

@@ -127,15 +127,24 @@ const char *operation(motion::ProgramOperation value) {
   }
   throw std::logic_error("Unknown program operation");
 }
+struct PreparationMetrics {
+  double planning_s{}, simulation_s{};
+};
 void write_scene(const motion::PreparedRobotProgram &prepared, std::ostream &output, std::istream &csv,
-                 const motion::ProgramSimulationReport &report, motion::PreparationContext &context) {
+                 const motion::ProgramSimulationReport &report, motion::PreparationContext &context,
+                 const PreparationMetrics &metrics) {
   const auto &program = *prepared.reference;
   const auto &schedule = *prepared.schedule;
   const auto &robot = program.robot();
   const auto &model = *robot.kinematics;
   output.imbue(std::locale::classic());
   output << std::setprecision(17);
-  output << "{\"format\":\"robot-motion-viewer\",\"schema_version\":1,\"robot\":{\"name\":";
+  output << "{\"format\":\"robot-motion-viewer\",\"schema_version\":1,\"preparation\":{\"planning_s\":"
+         << metrics.planning_s << ",\"simulation_s\":" << metrics.simulation_s
+         << ",\"work_units\":" << context.used(motion::PreparationResource::Work)
+         << ",\"build_configuration\":";
+  text(output, MOTION_VIEWER_BUILD_CONFIG);
+  output << "},\"robot\":{\"name\":";
   text(output, robot.name);
   output << ",\"base_link\":";
   text(output, robot.base_link);
@@ -340,10 +349,12 @@ int main(int argc, char **argv) {
     const auto timeout_ms = timeout ? integer(timeout, 1, 3600000) : 120000;
     motion::PreparationContext context(
         {}, {}, motion::PreparationContext::Clock::now() + std::chrono::milliseconds(timeout_ms));
+    const auto planning_begin = std::chrono::steady_clock::now();
     auto prepared = editor_mode ? prepare_editor_program(source, argv[6], &context)
                                 : motion::load_robot_program(argv[1], &context);
     if (argc >= 4)
       prepared = motion::retime_robot_program(prepared, integer(argv[3], 1, 20) * .001, &context);
+    const auto planning_end = std::chrono::steady_clock::now();
     const unsigned max_ticks = argc >= 5 ? integer(argv[4], 1, 99999) : 99999;
     temporary = destination;
     temporary += ".tmp-" + std::to_string(std::chrono::steady_clock::now().time_since_epoch().count());
@@ -357,6 +368,9 @@ int main(int argc, char **argv) {
         throw std::runtime_error("Viewer CSV budget of 64 MiB exceeded");
       throw;
     }
+    const PreparationMetrics metrics{
+        std::chrono::duration<double>(planning_end - planning_begin).count(),
+        std::chrono::duration<double>(std::chrono::steady_clock::now() - planning_end).count()};
     context.checkpoint("viewer.export");
     if (std::filesystem::exists(temporary))
       throw std::runtime_error("Temporary filename exists");
@@ -364,7 +378,7 @@ int main(int argc, char **argv) {
     if (!file)
       throw std::runtime_error("Cannot create visualization output");
     auto trace = trace_buffer.input();
-    write_scene(prepared, file, trace, report, context);
+    write_scene(prepared, file, trace, report, context, metrics);
     context.checkpoint("viewer.publish");
     file.close();
     if (!file)

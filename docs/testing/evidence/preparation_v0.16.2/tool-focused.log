@@ -1,0 +1,14 @@
+test_multiconfig_does_not_fall_back_to_stale_root_or_debug_binary (test_tool_build.ToolBuildTests.test_multiconfig_does_not_fall_back_to_stale_root_or_debug_binary) ... ok
+test_release_configuration_and_generator_specific_binary (test_tool_build.ToolBuildTests.test_release_configuration_and_generator_specific_binary) ... ok
+test_native_benchmark_and_validated_optional_metrics (test_preparation_metrics.PreparationMetricsTests.test_native_benchmark_and_validated_optional_metrics) ... ok
+
+----------------------------------------------------------------------
+Ran 3 tests in 0.027s
+
+OK
+test_successful_native_run_preserves_exact_source_snapshot_and_grid (test_program_editor.ProgramEditorTests.test_successful_native_run_preserves_exact_source_snapshot_and_grid) ... ok
+
+----------------------------------------------------------------------
+Ran 1 test in 0.426s
+
+OK

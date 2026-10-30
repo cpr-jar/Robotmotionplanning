@@ -59,6 +59,8 @@ def main():
             page.locator("#filename").fill("testprogramm.yaml")
             page.locator("#simulate").click()
             page.wait_for_function("document.body.dataset.resultState==='current'", timeout=120000)
+            summary = page.locator("#result-summary").inner_text()
+            assert "Planung" in summary and "Simulation" in summary and "Gesamt" in summary
             viewer = page.frame_locator("#preview")
             viewer.locator("body[data-viewer-state=ready][data-render-mode=mesh]").wait_for(timeout=30000)
             assert viewer.locator("body").get_attribute("data-mesh-links") == "7"

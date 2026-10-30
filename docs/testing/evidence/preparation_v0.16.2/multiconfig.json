@@ -1,0 +1,24 @@
+{
+  "program": "/workspace/robot-motion-cpp/programs/examples/ur5e_pick_place.yaml",
+  "source_sha256": "e1c20db228d1bc13b9ef235bbf3aea297a85d4369eb6d4bbbaa4c78370108499",
+  "cycle_ms": 10,
+  "duration_s": 46.28,
+  "commands": 4629,
+  "work_units": 18916,
+  "build_configuration": "Release",
+  "trace_sha256": "8c7b04d5a5e4ebaabf6739b765ea44ccd66fe771f093e275ebf7e877c0aec922",
+  "runs": [
+    {
+      "planning_s": 1.108911726,
+      "simulation_s": 0.128172998,
+      "native_process_s": 1.2681888379884185
+    }
+  ],
+  "median": {
+    "planning_s": 1.108911726,
+    "simulation_s": 0.128172998,
+    "native_process_s": 1.2681888379884185
+  },
+  "maximum_planning_s": 1.108911726,
+  "planning_to_motion_ratio": 0.023960927528089888
+}

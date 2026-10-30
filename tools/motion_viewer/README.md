@@ -1,4 +1,4 @@
-# Motion Viewer · separates Werkzeug 0.5.1
+# Motion Viewer · separates Werkzeug 0.5.2
 
 Ein **Offline-Viewer für die vorhandenen Bewegungsprogramme**, vollständig unter
 `tools/motion_viewer/`. Bibliothek, Steuerungsschnittstellen und deren Build-
@@ -7,7 +7,7 @@ benutzt ausschließlich die öffentlichen Bibliotheksschnittstellen.
 
 ## Sofort ansehen – ohne Build
 
-1. [Projekt mit Viewer, Editor und DXF-Befehl herunterladen](https://github.com/cpr-jar/Robotmotionplanning/archive/refs/tags/v0.16.1.zip) und entpacken.
+1. [Projekt mit Viewer, Editor und DXF-Befehl herunterladen](https://github.com/cpr-jar/Robotmotionplanning/archive/refs/tags/v0.16.2.zip) und entpacken.
 2. **`tools/motion_viewer/demo/ur5e_motion.html`** im Browser öffnen.
 3. **Abspielen** drücken. Mit dem Zeitregler oder den Programmschritten gezielt
    zu einer Stelle springen; die 3D-Ansicht mit der Maus drehen und zoomen.
@@ -292,3 +292,17 @@ Der normale Bibliotheks-Build kennt den Viewer nicht; der Viewer bindet die
 Bibliothek als Unterprojekt ein. Damit kann er separat geändert und getestet
 werden. Für die spätere reale Steuerungseinbindung gilt weiterhin das
 [Integrationshandbuch](../../docs/integration/controller_integration.md).
+
+## Planungszeit messen
+
+Die Starter wählen Release auch bei Multi-Config-Generatoren. Die Ergebniszeile
+des Editors nennt Planung, Simulation, Gesamtzeit und die tatsächlich gebaute
+Konfiguration. Ein alter, explizit übergebener Exporter muss neu gebaut werden.
+
+```sh
+python tools/motion_viewer/benchmark.py --cycle-ms 1 10 20 --repeats 3
+```
+
+Das Werkzeug bleibt unter `tools/motion_viewer/`. Es misst die vollständige
+Vorbereitung getrennt von der Simulation; die Bibliothek enthält keine Browser-
+oder Benchmark-Abhängigkeiten. [Messgrößen und Online-Ausbau](../../docs/integration/planning_performance.md).

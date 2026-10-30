@@ -24,12 +24,32 @@ struct Interval {
   double absolute() const { return std::max(std::abs(lo), std::abs(hi)); }
 };
 inline Interval operator+(Interval a, Interval b) {
+  // These identities are exact, including for floating-point endpoints. Keeping
+  // structural zeros avoids thousands of rounded operations in derivative jets.
+  if (b.lo == 0 && b.hi == 0)
+    return a;
+  if (a.lo == 0 && a.hi == 0)
+    return b;
   return {down(a.lo + b.lo), up(a.hi + b.hi)};
 }
 inline Interval operator-(Interval a, Interval b) {
+  if (b.lo == 0 && b.hi == 0)
+    return a;
+  if (a.lo == 0 && a.hi == 0)
+    return {-b.hi, -b.lo};
   return {down(a.lo - b.hi), up(a.hi - b.lo)};
 }
 inline Interval operator*(Interval a, Interval b) {
+  if ((a.lo == 0 && a.hi == 0) || (b.lo == 0 && b.hi == 0))
+    return Interval(0);
+  if (a.lo == 1 && a.hi == 1)
+    return b;
+  if (b.lo == 1 && b.hi == 1)
+    return a;
+  if (a.lo == -1 && a.hi == -1)
+    return {-b.hi, -b.lo};
+  if (b.lo == -1 && b.hi == -1)
+    return {-a.hi, -a.lo};
   const double v[4] = {a.lo * b.lo, a.lo * b.hi, a.hi * b.lo, a.hi * b.hi};
   return {down(*std::min_element(v, v + 4)), up(*std::max_element(v, v + 4))};
 }
@@ -123,6 +143,42 @@ inline std::vector<Jet> polynomial_jets(const std::vector<polynomial_detail::Con
   }
   return q;
 }
+namespace detail {
+// A constant frame has zero derivatives and every rigid transform has last row
+// [0, 0, 0, 1]. Evaluate only the nonzero terms rather than a dense 4x4 jet
+// product. All remaining scalar operations still use outward-rounded intervals.
+inline differential_math::Matrix<Jet> right_pose(const differential_math::Matrix<Jet> &a, const Pose &pose) {
+  const auto b = differential_math::pose<double>(pose);
+  auto r = differential_math::identity<Jet>();
+  for (int i = 0; i < 3; ++i)
+    for (int j = 0; j < 4; ++j)
+      for (int order = 0; order < 4; ++order) {
+        auto value = j == 3 ? a[i][3].d[order] : Interval(0);
+        for (int k = 0; k < 3; ++k)
+          value = value + a[i][k].d[order] * Interval(b[k][j]);
+        r[i][j].d[order] = value;
+      }
+  return r;
+}
+inline differential_math::Matrix<Jet> right_joint(const differential_math::Matrix<Jet> &a,
+                                                  const SerialJoint &joint, const Jet &q) {
+  auto r = a;
+  if (joint.type == SerialJointType::Prismatic) {
+    for (int i = 0; i < 3; ++i)
+      for (int k = 0; k < 3; ++k)
+        r[i][3] = r[i][3] + a[i][k] * (Jet(joint.axis[k]) * q);
+  } else {
+    const auto b = differential_math::rotation(joint.axis, q);
+    for (int i = 0; i < 3; ++i)
+      for (int j = 0; j < 3; ++j) {
+        r[i][j] = Jet{};
+        for (int k = 0; k < 3; ++k)
+          r[i][j] = r[i][j] + a[i][k] * b[k][j];
+      }
+  }
+  return r;
+}
+} // namespace detail
 inline Result evaluate(const IKinematics &model, const std::vector<Jet> &q) {
   using namespace differential_math;
   if (q.size() != model.dof())
@@ -173,19 +229,13 @@ inline Result evaluate(const IKinematics &model, const std::vector<Jet> &q) {
   auto t = pose<Jet>(serial->base_pose());
   std::size_t k = 0;
   for (const auto &j : serial->joints()) {
-    t = multiply(t, pose<Jet>(j.origin));
+    t = detail::right_pose(t, j.origin);
     if (j.type == SerialJointType::Fixed)
       continue;
-    auto m = identity<Jet>();
-    if (j.type == SerialJointType::Prismatic) {
-      for (int i = 0; i < 3; ++i)
-        m[i][3] = Jet(j.axis[i]) * q[k];
-    } else
-      m = rotation(j.axis, q[k]);
-    t = multiply(t, m);
+    t = detail::right_joint(t, j, q[k]);
     ++k;
   }
-  t = multiply(t, pose<Jet>(serial->tool_offset()));
+  t = detail::right_pose(t, serial->tool_offset());
   for (int i = 0; i < 3; ++i)
     r.position[i] = t[i][3];
   r.angular = angular(t);

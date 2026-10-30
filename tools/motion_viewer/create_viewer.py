@@ -279,6 +279,17 @@ def prepare_data(exported, max_frames=4000, visuals="auto", budget=None):
         if index in chosen:
             frames.append([float(value) for value in row])
     result = {key: exported[key] for key in ("format", "schema_version", "robot", "program")}
+    if "preparation" in exported:
+        metrics = exported["preparation"]
+        require(isinstance(metrics, dict), "Invalid preparation metrics")
+        for key in ("planning_s", "simulation_s"):
+            require(finite_number(metrics.get(key)) and metrics[key] >= 0, "Invalid preparation time")
+        require(type(metrics.get("work_units")) is int and metrics["work_units"] >= 0,
+                "Invalid preparation work count")
+        require(isinstance(metrics.get("build_configuration"), str)
+                and len(metrics["build_configuration"]) <= 64, "Invalid build configuration")
+        result["preparation"] = {key: metrics[key] for key in
+                                 ("planning_s", "simulation_s", "work_units", "build_configuration")}
     if budget:
         budget.checkpoint()
     visual_model = select_visual_model(robot, visuals)

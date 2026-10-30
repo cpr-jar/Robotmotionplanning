@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.16.2 — Reduce preparation cost and expose timings, 2026-10-30
+
+- Preserve exact interval identities and compose serial frames using their rigid
+  structure, avoiding dense products of constant derivative jets. Retain outward
+  rounding and the existing path tolerances, caps and admission budgets.
+- Avoid discarded differential evaluations at spline-admission midpoints.
+- Add extended-precision arithmetic and randomized mixed-joint enclosure checks
+  against the independent Eigen FK and unchanged double-jet derivatives.
+- Explicitly build/select Release with multi-config generators in viewer launchers.
+- Report native planning/simulation phases and editor elapsed times; add a separate
+  repeatable benchmark under tools/motion_viewer with trajectory hash checks.
+- Document local measurements and distinguish faster whole-program preparation
+  from the still-pending incremental online program planner.
+
 ## 0.16.1 — Keep TCP orientation during ordinary LIN, 2026-10-30
 
 - LIN now keeps the actual segment-start TCP orientation in world coordinates by

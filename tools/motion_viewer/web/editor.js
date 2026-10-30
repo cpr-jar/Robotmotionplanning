@@ -204,6 +204,14 @@
         " Befehle · " +
         result.cycle_ms +
         " ms";
+      if (result.preparation?.planning_s !== undefined) {
+        const seconds = (value) => value.toLocaleString("de-DE", { maximumFractionDigits: 3 });
+        $("result-summary").textContent +=
+          " · Planung " + seconds(result.preparation.planning_s) + " s" +
+          " · Simulation " + seconds(result.preparation.simulation_s) + " s" +
+          " · Gesamt " + seconds(result.preparation.total_s) + " s" +
+          " · " + result.preparation.build_configuration;
+      }
       for (const [id, url] of [
         ["download-html", result.html_url],
         ["download-snapshot", result.source_url],

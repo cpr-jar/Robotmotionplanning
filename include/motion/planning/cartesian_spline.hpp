@@ -25,24 +25,7 @@ public:
   double admitted_position_error_m() const { return position_error_; }
   double admitted_orientation_error_rad() const { return rotation_error_; }
   JointPathPoint evaluate(double s) const override {
-    path_detail::parameter(s);
-    const auto count = controls_.size(), k = std::min(count - 1, std::size_t(s * count));
-    const long double u = s == 1 ? 1 : static_cast<long double>(s) * count - k;
-    JointPathPoint r;
-    const auto n = model_->dof();
-    r.q.resize(n);
-    r.q_s.resize(n);
-    r.q_ss.resize(n);
-    r.q_sss.resize(n);
-    std::array<Vector *, 4> out{&r.q, &r.q_s, &r.q_ss, &r.q_sss};
-    for (std::size_t i = 0; i < n; ++i) {
-      auto b = controls_[k][i];
-      for (int o = 0; o < 4; ++o) {
-        (*out[o])[i] = double(polynomial_detail::value(b, 5 - o, u));
-        if (o < 3)
-          b = polynomial_detail::derivative(b, 5 - o, 1.L / count);
-      }
-    }
+    auto r = evaluate_joints(s);
     r.tcp.pose = model_->fk(r.q);
     KinematicDerivatives d;
     if (const auto *diff = dynamic_cast<const IDifferentialKinematics *>(model_.get()))
@@ -86,6 +69,28 @@ public:
   }
 
 private:
+  JointPathPoint evaluate_joints(double s) const {
+    path_detail::parameter(s);
+    const auto count = controls_.size(), k = std::min(count - 1, std::size_t(s * count));
+    const long double u = s == 1 ? 1 : static_cast<long double>(s) * count - k;
+    JointPathPoint r;
+    const auto n = model_->dof();
+    r.q.resize(n);
+    r.q_s.resize(n);
+    r.q_ss.resize(n);
+    r.q_sss.resize(n);
+    std::array<Vector *, 4> out{&r.q, &r.q_s, &r.q_ss, &r.q_sss};
+    for (std::size_t i = 0; i < n; ++i) {
+      auto b = controls_[k][i];
+      for (int o = 0; o < 4; ++o) {
+        (*out[o])[i] = double(polynomial_detail::value(b, 5 - o, u));
+        if (o < 3)
+          b = polynomial_detail::derivative(b, 5 - o, 1.L / count);
+      }
+    }
+    return r;
+  }
+
   friend CartesianSplineResult map_cartesian_spline(std::shared_ptr<const IKinematics>,
                                                     std::shared_ptr<const IPosePath>, const Vector &,
                                                     CartesianSplineOptions);
@@ -218,7 +223,7 @@ inline CartesianSplineResult map_cartesian_spline(std::shared_ptr<const IKinemat
             angular[o] = kinematic_detail::norm(a);
           }
           const double mid = begin + span / 2;
-          const auto actual = candidate->evaluate(mid).tcp.pose, goal = pose_at(mid);
+          const auto actual = model->fk(candidate->evaluate_joints(mid).q), goal = pose_at(mid);
           const double p = kinematic_detail::norm(kinematic_detail::sub(actual.position, goal.position)) +
                            (linear[0] + desired->linear_speed_bound()) * span / 2;
           const double r = rotation_distance(actual.orientation, goal.orientation) +
