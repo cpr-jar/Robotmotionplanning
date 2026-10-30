@@ -96,6 +96,98 @@ WAIT-Zeiten ändern sich dadurch nicht. Das ist keine Laufzeit-Geschwindigkeits�
 
 ## Vorabprüfung und Ausführung
 
+### Pick-and-Place-Beispiel für UR5e
+
+`programs/examples/ur5e_pick_place.yaml` verwendet das vorhandene nominale
+UR5e-Modell, nicht den älteren UR5. Vorgesehen sind zwei Stationen mit
+senkrechtem Absenken und Anheben, kurzen WAITs als Greifer-Platzhalter und
+weitem PTP-Transfer mit 180 Grad Werkzeugdrehung bei globalem `speed: 1.0`.
+Alle Schrittgrenzen bleiben
+Stillstandspunkte. Es werden weder Greifer-I/O noch Werkstücke simuliert.
+
+Die Datei muss mit dem nativen Exporter vollständig planbar sein und darf
+keine Sample-Profilverletzungen zeigen. Mindestens eine Sample-Spitze für
+Geschwindigkeit, Beschleunigung oder Ruck soll mindestens 90 % einer
+Profilgrenze erreichen. Das ist ein Belastungsbeispiel für Simulationsannahmen,
+keine Herstellerfreigabe, Nutzlastprüfung oder Kollisionsprüfung.
+
+Das Beispiel nutzt das separate `models/ur5e/profile_pick_place_simulation.yaml`.
+Das konservative `models/ur5e/profile.yaml` bleibt unverändert. Für das neue Profil
+gelten folgende vor der Simulation festgelegte Annahmen:
+
+| Bereich | Geschwindigkeit | Beschleunigung | Ruck |
+| --- | ---: | ---: | ---: |
+| Jede Gelenkachse | 3,141592653589793 rad/s | 12 rad/s² | 60 rad/s³ |
+| TCP linear | 1,0 m/s | 2 m/s² | 10 m/s³ |
+| TCP rotatorisch | 0,5 rad/s | 1 rad/s² | 5 rad/s³ |
+
+Die Gelenkgeschwindigkeit entspricht den 180 Grad/s aus
+[UR-Forumsbeitrag 4](https://forum.universal-robots.com/t/maximum-axis-speed-acceleration/13338/4).
+Die Beschleunigungen liegen unter den Empfehlungen für moveJ und moveL aus
+[Beitrag 2](https://forum.universal-robots.com/t/maximum-axis-speed-acceleration/13338/2),
+sind aber keine für jede Pose und Nutzlast garantierten Grenzen. Der angenommene
+Ruck ist Beschleunigung geteilt durch 0,2 s Anstiegszeit, kein Herstellerwert.
+Der [Ruck-Thread](https://forum.universal-robots.com/t/how-to-apply-a-forth-order-polynomial-to-limit-jerk/3708/4)
+liefert dafür keine numerischen Herstellergrenzen. Die lineare TCP-Geschwindigkeit
+von 1,0 m/s ist eine zusätzliche Simulationsannahme, kein durch diese Beiträge
+belegter Herstellergrenzwert. Die rotatorischen TCP-Grenzen werden unverändert
+aus dem konservativen Profil übernommen und können weiterhin limitieren.
+
+CLI-Modellpfade sind relativ zur Programmdatei. Beim Import in den Editor
+`robot_profile` auf `models/ur5e/profile_pick_place_simulation.yaml` setzen und
+erneut simulieren.
+
+Aktueller Prüfstand mit 1,0 m/s linearer TCP-Geschwindigkeitsgrenze vom
+30.10.2026: native Planung und Editor-HTML-Veröffentlichung erfolgreich,
+keine Sample-Profilverletzungen. Die acht senkrechten 120-mm-Bewegungen,
+Rückkehr zur Startkonfiguration und terminaler Stillstand sind geprüft.
+Die Gesamtdauer bleibt bei 46,28 s und 4.629 Sollwerten bei 10 ms.
+Die tatsächliche lineare TCP-Spitzengeschwindigkeit bleibt 0,2419 m/s,
+nun 24,2 % der erhöhten Grenze. Die übrigen Sample-Spitzen bleiben gegenüber
+dem folgenden Vergleichsstand unverändert. Die vier PTP-Transfers dauern
+weiterhin jeweils 9,5 s; eine höhere Geschwindigkeitsgrenze allein erzwingt
+keine kürzere Planung. Beschleunigung, Ruck, rotatorische TCP-Grenzen und
+die Bahn bleiben unverändert. Das ursprüngliche Belastungsziel von mindestens
+90 % wird mit maximal 89,5 % Sample-Grenzausnutzung aktuell knapp verfehlt;
+dafür werden keine weiteren Grenzen ohne neue Annahmen verändert.
+
+Vergleichsstand mit dem Annahmenprofil und noch 0,25 m/s TCP-Geschwindigkeit
+vom 30.10.2026: dieselben zwei
+Zyklen, 16 Segmente und acht senkrechte 120-mm-Bewegungen ergeben 4.629 Sollwerte
+bei 10 ms und 46,28 s Gesamtdauer (vorher 60,72 s). Der native Export und die
+HTML-Veröffentlichung im Editor waren erfolgreich. Alle Samples bleiben innerhalb
+der Profilgrenzen; Start- und Endkonfiguration stimmen überein, der Endzustand
+ist in Ruhe. Die Sample-Spitzen relativ zum neuen Profil sind:
+
+| Größe | Anteil an der Profilgrenze |
+| --- | ---: |
+| Gelenkgeschwindigkeit | 19,7 % |
+| Gelenkbeschleunigung | 15,8 % |
+| Gelenkruck | 35,5 % |
+| Lineare TCP-Geschwindigkeit | 96,8 % |
+| Lineare TCP-Beschleunigung | 40,1 % |
+| Linearer TCP-Ruck | 89,5 % |
+
+Die unveränderten TCP-Grenzen begrenzen diese Bahn weiterhin. Die höheren
+Gelenkgrenzen bedeuten daher nicht, dass die Bahn diese auch ausschöpft.
+
+Vergleichsstand mit dem bisherigen konservativen Profil vom 30.10.2026:
+zwei Zyklen mit je 120 mm vertikalem
+Hub, 16 expandierte Segmente, 6.073 Sollwerte bei 10 ms und 60,72 s Gesamtdauer.
+Der native Export und die HTML-Veröffentlichung durch den Editor waren erfolgreich.
+Die vollständige Sample-Spur enthält keine Profilverletzungen. Ihre Maxima sind:
+
+| Größe | Sample-Spitze | Anteil an der Profilgrenze |
+| --- | ---: | ---: |
+| Gelenkgeschwindigkeit | 0,4996 rad/s | 99,9 % |
+| Gelenkbeschleunigung | 0,6469 rad/s² | 64,7 % |
+| Gelenkruck | 4,2586 rad/s³ | 85,2 % |
+| Lineare TCP-Beschleunigung | 0,2741 m/s² | 54,8 % |
+| Linearer TCP-Ruck | 1,7914 m/s³ | 89,6 % |
+
+Sample-Spitzen ersetzen nicht die kontinuierliche Zulassung des nativen Planers
+und sind keine Messungen an einem physischen Roboter.
+
 Alle Befehle werden vor Veröffentlichung des Programms geprüft. PTP verwendet
 Gelenkpolynomhüllen plus nichtlineare FK-Intervalljets; bei zu hohen TCP-Werten
 werden innerhalb eines festen Budgets längere Dauern versucht. LIN/CIRC werden

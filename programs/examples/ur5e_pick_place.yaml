@@ -1,0 +1,31 @@
+schema_version: 1
+units: SI
+frame: world
+robot_profile: ../../models/ur5e/profile_pick_place_simulation.yaml
+cycle_s: 0.01
+speed: 1.0
+start: pick_above
+points:
+  pick_above:
+    joints: [-0.65, -1.2, 1.6, -1.9707963267948965, -1.5707963267948966, 0.0]
+  place_above:
+    joints: [0.65, -1.2, 1.6, -1.9707963267948965, -1.5707963267948966, 3.141592653589793]
+  pick:
+    position: [0.5702168444656257, -0.26603666971901746, 0.1862867376552781]
+    orientation: [0.0, -0.4443048469804716, 0.8958756626617668, 0.0]
+  place:
+    position: [0.4088741486854529, 0.4782726104265926, 0.1862867376552781]
+    orientation: [0.0, -0.4443048471642192, -0.895875662570638, 0.0]
+subprograms:
+  pick_and_place:
+    - {type: LIN, target: pick}
+    - {type: WAIT, seconds: 0.2}
+    - {type: LIN, target: pick_above}
+    - {type: PTP, target: place_above}
+    - {type: LIN, target: place}
+    - {type: WAIT, seconds: 0.2}
+    - {type: LIN, target: place_above}
+    - {type: PTP, target: pick_above}
+steps:
+  - {type: CALL, program: pick_and_place}
+  - {type: CALL, program: pick_and_place}
