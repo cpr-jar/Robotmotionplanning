@@ -1,0 +1,77 @@
+Test project /workspace/robot-motion-cpp/build-all
+      Start 24: random_programs_tests
+      Start 21: lin_orientation_tests
+ 1/36 Test #21: lin_orientation_tests ............   Passed    0.86 sec
+      Start 23: dxf_program_tests
+ 2/36 Test #23: dxf_program_tests ................   Passed    0.28 sec
+      Start  5: execution_tests
+ 3/36 Test  #5: execution_tests ..................   Passed    0.02 sec
+      Start 25: parser_fuzz_tests
+ 4/36 Test #25: parser_fuzz_tests ................   Passed    0.35 sec
+      Start 16: kinematic_edges_tests
+ 5/36 Test #24: random_programs_tests ............   Passed    1.81 sec
+      Start 20: robot_program_tests
+ 6/36 Test #16: kinematic_edges_tests ............   Passed    0.31 sec
+      Start 27: following_tests
+ 7/36 Test #27: following_tests ..................   Passed    0.08 sec
+      Start 22: preparation_budget_tests
+ 8/36 Test #22: preparation_budget_tests .........   Passed    0.01 sec
+      Start 33: controller_shutdown
+ 9/36 Test #33: controller_shutdown ..............   Passed    0.02 sec
+      Start 28: controller_cycle_1ms
+10/36 Test #20: robot_program_tests ..............   Passed    0.14 sec
+      Start 30: controller_cycle_20ms
+11/36 Test #28: controller_cycle_1ms .............   Passed    0.03 sec
+      Start  6: live_session_tests
+12/36 Test #30: controller_cycle_20ms ............   Passed    0.02 sec
+      Start 29: controller_cycle_10ms
+13/36 Test #29: controller_cycle_10ms ............   Passed    0.02 sec
+      Start 31: controller_late-clock
+14/36 Test  #6: live_session_tests ...............   Passed    0.04 sec
+      Start 32: controller_sink-refusal
+15/36 Test #31: controller_late-clock ............   Passed    0.02 sec
+      Start 15: interval_enclosures_tests
+16/36 Test #32: controller_sink-refusal ..........   Passed    0.02 sec
+      Start 34: program_ur5e_e2e
+17/36 Test #15: interval_enclosures_tests ........   Passed    0.01 sec
+      Start 36: program_fanuc_lrmate200id_e2e
+18/36 Test #36: program_fanuc_lrmate200id_e2e ....   Passed    0.02 sec
+      Start 11: reference_kinematics_tests
+19/36 Test #34: program_ur5e_e2e .................   Passed    0.03 sec
+      Start 19: dxf_import_tests
+20/36 Test #19: dxf_import_tests .................   Passed    0.02 sec
+      Start 35: program_abb_irb120_e2e
+21/36 Test #11: reference_kinematics_tests .......   Passed    0.03 sec
+      Start  8: execution_faults_tests
+22/36 Test #35: program_abb_irb120_e2e ...........   Passed    0.02 sec
+      Start 14: serial_tests
+23/36 Test  #8: execution_faults_tests ...........   Passed    0.02 sec
+      Start 17: kdl_reference_tests
+24/36 Test #17: kdl_reference_tests ..............   Passed    0.01 sec
+      Start  4: envelopes_tests
+25/36 Test #14: serial_tests .....................   Passed    0.02 sec
+      Start  2: preparation_context_tests
+26/36 Test  #2: preparation_context_tests ........   Passed    0.00 sec
+      Start  7: provider_contracts_tests
+27/36 Test  #4: envelopes_tests ..................   Passed    0.01 sec
+      Start 26: stopping_tests
+28/36 Test  #7: provider_contracts_tests .........   Passed    0.00 sec
+      Start 12: header_compatibility_tests
+29/36 Test #12: header_compatibility_tests .......   Passed    0.00 sec
+      Start  3: trajectory_tests
+30/36 Test #26: stopping_tests ...................   Passed    0.00 sec
+      Start 18: calibration_tests
+31/36 Test  #3: trajectory_tests .................   Passed    0.00 sec
+      Start 13: linux_platform_tests
+32/36 Test #18: calibration_tests ................   Passed    0.00 sec
+      Start  1: core_tests
+33/36 Test #13: linux_platform_tests .............   Passed    0.00 sec
+      Start  9: allocations_tests
+34/36 Test  #1: core_tests .......................   Passed    0.00 sec
+      Start 10: tracking_tests
+35/36 Test  #9: allocations_tests ................   Passed    0.00 sec
+36/36 Test #10: tracking_tests ...................   Passed    0.00 sec
+
+100% tests passed out of 36
+
+Total Test time (real) =   2.12 sec

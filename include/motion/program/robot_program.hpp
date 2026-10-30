@@ -25,6 +25,8 @@ private:
 using ProgramPoint = std::variant<Vector, Pose>;
 enum class ProgramOperation { Ptp, Line, Circle, Wait, Dxf };
 enum class DxfTravel { Reject, Line, Ptp };
+/// LIN keeps the actual start TCP orientation in world coordinates by default.
+enum class LinearOrientationMode { Keep, Interpolate };
 struct DxfProgramCommand {
   std::string file;
   DxfImportOptions import;
@@ -44,6 +46,7 @@ struct ProgramInstruction {
   std::optional<DxfProgramCommand> dxf;
   std::optional<DxfLocation> drawing_location;
   std::optional<PathVector3> drawing_start; // Nominal CAD start; preparation checks start/end within 1 um.
+  LinearOrientationMode linear_orientation_mode{LinearOrientationMode::Keep};
 };
 class RobotProgramSource {
 public:

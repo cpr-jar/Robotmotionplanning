@@ -1,0 +1,8 @@
+test_actual_tcp_orientation_at_every_lin_tick_and_viewer_metadata (test_lin_orientation.LinearOrientationTests.test_actual_tcp_orientation_at_every_lin_tick_and_viewer_metadata) ... ok
+test_user_far_goal_rejected_and_explicit_rotation_remains_available (test_lin_orientation.LinearOrientationTests.test_user_far_goal_rejected_and_explicit_rotation_remains_available) ... ok
+
+----------------------------------------------------------------------
+Ran 2 tests in 30.885s
+
+OK
+UR5e LIN: 98 ticks, maximum orientation change 3.30768245e-07 deg

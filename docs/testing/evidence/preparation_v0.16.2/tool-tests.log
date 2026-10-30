@@ -1,0 +1,67 @@
+test_actual_worker_cancel_and_timeout_reap_and_remove_partial_files (test_job_budget.JobBudgetTests.test_actual_worker_cancel_and_timeout_reap_and_remove_partial_files) ... ok
+test_cancel_during_python_phase_preserves_prior_and_releases_slot (test_job_budget.JobBudgetTests.test_cancel_during_python_phase_preserves_prior_and_releases_slot) ... ok
+test_deadline_after_render_prevents_commit (test_job_budget.JobBudgetTests.test_deadline_after_render_prevents_commit) ... ok
+test_deadline_and_thread_safe_cancellation (test_job_budget.JobBudgetTests.test_deadline_and_thread_safe_cancellation) ... ok
+test_lazy_lines_preserve_csv_newline_conventions (test_job_budget.JobBudgetTests.test_lazy_lines_preserve_csv_newline_conventions) ... ok
+test_streaming_validation_has_bounded_numeric_storage_and_checks_hidden_rows (test_job_budget.JobBudgetTests.test_streaming_validation_has_bounded_numeric_storage_and_checks_hidden_rows) ... ok
+test_actual_tcp_orientation_at_every_lin_tick_and_viewer_metadata (test_lin_orientation.LinearOrientationTests.test_actual_tcp_orientation_at_every_lin_tick_and_viewer_metadata) ... ok
+test_user_far_goal_rejected_and_explicit_rotation_remains_available (test_lin_orientation.LinearOrientationTests.test_user_far_goal_rejected_and_explicit_rotation_remains_available) ... ok
+test_complete_simulation_and_limits (test_motion_viewer.ViewerTests.test_complete_simulation_and_limits) ... ok
+test_cycle_grid_one_and_twenty_ms (test_motion_viewer.ViewerTests.test_cycle_grid_one_and_twenty_ms) ... ok
+test_decimation_preserves_boundaries_and_full_statistics (test_motion_viewer.ViewerTests.test_decimation_preserves_boundaries_and_full_statistics) ... ok
+test_embedded_labels_remain_inert_json (test_motion_viewer.ViewerTests.test_embedded_labels_remain_inert_json) ... ok
+test_invalid_metadata_and_json_rejected (test_motion_viewer.ViewerTests.test_invalid_metadata_and_json_rejected) ... ok
+test_late_program_error_preserves_existing_json (test_motion_viewer.ViewerTests.test_late_program_error_preserves_existing_json) ... ok
+test_malformed_input_preserves_existing_html (test_motion_viewer.ViewerTests.test_malformed_input_preserves_existing_html) ... ok
+test_native_budget_preserves_existing_json (test_motion_viewer.ViewerTests.test_native_budget_preserves_existing_json) ... ok
+test_renderer_matches_three_reference_models_and_mixed_chain (test_motion_viewer.ViewerTests.test_renderer_matches_three_reference_models_and_mixed_chain) ... ok
+test_source_cannot_be_overwritten (test_motion_viewer.ViewerTests.test_source_cannot_be_overwritten) ... ok
+test_visual_selection_is_trusted_and_skeleton_export_is_self_contained (test_motion_viewer.ViewerTests.test_visual_selection_is_trusted_and_skeleton_export_is_self_contained) ... ok
+test_native_benchmark_and_validated_optional_metrics (test_preparation_metrics.PreparationMetricsTests.test_native_benchmark_and_validated_optional_metrics) ... ok
+setUpClass (test_program_editor.EditorHttpTests) ... ERROR
+test_busy_and_timeout_never_publish_partial_results (test_program_editor.ProgramEditorTests.test_busy_and_timeout_never_publish_partial_results) ... ok
+test_dxf_assets_validation_and_native_path_boundaries (test_program_editor.ProgramEditorTests.test_dxf_assets_validation_and_native_path_boundaries) ... ok
+test_dxf_command_simulates_and_bundle_retains_exact_assets (test_program_editor.ProgramEditorTests.test_dxf_command_simulates_and_bundle_retains_exact_assets) ... ok
+test_dxf_rejected_geometry_keeps_prior_preview_and_reports_cad_location (test_program_editor.ProgramEditorTests.test_dxf_rejected_geometry_keeps_prior_preview_and_reports_cad_location) ... ok
+test_examples_have_portable_paths_and_work_with_existing_native_parser (test_program_editor.ProgramEditorTests.test_examples_have_portable_paths_and_work_with_existing_native_parser) ... ok
+test_late_error_has_line_and_step_and_preserves_previous_valid_result (test_program_editor.ProgramEditorTests.test_late_error_has_line_and_step_and_preserves_previous_valid_result) ... ok
+test_parser_errors_and_model_path_escape_are_rejected (test_program_editor.ProgramEditorTests.test_parser_errors_and_model_path_escape_are_rejected) ... ok
+test_request_validation_budgets_and_unicode (test_program_editor.ProgramEditorTests.test_request_validation_budgets_and_unicode) ... ok
+test_result_retention_is_bounded_and_old_urls_expire (test_program_editor.ProgramEditorTests.test_result_retention_is_bounded_and_old_urls_expire) ... ok
+test_retention_cleanup_failure_does_not_reject_a_committed_result (test_program_editor.ProgramEditorTests.test_retention_cleanup_failure_does_not_reject_a_committed_result) ... ok
+test_successful_native_run_preserves_exact_source_snapshot_and_grid (test_program_editor.ProgramEditorTests.test_successful_native_run_preserves_exact_source_snapshot_and_grid) ... ok
+test_symlink_cannot_escape_model_folder (test_program_editor.ProgramEditorTests.test_symlink_cannot_escape_model_folder) ... ok
+test_write_failure_before_commit_preserves_all_previous_results (test_program_editor.ProgramEditorTests.test_write_failure_before_commit_preserves_all_previous_results) ... ok
+test_multiconfig_does_not_fall_back_to_stale_root_or_debug_binary (test_tool_build.ToolBuildTests.test_multiconfig_does_not_fall_back_to_stale_root_or_debug_binary) ... ok
+test_release_configuration_and_generator_specific_binary (test_tool_build.ToolBuildTests.test_release_configuration_and_generator_specific_binary) ... ok
+test_all_pinned_sources_and_vendor_files_match_checksums (test_visual_assets.VisualAssetTests.test_all_pinned_sources_and_vendor_files_match_checksums) ... ok
+test_chain_identity_controls_selection_and_base_tool_are_independent (test_visual_assets.VisualAssetTests.test_chain_identity_controls_selection_and_base_tool_are_independent) ... ok
+test_complete_meshes_and_physical_scale (test_visual_assets.VisualAssetTests.test_complete_meshes_and_physical_scale) ... ok
+test_converter_preserves_units_scene_offsets_and_inverse_transpose_normals (test_visual_assets.VisualAssetTests.test_converter_preserves_units_scene_offsets_and_inverse_transpose_normals) ... ok
+test_html_licenses_include_authors_and_complete_terms (test_visual_assets.VisualAssetTests.test_html_licenses_include_authors_and_complete_terms) ... ok
+test_visual_pack_accepts_lf_and_crlf_but_rejects_content_changes (test_visual_assets.VisualAssetTests.test_visual_pack_accepts_lf_and_crlf_but_rejects_content_changes) ... ok
+test_visual_urdf_retains_kinematics_and_resolves_every_mesh (test_visual_assets.VisualAssetTests.test_visual_urdf_retains_kinematics_and_resolves_every_mesh) ... ok
+
+======================================================================
+ERROR: setUpClass (test_program_editor.EditorHttpTests)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/robot-motion-cpp/tools/motion_viewer/tests/test_program_editor.py", line 259, in setUpClass
+    cls.server = EditorServer(cls.service, 0)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/robot-motion-cpp/tools/motion_viewer/editor_server.py", line 340, in __init__
+    super().__init__(("127.0.0.1", port), EditorHandler)
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/socketserver.py", line 453, in __init__
+    self.socket = socket.socket(self.address_family,
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/socket.py", line 233, in __init__
+    _socket.socket.__init__(self, family, type, proto, fileno)
+PermissionError: [Errno 1] Operation not permitted
+
+----------------------------------------------------------------------
+Ran 42 tests in 141.791s
+
+FAILED (errors=1)
+Streaming 100000 rows: CSV=35873759 bytes, traced peak=341246 bytes, display=99
+UR5e LIN: 98 ticks, maximum orientation change 3.30768245e-07 deg
+Renderer FK comparison: {'cases': 4713, 'maxPosition': 3.510833468576701e-16, 'maxRotation': 1.3322676295501878e-15}

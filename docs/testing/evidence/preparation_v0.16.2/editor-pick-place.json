@@ -1,0 +1,13 @@
+{
+  "duration_s": 46.28,
+  "commands": 4629,
+  "preparation": {
+    "planning_s": 1.108062568,
+    "simulation_s": 0.130537001,
+    "work_units": 18916,
+    "build_configuration": "Release",
+    "native_process_s": 1.2849833640066208,
+    "postprocess_s": 0.5043588479893515,
+    "total_s": 1.7894914460048312
+  }
+}

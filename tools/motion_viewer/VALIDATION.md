@@ -1,4 +1,14 @@
-# Werkzeugprüfung 0.5.0 · 30.10.2026
+# Werkzeugprüfung 0.5.1 · 30.10.2026
+
+**41/41 Python-Tests** und drei echte Chromium-Abläufe bestanden. LIN hält jetzt
+standardmäßig die tatsächliche TCP-Orientierung am Segmentanfang. Die neue
+Editorvorlage startet mit Achse 1 bei 2 rad; Browser-FK und sämtliche nativen
+LIN-Samples bestätigen den konstanten Verlauf. Explizite Interpolation und
+Ablehnung des nicht zugelassenen konstanten Fernziels sind geprüft.
+[LIN-Prüfbericht](../../docs/testing/lin_orientation_validation.md).
+
+## Vorheriger Nachweis 0.5.0 · 30.10.2026
+
 
 **38/38 Python-Tests** und drei echte Chromium-Abläufe lokal bestanden.
 Neue Prüfungen: nativen Worker abbrechen/reapen, Gesamtdeadline nach Rendering,

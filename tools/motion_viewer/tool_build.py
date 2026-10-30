@@ -12,7 +12,17 @@ def build_exporter(build_dir, cmake="cmake"):
         [cmake, "-S", str(TOOL_DIR), "-B", str(build_dir), "-DCMAKE_BUILD_TYPE=Release"], check=True
     )
     subprocess.run(
-        [cmake, "--build", str(build_dir), "--target", "motion_viewer_exporter", "--parallel", "2"],
+        [cmake, "--build", str(build_dir), "--config", "Release", "--target", "motion_viewer_exporter",
+         "--parallel", "2"],
         check=True,
     )
-    return build_dir / ("motion_viewer_exporter.exe" if os.name == "nt" else "motion_viewer_exporter")
+    # CMAKE_BUILD_TYPE does not select the configuration of Visual Studio or
+    # Ninja Multi-Config. Never fall back to a possibly stale Debug executable.
+    cache = (build_dir / "CMakeCache.txt").read_text(encoding="utf-8")
+    multi_config = any(line.startswith("CMAKE_CONFIGURATION_TYPES:") and line.partition("=")[2]
+                       for line in cache.splitlines())
+    executable = build_dir / ("Release" if multi_config else "") / (
+        "motion_viewer_exporter.exe" if os.name == "nt" else "motion_viewer_exporter")
+    if not executable.is_file():
+        raise FileNotFoundError("Release exporter missing after build: " + str(executable))
+    return executable

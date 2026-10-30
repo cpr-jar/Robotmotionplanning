@@ -53,12 +53,14 @@ def main():
             page.goto(server.url)
             page.wait_for_function("document.body.dataset.editorState==='ready'")
             assert "models/ur5e/profile.yaml" in page.locator("#source").input_value()
-            assert page.locator("#example option").count() == 4
+            assert page.locator("#example option").count() == 5
             assert page.locator("#preview").is_hidden()
             original = page.locator("#source").input_value()
             page.locator("#filename").fill("testprogramm.yaml")
             page.locator("#simulate").click()
             page.wait_for_function("document.body.dataset.resultState==='current'", timeout=120000)
+            summary = page.locator("#result-summary").inner_text()
+            assert "Planung" in summary and "Simulation" in summary and "Gesamt" in summary
             viewer = page.frame_locator("#preview")
             viewer.locator("body[data-viewer-state=ready][data-render-mode=mesh]").wait_for(timeout=30000)
             assert viewer.locator("body").get_attribute("data-mesh-links") == "7"
@@ -133,6 +135,35 @@ def main():
             if options.screenshot:
                 options.screenshot.parent.mkdir(parents=True, exist_ok=True)
                 page.screenshot(path=str(options.screenshot), full_page=True)
+            # Reproduce the 2-rad-start report through the real editor and
+            # compare the matrices actually used by the browser FK along LIN.
+            page.locator("#example").select_option("ur5e_lin")
+            page.locator("#load-example").click()
+            page.wait_for_function("document.getElementById('filename').value==='ur5e_lin_programm.yaml'")
+            assert "models/ur5e/profile_pick_place_simulation.yaml" in page.locator("#source").input_value()
+            page.locator("#cycle-ms").fill("10")
+            page.locator("#simulate").click()
+            page.wait_for_function("document.body.dataset.resultState==='current' && document.body.dataset.editorState==='ready'", timeout=120000)
+            viewer.locator("body[data-viewer-state=ready][data-render-mode=mesh]").wait_for(timeout=30000)
+            assert "Orientierung konstant" in viewer.locator("#segments").inner_text()
+            lin_orientation = viewer.locator("#motion-data").evaluate("""element => {
+              const data=JSON.parse(element.textContent), K=MotionKinematics;
+              const col=Object.fromEntries(data.columns.map((key,i)=>[key,i]));
+              const segment=data.program.segments.find(s=>s.operation==='LIN');
+              if(segment.orientation_mode!=='keep') throw Error('Wrong LIN orientation policy');
+              const line=data.frames.filter(f=>f[col.segment]===segment.index);
+              const q=f=>data.robot.joint_names.map((_,i)=>f[col['q'+i]]);
+              if(q(line[0])[0]<1.9) throw Error('Expected reported 2-rad start');
+              const start=K.forwardKinematics(data.robot,q(line[0])).transform;
+              let maximum=0;
+              for(const frame of line) {
+                const actual=K.forwardKinematics(data.robot,q(frame)).transform;
+                for(let r=0;r<3;r++) for(let c=0;c<3;c++)
+                  maximum=Math.max(maximum,Math.abs(actual[4*r+c]-start[4*r+c]));
+              }
+              return {samples:line.length,maximum};
+            }""")
+            assert lin_orientation["samples"] > 1 and lin_orientation["maximum"] < 5e-4, lin_orientation
             # Another robot uses the same planner and the skeleton fallback.
             page.locator("#example").select_option("abb_irb120")
             page.locator("#load-example").click()
@@ -173,6 +204,7 @@ def main():
                     {
                         "state": "ready",
                         "browser_errors": errors,
+                        "lin_orientation": lin_orientation,
                         "external_requests": external,
                         "checks": [
                             "native simulation",
@@ -184,6 +216,7 @@ def main():
                             "local draft restore",
                             "YAML import",
                             "edit during simulation",
+                            "LIN keeps world TCP orientation after 2-rad PTP",
                             "second robot",
                             "cancel during Python processing preserves preview",
                             "20 ms grid",

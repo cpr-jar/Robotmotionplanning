@@ -1,4 +1,12 @@
-# Prüfberichte — aktueller Stand 0.16.0, 30.10.2026
+# Prüfberichte — aktueller Stand 0.16.1, 30.10.2026
+
+## LIN-Orientierung 0.16.1
+
+LIN hält standardmäßig die TCP-Orientierung am tatsächlichen Bahnanfang.
+Bewusste Drehung wird explizit gewählt. Der gemeldete Start mit Achse 1 bei 2 rad,
+benannte Gelenkpunkte, DXF-Eintritt und 1/10/20-ms-Raster sind Regressionstests.
+[Details und Grenzen](lin_orientation_validation.md).
+
 
 ## Aktueller Stand 0.16.0
 

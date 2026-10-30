@@ -1,4 +1,4 @@
-# Robot Motion C++ — 0.16.0
+# Robot Motion C++ — 0.16.2
 
 C++20-Bibliothek für Roboterkinematik, Bewegungsplanung, Anwenderprogramme und
 zeitlich geprüfte Sollwertausgabe. Der Quellcode ist nach Aufgaben gegliedert;
@@ -30,6 +30,15 @@ gezielt auswählen; die bisherige Fassade bleibt verfügbar.
 
 Neu in **0.16.0**: [gemeinsame Vorbereitungsbudgets und Abbruch](docs/integration/preparation_resources.md),
 DXF-Parsecache, speichersparende Spuren und ein Abbruchknopf im getrennten Editor.
+
+Neu in **0.16.2**: schnellere Intervall-FK, getrennte Planungs-/Simulationszeiten,
+Release-Auswahl auch bei Multi-Config-Builds und ein reproduzierbarer Benchmark.
+[Planungszeit und Online-Ausbau](docs/integration/planning_performance.md).
+
+Korrektur in **0.16.1**: `LIN` hält standardmäßig die TCP-Orientierung am
+Bahnanfang. Eine Drehung zur Zielorientierung wird explizit mit
+`orientation_mode: interpolate` gewählt. [Vertrag und Beispiel](docs/formats/robot_program_yaml.md#lin-und-tcp-orientierung),
+[Prüfnachweis](docs/testing/lin_orientation_validation.md).
 
 ## Starten
 
@@ -150,6 +159,6 @@ Dispatch-Test sind kein Nachweis physischer Ausführung oder harter Echtzeit.
 Zielrepository: https://github.com/cpr-jar/Robotmotionplanning
 
 Der fortgeführte Quellstand liegt auf `recovery/reconstructed-v0.12.1`.
-[Quell-ZIP v0.15.0](https://github.com/cpr-jar/Robotmotionplanning/archive/refs/tags/v0.16.0.zip).
+[Quell-ZIP v0.16.2](https://github.com/cpr-jar/Robotmotionplanning/archive/refs/tags/v0.16.2.zip).
 Die frühere Rekonstruktionssicherung v0.12.1 bleibt zusätzlich als Git-Bundle in
 `backups/` erhalten; sie wird durch neue Versionen nicht überschrieben.

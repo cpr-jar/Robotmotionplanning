@@ -150,7 +150,10 @@ PreparedRobotProgram compile_robot_program(const RobotProgramSource &source, Imp
           auto orientation = first.orientation;
           if (instruction.operation == ProgramOperation::Line) {
             auto goal = target_pose();
-            orientation = goal.orientation;
+            if (instruction.linear_orientation_mode == LinearOrientationMode::Interpolate)
+              orientation = goal.orientation;
+            // A normal LIN translates the TCP while retaining its actual start
+            // orientation. A target's stored orientation is used only on opt-in.
             geometry = std::make_shared<CartesianLinePath>(first, Pose{goal.position, first.orientation});
           } else if (instruction.operation == ProgramOperation::Circle) {
             geometry = std::make_shared<CartesianArcPath>(
@@ -167,8 +170,15 @@ PreparedRobotProgram compile_robot_program(const RobotProgramSource &source, Imp
           const auto path = map_cartesian_spline(program->robot_.kinematics,
                                                  std::make_shared<PoseSweepPath>(geometry, orientation),
                                                  state.q, path_options);
-          if (!path)
-            throw std::domain_error(path.diagnostic);
+          if (!path) {
+            const auto diagnostic_prefix =
+                instruction.operation == ProgramOperation::Line
+                    ? instruction.linear_orientation_mode == LinearOrientationMode::Keep
+                          ? "LIN with constant TCP orientation: "
+                          : "LIN with interpolated TCP orientation: "
+                    : "";
+            throw std::domain_error(diagnostic_prefix + path.diagnostic);
+          }
           auto timed = PathTimeParameterizer(limits).plan(path.path, state, tcp);
           if (!timed)
             throw std::domain_error(timed.diagnostic);

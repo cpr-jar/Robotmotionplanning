@@ -82,7 +82,7 @@ Kondition der Lösung. Einfach länger fahren behebt nicht jede solche Situation
 | Befehl | Was der Auftrag vorgibt | Was du am Roboter erwarten kannst |
 | --- | --- | --- |
 | **PTP** | Ziel-Gelenkstellung oder Zielpose | Die Achsen fahren einen glatten Gelenkverlauf. Die TCP-Bahn darf gekrümmt sein. |
-| **LIN** | Zielpose und eine TCP-Gerade ab der aktuellen Pose | Die Kinematik wird entlang der Geraden gelöst; die Achsen müssen dazu nicht linear laufen. |
+| **LIN** | Zielposition und eine TCP-Gerade mit gehaltener TCP-Orientierung ab der aktuellen Pose | Die Kinematik wird entlang der Geraden gelöst; die Achsen müssen dazu nicht linear laufen. |
 | **CIRC** | Kreismittelpunkt bzw. Versatz, Normale und Drehwinkel | Der TCP folgt einem Kreisbogen; auch vollständige Kreise sind möglich. |
 | **WAIT** | Eine Wartezeit | Der Sollzustand bleibt im Stillstand. Es wird keine neue IK-Bahn benötigt. |
 
@@ -99,6 +99,11 @@ Bei einer Zielpose wird zunächst IK gelöst. Danach entsteht eine Gelenkquintik
 also ein glattes Polynom fünften Grades. Zusätzlich zu den Gelenkgrenzen werden
 die daraus entstehenden TCP-Grenzen geprüft. Falls nötig, wird die Dauer innerhalb
 begrenzter Versuche verlängert; ohne erfolgreichen Nachweis wird abgelehnt.
+
+Für normale LIN-Schritte bleibt ab 0.16.1 die TCP-Orientierung im Weltbezug
+konstant. Eine gewünschte Drehung zur Zielpose benötigt ausdrücklich
+`orientation_mode: interpolate`. Arm- und Handachsen gleichen ihre Bewegung
+entsprechend aus. [Programmvertrag](../formats/robot_program_yaml.md#lin-und-tcp-orientierung).
 
 **LIN/CIRC:** Zunächst wird der gewünschte TCP-Weg mit seinem Orientierungsverlauf
 festgelegt. Entlang dieses Wegs löst die Software wiederholt IK, jeweils mit der

@@ -46,7 +46,10 @@
         : x.toLocaleString("de-DE", { minimumFractionDigits: digits, maximumFractionDigits: digits });
     const colors = { PTP: "#276ac1", LIN: "#07866d", CIRC: "#9253b4", WAIT: "#758798" };
     const operationLabel = (segment) =>
-      (segment.source_command === "DXF" ? "DXF · " : "") + segment.operation;
+      (segment.source_command === "DXF" ? "DXF · " : "") + segment.operation +
+      (segment.operation === "LIN" && segment.orientation_mode
+        ? segment.orientation_mode === "keep" ? " · Orientierung konstant" : " · Orientierung interpoliert"
+        : "");
     const state = {
       index: 0,
       axis: 0,

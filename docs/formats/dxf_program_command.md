@@ -115,6 +115,11 @@ abgelehnt, wenn die Posen nicht zusammenpassen. Mit `travel: LIN/PTP` werden
 diese Verbindungen ausdrücklich Bestandteil der geprüften Bewegung. Der
 Einfügehelfer zeigt seine Auswahl und schreibt sie in das YAML.
 
+Ab 0.16.1 halten normale LIN-Schritte ihre Anfangsorientierung. Ein DXF-Befehl
+mit explizitem `orientation` stellt seine gewünschte Orientierung weiterhin beim
+Eintritt über die Travel-Bewegung ein; die folgenden Konturen behalten sie.
+[LIN-Orientierungsvertrag](robot_program_yaml.md#lin-und-tcp-orientierung).
+
 Jede erzeugte LIN-/CIRC-/PTP-Bewegung hat nach dem bestehenden Programmvertrag
 Stillstandsgrenzen. Das ist eine geometrisch und dynamisch geprüfte Abfolge,
 noch keine durchgehende Bearbeitungsbahn mit Verschleifen oder Prozess-I/O.

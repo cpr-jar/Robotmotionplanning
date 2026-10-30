@@ -315,7 +315,8 @@
         "fields": [
           "operation, target, speed",
           "center, normal, sweep_rad",
-          "seconds, location"
+          "seconds, location",
+          "linear_orientation_mode (LIN: Keep / Interpolate)"
         ]
       },
       {
@@ -983,7 +984,8 @@
         "methods": [],
         "fields": [
           "operation, location, speed",
-          "dxf, drawing_location"
+          "dxf, drawing_location",
+          "linear_orientation_mode (LIN: Keep / Interpolate)"
         ]
       },
       {

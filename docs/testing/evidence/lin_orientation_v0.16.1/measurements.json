@@ -1,0 +1,58 @@
+[
+  {
+    "case": "user",
+    "cycle_ms": 10,
+    "accepted": false,
+    "diagnostic": "[scratch]/user.yaml:15:5 [steps step 3]: LIN with constant TCP orientation: Spline IK/tube admission failed within budget"
+  },
+  {
+    "case": "user-interpolate",
+    "cycle_ms": 10,
+    "accepted": true,
+    "commands": 9138,
+    "duration_s": 91.37,
+    "segments": [
+      {
+        "index": 3,
+        "operation": "LIN",
+        "orientation_mode": "interpolate",
+        "samples_including_both_boundaries": 5425,
+        "max_orientation_change_rad": 1.8000027468293112,
+        "max_orientation_change_deg": 103.13256050527475
+      },
+      {
+        "index": 4,
+        "operation": "CIRC",
+        "orientation_mode": null,
+        "samples_including_both_boundaries": 707,
+        "max_orientation_change_rad": 1.6847769392726123e-06,
+        "max_orientation_change_deg": 9.653060804128929e-05
+      }
+    ]
+  },
+  {
+    "case": "user-near",
+    "cycle_ms": 10,
+    "accepted": true,
+    "commands": 2547,
+    "duration_s": 25.46,
+    "segments": [
+      {
+        "index": 3,
+        "operation": "LIN",
+        "orientation_mode": "keep",
+        "samples_including_both_boundaries": 99,
+        "max_orientation_change_rad": 5.772994937816349e-09,
+        "max_orientation_change_deg": 3.307682450872659e-07
+      },
+      {
+        "index": 4,
+        "operation": "CIRC",
+        "orientation_mode": null,
+        "samples_including_both_boundaries": 643,
+        "max_orientation_change_rad": 2.2174836638090987e-06,
+        "max_orientation_change_deg": 0.0001270524550754681
+      }
+    ]
+  }
+]

@@ -1,0 +1,212 @@
+{
+  "format": "robot-motion-preparation-benchmark",
+  "schema_version": 1,
+  "platform": "Linux-6.18.55-x86_64-with-glibc2.41",
+  "machine": "x86_64",
+  "cases": [
+    {
+      "program": "/workspace/robot-motion-cpp/programs/examples/ur5e_pick_place.yaml",
+      "source_sha256": "e1c20db228d1bc13b9ef235bbf3aea297a85d4369eb6d4bbbaa4c78370108499",
+      "cycle_ms": 1,
+      "duration_s": 46.176,
+      "commands": 46177,
+      "work_units": 18916,
+      "build_configuration": "Release",
+      "trace_sha256": "0f405e4e6f0946ca546b631bd6dc77a938bf7910a69e79f5c57c27325173217d",
+      "runs": [
+        {
+          "planning_s": 1.10739676,
+          "simulation_s": 1.267476991,
+          "native_process_s": 2.66534680800396
+        },
+        {
+          "planning_s": 1.104939383,
+          "simulation_s": 1.298937192,
+          "native_process_s": 2.6971590040047886
+        },
+        {
+          "planning_s": 1.114503519,
+          "simulation_s": 1.272746027,
+          "native_process_s": 2.67640389999724
+        }
+      ],
+      "median": {
+        "planning_s": 1.10739676,
+        "simulation_s": 1.272746027,
+        "native_process_s": 2.67640389999724
+      },
+      "maximum_planning_s": 1.114503519,
+      "planning_to_motion_ratio": 0.023982085065835067
+    },
+    {
+      "program": "/workspace/robot-motion-cpp/programs/examples/ur5e_pick_place.yaml",
+      "source_sha256": "e1c20db228d1bc13b9ef235bbf3aea297a85d4369eb6d4bbbaa4c78370108499",
+      "cycle_ms": 10,
+      "duration_s": 46.28,
+      "commands": 4629,
+      "work_units": 18916,
+      "build_configuration": "Release",
+      "trace_sha256": "8c7b04d5a5e4ebaabf6739b765ea44ccd66fe771f093e275ebf7e877c0aec922",
+      "runs": [
+        {
+          "planning_s": 1.100452832,
+          "simulation_s": 0.12755299,
+          "native_process_s": 1.260286527001881
+        },
+        {
+          "planning_s": 1.111390304,
+          "simulation_s": 0.126140223,
+          "native_process_s": 1.2682645290042274
+        },
+        {
+          "planning_s": 1.117648172,
+          "simulation_s": 0.130295223,
+          "native_process_s": 1.2792546939890599
+        }
+      ],
+      "median": {
+        "planning_s": 1.111390304,
+        "simulation_s": 0.12755299,
+        "native_process_s": 1.2682645290042274
+      },
+      "maximum_planning_s": 1.117648172,
+      "planning_to_motion_ratio": 0.024014483664649956
+    },
+    {
+      "program": "/workspace/robot-motion-cpp/programs/examples/ur5e_pick_place.yaml",
+      "source_sha256": "e1c20db228d1bc13b9ef235bbf3aea297a85d4369eb6d4bbbaa4c78370108499",
+      "cycle_ms": 20,
+      "duration_s": 46.4,
+      "commands": 2321,
+      "work_units": 18916,
+      "build_configuration": "Release",
+      "trace_sha256": "41e0a70a30fca4324da36a7ba72b91f74363ff53c0ac11d454832bb22f546e8c",
+      "runs": [
+        {
+          "planning_s": 1.108800613,
+          "simulation_s": 0.064598791,
+          "native_process_s": 1.1930377350072376
+        },
+        {
+          "planning_s": 1.111595717,
+          "simulation_s": 0.063625698,
+          "native_process_s": 1.1914986100018723
+        },
+        {
+          "planning_s": 1.10736301,
+          "simulation_s": 0.06399282,
+          "native_process_s": 1.1885145849955734
+        }
+      ],
+      "median": {
+        "planning_s": 1.108800613,
+        "simulation_s": 0.06399282,
+        "native_process_s": 1.1914986100018723
+      },
+      "maximum_planning_s": 1.111595717,
+      "planning_to_motion_ratio": 0.02389656493534483
+    },
+    {
+      "program": "/workspace/robot-motion-cpp/programs/examples/ur5e_lin_keep_orientation.yaml",
+      "source_sha256": "57b1f01d0269ca027689415e8212387a9649aec71e25a16b7abe95a8a64ea2a1",
+      "cycle_ms": 1,
+      "duration_s": 25.438,
+      "commands": 25439,
+      "work_units": 3303,
+      "build_configuration": "Release",
+      "trace_sha256": "898a567ef56a284f66a48e465c912a0ffd4727c574d209c2c0cb774f110087e9",
+      "runs": [
+        {
+          "planning_s": 0.188603561,
+          "simulation_s": 0.770827607,
+          "native_process_s": 1.1173064439935843
+        },
+        {
+          "planning_s": 0.188238182,
+          "simulation_s": 0.752673459,
+          "native_process_s": 1.0969502829975681
+        },
+        {
+          "planning_s": 0.188539234,
+          "simulation_s": 0.747681727,
+          "native_process_s": 1.090217268007109
+        }
+      ],
+      "median": {
+        "planning_s": 0.188539234,
+        "simulation_s": 0.752673459,
+        "native_process_s": 1.0969502829975681
+      },
+      "maximum_planning_s": 0.188603561,
+      "planning_to_motion_ratio": 0.0074117160940325505
+    },
+    {
+      "program": "/workspace/robot-motion-cpp/programs/examples/ur5e_lin_keep_orientation.yaml",
+      "source_sha256": "57b1f01d0269ca027689415e8212387a9649aec71e25a16b7abe95a8a64ea2a1",
+      "cycle_ms": 10,
+      "duration_s": 25.46,
+      "commands": 2547,
+      "work_units": 3303,
+      "build_configuration": "Release",
+      "trace_sha256": "9314627cabecebfd288aa7b2b79aec3d43c69f030ea61a371e2706ee9c9ea52f",
+      "runs": [
+        {
+          "planning_s": 0.183821738,
+          "simulation_s": 0.075319231,
+          "native_process_s": 0.2765618999983417
+        },
+        {
+          "planning_s": 0.187869798,
+          "simulation_s": 0.077291939,
+          "native_process_s": 0.28283281800395343
+        },
+        {
+          "planning_s": 0.188087415,
+          "simulation_s": 0.076792497,
+          "native_process_s": 0.2828007600037381
+        }
+      ],
+      "median": {
+        "planning_s": 0.187869798,
+        "simulation_s": 0.076792497,
+        "native_process_s": 0.2828007600037381
+      },
+      "maximum_planning_s": 0.188087415,
+      "planning_to_motion_ratio": 0.0073790179890023564
+    },
+    {
+      "program": "/workspace/robot-motion-cpp/programs/examples/ur5e_lin_keep_orientation.yaml",
+      "source_sha256": "57b1f01d0269ca027689415e8212387a9649aec71e25a16b7abe95a8a64ea2a1",
+      "cycle_ms": 20,
+      "duration_s": 25.48,
+      "commands": 1275,
+      "work_units": 3303,
+      "build_configuration": "Release",
+      "trace_sha256": "4172b154e3174191e3d00b33c404a09b6dd52a08043e102e094bebc7230e23c5",
+      "runs": [
+        {
+          "planning_s": 0.18588396,
+          "simulation_s": 0.038250258,
+          "native_process_s": 0.2342963859991869
+        },
+        {
+          "planning_s": 0.187328063,
+          "simulation_s": 0.037960853,
+          "native_process_s": 0.2352875619981205
+        },
+        {
+          "planning_s": 0.192407443,
+          "simulation_s": 0.041132986,
+          "native_process_s": 0.24380805899272673
+        }
+      ],
+      "median": {
+        "planning_s": 0.187328063,
+        "simulation_s": 0.038250258,
+        "native_process_s": 0.2352875619981205
+      },
+      "maximum_planning_s": 0.192407443,
+      "planning_to_motion_ratio": 0.007351964795918367
+    }
+  ]
+}

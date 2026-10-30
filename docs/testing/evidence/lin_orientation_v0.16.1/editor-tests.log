@@ -1,0 +1,20 @@
+test_http_boundaries_host_origin_token_body_and_static_routes (test_program_editor.EditorHttpTests.test_http_boundaries_host_origin_token_body_and_static_routes) ... ok
+test_real_http_round_trip_and_immutable_downloads (test_program_editor.EditorHttpTests.test_real_http_round_trip_and_immutable_downloads) ... ok
+test_busy_and_timeout_never_publish_partial_results (test_program_editor.ProgramEditorTests.test_busy_and_timeout_never_publish_partial_results) ... ok
+test_dxf_assets_validation_and_native_path_boundaries (test_program_editor.ProgramEditorTests.test_dxf_assets_validation_and_native_path_boundaries) ... ok
+test_dxf_command_simulates_and_bundle_retains_exact_assets (test_program_editor.ProgramEditorTests.test_dxf_command_simulates_and_bundle_retains_exact_assets) ... ok
+test_dxf_rejected_geometry_keeps_prior_preview_and_reports_cad_location (test_program_editor.ProgramEditorTests.test_dxf_rejected_geometry_keeps_prior_preview_and_reports_cad_location) ... ok
+test_examples_have_portable_paths_and_work_with_existing_native_parser (test_program_editor.ProgramEditorTests.test_examples_have_portable_paths_and_work_with_existing_native_parser) ... ok
+test_late_error_has_line_and_step_and_preserves_previous_valid_result (test_program_editor.ProgramEditorTests.test_late_error_has_line_and_step_and_preserves_previous_valid_result) ... ok
+test_parser_errors_and_model_path_escape_are_rejected (test_program_editor.ProgramEditorTests.test_parser_errors_and_model_path_escape_are_rejected) ... ok
+test_request_validation_budgets_and_unicode (test_program_editor.ProgramEditorTests.test_request_validation_budgets_and_unicode) ... ok
+test_result_retention_is_bounded_and_old_urls_expire (test_program_editor.ProgramEditorTests.test_result_retention_is_bounded_and_old_urls_expire) ... ok
+test_retention_cleanup_failure_does_not_reject_a_committed_result (test_program_editor.ProgramEditorTests.test_retention_cleanup_failure_does_not_reject_a_committed_result) ... ok
+test_successful_native_run_preserves_exact_source_snapshot_and_grid (test_program_editor.ProgramEditorTests.test_successful_native_run_preserves_exact_source_snapshot_and_grid) ... ok
+test_symlink_cannot_escape_model_folder (test_program_editor.ProgramEditorTests.test_symlink_cannot_escape_model_folder) ... ok
+test_write_failure_before_commit_preserves_all_previous_results (test_program_editor.ProgramEditorTests.test_write_failure_before_commit_preserves_all_previous_results) ... ok
+
+----------------------------------------------------------------------
+Ran 15 tests in 5.792s
+
+OK

@@ -1,6 +1,6 @@
 # Dokumentation für Entwicklung und Steuerungseinbindung
 
-Stand: **0.16.0**. Die Zielsteuerung ist eine Eigenentwicklung; die konkrete
+Stand: **0.16.2**. Die Zielsteuerung ist eine Eigenentwicklung; die konkrete
 Adapterplanung folgt später. Der betrachtete Zyklusbereich beträgt **1–20 ms**.
 Die Dokumente beschreiben die vorhandene Bibliothek und benennen noch offene
 Integrationsaufgaben ausdrücklich.
@@ -22,6 +22,7 @@ Integrationsaufgaben ausdrücklich.
 | 13 | [Verwaltete Planübergabe](integration/live_motion_session.md) / [Prüfnachweis](testing/live_session_validation.md) | Lebensdauer, Annahme/Commit, Rücknahme und bestätigter Shutdown ab 0.14.0 |
 | 14 | [Komponenten und Modulgrenzen](architecture/components.md) / [Prüfbericht](testing/components_validation.md) | Selektive CMake-Einbindung, Runtime ohne Parser, Kompatibilität und Schichtenprüfung |
 | 15 | [Vorbereitungsbudgets und Abbruch](integration/preparation_resources.md) / [Prüfbericht](testing/resources_validation.md) | Gemeinsame Limits, DXF-Cache, Editorabbruch und speichersparende Spuren |
+| 16 | [Planungszeit und Online-Ausbau](integration/planning_performance.md) / [Prüfbericht](testing/planning_performance_validation.md) | Beschleunigte Intervallrechnung, Release-Build, Phasenmessung und noch fehlender inkrementeller Planer |
 
 Neu ab 0.13.0: [DXF als Programmbefehl](formats/dxf_program_command.md),
 einschließlich Layern, Einheiten, Platzierung, Genauigkeit, Ablauf und Klassensicht.
@@ -32,3 +33,7 @@ Die Diagramme sind eingecheckt. Zum Lesen wird weder Python noch Graphviz
 benötigt; die SVG-Dateien lassen sich im Browser öffnen. Für eine zusammenhängende
 Offline-Ausgabe siehe [Handbuch erzeugen](development/naming_and_migration.md#dokumentation-prüfen-und-erzeugen).
 Historische Wiederherstellung und Sicherung stehen unter [history](history/recovery_status.md).
+
+Ab 0.16.1 hält LIN standardmäßig die TCP-Orientierung am Bahnanfang.
+[Orientierungsvertrag](formats/robot_program_yaml.md#lin-und-tcp-orientierung)
+und [Prüfnachweis](testing/lin_orientation_validation.md).

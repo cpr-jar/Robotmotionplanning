@@ -27,6 +27,11 @@ Auftrag abbrechen und teilt ein Gesamtzeitbudget bis zur Veröffentlichung.
 Browser-/TSan-/ARM64-Jobs sind in CI ergänzt. Lokale Tests und verbleibende
 Grenzen: [Ressourcenprüfung](../testing/resources_validation.md).
 
+Mit **0.16.2** ist die Intervall-Vorbereitung beschleunigt und messbar.
+Der Compiler plant weiterhin das vollständige Programm. Der priorisierte Ausbau
+zu einem begrenzten Segmentplaner, Lookahead-Worker und definiertem Verhalten bei
+zu wenig Vorlauf steht unter [Onlineplanung](../integration/planning_performance.md).
+
 Die nächsten Schritte:
 
 1. **Zielplattform und Betriebsbudgets konkretisieren:** ARM64-CI-Läufe beobachten,

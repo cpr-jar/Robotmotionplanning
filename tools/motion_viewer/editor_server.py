@@ -16,6 +16,7 @@ import shutil
 import subprocess
 import tempfile
 import threading
+import time
 import zipfile
 
 from job_budget import JobBudget, JobStopped
@@ -45,6 +46,11 @@ EXAMPLES = {
         "ur5e/profile_pick_place_simulation.yaml",
     ),
     "ur5e_dxf": ("UR5e · DXF-Kontur abfahren", ROOT / "programs/examples/ur5e_dxf_demo.yaml", "ur5e/profile.yaml"),
+    "ur5e_lin": (
+        "UR5e · LIN mit konstanter Orientierung",
+        ROOT / "programs/examples/ur5e_lin_keep_orientation.yaml",
+        "ur5e/profile_pick_place_simulation.yaml",
+    ),
     "abb_irb120": (
         "ABB IRB120 · Unterprogramm",
         ROOT / "programs/examples/abb_irb120_demo.yaml",
@@ -192,6 +198,7 @@ class SimulationService:
         run = None
         published = False
         budget = JobBudget(self.timeout_s)
+        started = time.perf_counter()
         job_id = request.get("job_id", secrets.token_hex(16))
         with self._jobs_lock:
             if self._closing:
@@ -211,6 +218,7 @@ class SimulationService:
                 budget.checkpoint()
                 environment = os.environ.copy()
                 environment["MOTION_PREPARATION_TIMEOUT_MS"] = str(max(1, int(budget.remaining() * 1000)))
+                native_started = time.perf_counter()
                 with subprocess.Popen(
                     [str(self.exporter), str(program), str(exported), str(cycle), "99999",
                      "--workspace", str(self.workspace)],
@@ -246,6 +254,7 @@ class SimulationService:
                     # No temporary host paths in user-facing diagnostics.
                     detail["message"] = detail["message"].replace(str(run), "<Programm>")
                     raise EditorError(422, **detail)
+            native_finished = time.perf_counter()
             data = prepare_data(load_export(exported, budget=budget), budget=budget)
             if data["sample_limit_violations"]:
                 raise EditorError(
@@ -277,6 +286,12 @@ class SimulationService:
                 "source_url": f"/downloads/{result_id}/program.yaml",
                 "bundle_url": f"/downloads/{result_id}/program.zip",
                 "dxf_files": len(assets),
+                "preparation": {
+                    **data.get("preparation", {}),
+                    "native_process_s": native_finished - native_started,
+                    "postprocess_s": time.perf_counter() - native_finished,
+                    "total_s": time.perf_counter() - started,
+                },
             }
             # Linearize cancellation and publication: a confirmed cancellation
             # cannot race a commit; a late cancel cannot affect a later job.
@@ -333,7 +348,7 @@ class EditorServer(ThreadingHTTPServer):
 
 
 class EditorHandler(BaseHTTPRequestHandler):
-    server_version = "MotionEditor/0.5.0"
+    server_version = "MotionEditor/0.5.1"
 
     def setup(self):
         super().setup()
