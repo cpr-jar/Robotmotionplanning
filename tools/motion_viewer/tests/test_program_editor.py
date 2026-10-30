@@ -186,6 +186,25 @@ class ProgramEditorTests(unittest.TestCase):
         with self.assertRaises(EditorError):
             self.service.example("../../etc/passwd")
 
+    def test_pick_place_example_retains_simulation_profile_and_simulates(self):
+        example = self.service.example("ur5e_pick_place")
+        source = (ROOT / "programs/examples/ur5e_pick_place.yaml").read_text(encoding="utf-8")
+        self.assertEqual(example["label"], "UR5e · Pick and Place")
+        self.assertEqual(example["assets"], [])
+        self.assertEqual(
+            example["source"],
+            source.replace(
+                "robot_profile: ../../models/ur5e/profile_pick_place_simulation.yaml",
+                "robot_profile: models/ur5e/profile_pick_place_simulation.yaml",
+                1,
+            ),
+        )
+        result = self.service.simulate(
+            {"source": example["source"], "filename": example["filename"], "cycle_ms": 10}
+        )
+        self.assertEqual(result["segments"], 16)
+        self.assertTrue(result["full_model"])
+
     def test_dxf_command_simulates_and_bundle_retains_exact_assets(self):
         example = self.service.example("ur5e_dxf")
         request = {key: example[key] for key in ("source", "filename", "assets")}

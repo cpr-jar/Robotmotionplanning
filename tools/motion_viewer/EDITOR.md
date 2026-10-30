@@ -1,5 +1,15 @@
 # Lokaler Programmeditor und Simulation
 
+## Pick-and-Place-Vorlage
+
+Das Beispiel-Dropdown enthält **„UR5e · Pick and Place“**. **Vorlage laden**
+übernimmt `programs/examples/ur5e_pick_place.yaml` und setzt den Profilpfad
+automatisch auf `models/ur5e/profile_pick_place_simulation.yaml`.
+Das separate Simulationsprofil muss erhalten bleiben; es darf nicht durch das
+konservative Standardprofil ersetzt werden. Die Vorlage enthält zwei Zyklen
+und keine DXF-Anhänge. Die bestehenden Beispiele behalten ihre bisherigen Profile.
+Die höheren Grenzwerte sind Simulationsannahmen, keine Hardwarefreigabe.
+
 ## DXF-Dateien und ein Bahnbefehl (0.4.0)
 
 **DXF öffnen** lädt bis zu vier Text-DXF-Dateien mit je maximal 1 MiB.

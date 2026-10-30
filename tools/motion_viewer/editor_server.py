@@ -38,17 +38,22 @@ MAX_ASSETS = 4
 MAX_DIAGNOSTIC_BYTES = 16384
 RESULT_LIMIT = 3
 EXAMPLES = {
-    "ur5e": ("UR5e · PTP / LIN / Vollkreis / WAIT", TOOL_DIR / "demo/ur5e_visual_demo.yaml", "ur5e"),
-    "ur5e_dxf": ("UR5e · DXF-Kontur abfahren", ROOT / "programs/examples/ur5e_dxf_demo.yaml", "ur5e"),
+    "ur5e": ("UR5e · PTP / LIN / Vollkreis / WAIT", TOOL_DIR / "demo/ur5e_visual_demo.yaml", "ur5e/profile.yaml"),
+    "ur5e_pick_place": (
+        "UR5e · Pick and Place",
+        ROOT / "programs/examples/ur5e_pick_place.yaml",
+        "ur5e/profile_pick_place_simulation.yaml",
+    ),
+    "ur5e_dxf": ("UR5e · DXF-Kontur abfahren", ROOT / "programs/examples/ur5e_dxf_demo.yaml", "ur5e/profile.yaml"),
     "abb_irb120": (
         "ABB IRB120 · Unterprogramm",
         ROOT / "programs/examples/abb_irb120_demo.yaml",
-        "abb_irb120",
+        "abb_irb120/profile.yaml",
     ),
     "fanuc_lrmate200id": (
         "FANUC LR Mate · Unterprogramm",
         ROOT / "programs/examples/fanuc_lrmate200id_demo.yaml",
-        "fanuc_lrmate200id",
+        "fanuc_lrmate200id/profile.yaml",
     ),
 }
 
@@ -163,12 +168,12 @@ class SimulationService:
     def example(self, name):
         if name not in EXAMPLES:
             raise EditorError(404, "Unbekanntes Beispiel.")
-        label, path, robot = EXAMPLES[name]
+        label, path, profile = EXAMPLES[name]
         source = path.read_text(encoding="utf-8")
         # Known checked-in examples use paths relative to their original folder.
         # Replace only that exact line; preserve all program lines and comments.
         profile_line = next(line for line in source.splitlines() if line.startswith("robot_profile:"))
-        source = source.replace(profile_line, f"robot_profile: models/{robot}/profile.yaml", 1)
+        source = source.replace(profile_line, f"robot_profile: models/{profile}", 1)
         assets = []
         if name == "ur5e_dxf":
             source = source.replace("file: ../dxf/rounded_path.dxf", "file: rounded_path.dxf", 1)

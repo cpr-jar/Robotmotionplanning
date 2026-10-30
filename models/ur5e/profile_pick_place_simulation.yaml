@@ -32,6 +32,6 @@ tcp_limits:
   max_linear_velocity: 1.0
   max_linear_acceleration: 2.0
   max_linear_jerk: 10.0
-  max_angular_velocity: 0.5
-  max_angular_acceleration: 1.0
-  max_angular_jerk: 5.0
+  max_angular_velocity: 3.141592653589793
+  max_angular_acceleration: 12.0
+  max_angular_jerk: 60.0

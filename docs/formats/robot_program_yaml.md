@@ -119,7 +119,7 @@ gelten folgende vor der Simulation festgelegte Annahmen:
 | --- | ---: | ---: | ---: |
 | Jede Gelenkachse | 3,141592653589793 rad/s | 12 rad/s² | 60 rad/s³ |
 | TCP linear | 1,0 m/s | 2 m/s² | 10 m/s³ |
-| TCP rotatorisch | 0,5 rad/s | 1 rad/s² | 5 rad/s³ |
+| TCP rotatorisch | 3,141592653589793 rad/s | 12 rad/s² | 60 rad/s³ |
 
 Die Gelenkgeschwindigkeit entspricht den 180 Grad/s aus
 [UR-Forumsbeitrag 4](https://forum.universal-robots.com/t/maximum-axis-speed-acceleration/13338/4).
@@ -130,14 +130,45 @@ Ruck ist Beschleunigung geteilt durch 0,2 s Anstiegszeit, kein Herstellerwert.
 Der [Ruck-Thread](https://forum.universal-robots.com/t/how-to-apply-a-forth-order-polynomial-to-limit-jerk/3708/4)
 liefert dafür keine numerischen Herstellergrenzen. Die lineare TCP-Geschwindigkeit
 von 1,0 m/s ist eine zusätzliche Simulationsannahme, kein durch diese Beiträge
-belegter Herstellergrenzwert. Die rotatorischen TCP-Grenzen werden unverändert
-aus dem konservativen Profil übernommen und können weiterhin limitieren.
+belegter Herstellergrenzwert. Auch die rotatorischen TCP-Grenzen sind zusätzliche
+Simulationsannahmen: 3,141592653589793 rad/s, 12 rad/s² und 60 rad/s³.
+Die rotatorische Ruckannahme folgt ebenfalls aus 0,2 s Beschleunigungsanstieg.
+Sie sind keine abgeleiteten oder belegten Herstellergrenzen für die TCP-Drehung.
+Nur dieses separate Profil wird angepasst; Bahn, Wartezeiten, Gelenkgrenzen
+und lineare TCP-Grenzen bleiben unverändert. Die Änderung muss nativ und über
+den Editor ohne Profilverletzungen planbar sein; Zykluszeit und Sample-Spitzen
+werden erneut gemessen statt aus den Grenzwerten vorhergesagt.
 
 CLI-Modellpfade sind relativ zur Programmdatei. Beim Import in den Editor
 `robot_profile` auf `models/ur5e/profile_pick_place_simulation.yaml` setzen und
 erneut simulieren.
 
-Aktueller Prüfstand mit 1,0 m/s linearer TCP-Geschwindigkeitsgrenze vom
+Aktueller Prüfstand mit den erhöhten rotatorischen TCP-Grenzen vom 30.10.2026:
+zwei Zyklen, 16 Segmente und 1.581 Sollwerte bei 10 ms ergeben 15,80 s
+Gesamtdauer statt 46,28 s. Jeder der vier PTP-Transfers dauert 1,88 s statt
+9,5 s. Das isolierte Anheben der rotatorischen TCP-Grenzen verkürzt damit
+die Transferzeit; Bahn und übrige Profilwerte wurden nicht verändert.
+Der PTP-Planer verlängert abgelehnte Zeitkandidaten jeweils um Faktor 1,5;
+Sample-Spitzen müssen daher nicht genau an jeder kontinuierlich geprüften
+TCP-Grenze liegen.
+
+| Größe | Anteil an der aktuellen Profilgrenze |
+| --- | ---: |
+| Gelenkgeschwindigkeit | 99,7 % |
+| Gelenkbeschleunigung | 42,8 % |
+| Gelenkruck | 47,3 % |
+| Lineare TCP-Geschwindigkeit | 81,6 % (0,8158 m/s) |
+| Lineare TCP-Beschleunigung | 67,8 % |
+| Linearer TCP-Ruck | 89,5 % |
+
+Native Planung und Editor-HTML-Veröffentlichung waren erfolgreich, ohne
+Sample-Profilverletzungen. Die acht senkrechten 120-mm-Bewegungen,
+Rückkehr zur Startkonfiguration und terminaler Stillstand sind erneut geprüft.
+Das Belastungsziel von mindestens 90 % ist mit der Gelenkgeschwindigkeit erfüllt.
+Dies sind weiterhin Simulationsergebnisse ohne Kollisions- oder Nutzlastfreigabe.
+
+Vergleichsstand mit 1,0 m/s linearer TCP-Geschwindigkeitsgrenze und noch
+konservativen rotatorischen TCP-Grenzen vom
 30.10.2026: native Planung und Editor-HTML-Veröffentlichung erfolgreich,
 keine Sample-Profilverletzungen. Die acht senkrechten 120-mm-Bewegungen,
 Rückkehr zur Startkonfiguration und terminaler Stillstand sind geprüft.
@@ -148,7 +179,7 @@ dem folgenden Vergleichsstand unverändert. Die vier PTP-Transfers dauern
 weiterhin jeweils 9,5 s; eine höhere Geschwindigkeitsgrenze allein erzwingt
 keine kürzere Planung. Beschleunigung, Ruck, rotatorische TCP-Grenzen und
 die Bahn bleiben unverändert. Das ursprüngliche Belastungsziel von mindestens
-90 % wird mit maximal 89,5 % Sample-Grenzausnutzung aktuell knapp verfehlt;
+90 % wird mit maximal 89,5 % Sample-Grenzausnutzung in diesem Vergleichsstand knapp verfehlt;
 dafür werden keine weiteren Grenzen ohne neue Annahmen verändert.
 
 Vergleichsstand mit dem Annahmenprofil und noch 0,25 m/s TCP-Geschwindigkeit
