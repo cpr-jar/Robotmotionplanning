@@ -125,6 +125,10 @@ void inspect(const tinyxml2::XMLElement *e, std::size_t depth = 0) {
 }
 } // namespace
 SerialRobotProfile parse_serial_profile_yaml(std::string_view content) {
+  return parse_serial_profile_yaml(content, nullptr);
+}
+SerialRobotProfile parse_serial_profile_yaml(std::string_view content, PreparationContext *context) {
+  preparation_consume(context, PreparationResource::InputBytes, content.size(), "profile.parse");
   if (content.empty() || content.size() > 128 * 1024 || content.find('\0') != content.npos)
     fail("Invalid profile size/text");
   try {
@@ -148,6 +152,7 @@ SerialRobotProfile parse_serial_profile_yaml(std::string_view content) {
     if (!joints.IsMap() || joints.size() == 0 || joints.size() > 12)
       fail("Expected 1..12 joint profiles");
     for (auto field : joints) {
+      preparation_consume(context, PreparationResource::Work, 1, "profile.joints");
       const auto name = text(field.first);
       if (p.joints.count(name))
         fail("Duplicate profile joint: " + name);
@@ -200,6 +205,11 @@ SerialRobotProfile parse_serial_profile_yaml(std::string_view content) {
   }
 }
 ImportedSerialRobot import_serial_urdf(std::string_view xml, const SerialRobotProfile &p) {
+  return import_serial_urdf(xml, p, nullptr);
+}
+ImportedSerialRobot import_serial_urdf(std::string_view xml, const SerialRobotProfile &p,
+                                       PreparationContext *context) {
+  preparation_consume(context, PreparationResource::InputBytes, xml.size(), "urdf.parse");
   if (xml.empty() || xml.size() > 8 * 1024 * 1024 || xml.find('\0') != xml.npos ||
       xml.find("<!DOCTYPE") != xml.npos)
     fail("Invalid/unsupported URDF content");
@@ -218,6 +228,7 @@ ImportedSerialRobot import_serial_urdf(std::string_view xml, const SerialRobotPr
     fail("Missing selected base/tip");
   std::map<std::string, SerialJoint> incoming;
   for (auto *j = root->FirstChildElement("joint"); j; j = j->NextSiblingElement("joint")) {
+    preparation_consume(context, PreparationResource::Work, 1, "urdf.joints");
     SerialJoint s;
     s.name = attr(j, "name");
     if (!jointnames.insert(s.name).second)
@@ -299,12 +310,20 @@ ImportedSerialRobot import_serial_urdf(std::string_view xml, const SerialRobotPr
   if (selected.size() != p.joints.size())
     fail("Unknown/extraneous profile joint");
   check_limits(caps, selected.size());
+  preparation_checkpoint(context, "model.finish");
   return {p.robot_name, p.base_link,
           p.tip_link,   std::make_shared<SerialChainKinematics>(chain, p.base_pose, p.tool_offset, p.solver),
           caps,         p.tcp_limits};
 }
 ImportedSerialRobot load_serial_robot_files(const std::string &urdf, const std::string &profile) {
-  return import_serial_urdf(read(urdf, 8 * 1024 * 1024),
-                            parse_serial_profile_yaml(read(profile, 128 * 1024)));
+  return load_serial_robot_files(urdf, profile, nullptr);
+}
+ImportedSerialRobot load_serial_robot_files(const std::string &urdf, const std::string &profile,
+                                            PreparationContext *context) {
+  preparation_checkpoint(context, "model.read");
+  const auto profile_text = read(profile, 128 * 1024);
+  const auto parsed_profile = parse_serial_profile_yaml(profile_text, context);
+  preparation_checkpoint(context, "model.read");
+  return import_serial_urdf(read(urdf, 8 * 1024 * 1024), parsed_profile, context);
 }
 } // namespace motion

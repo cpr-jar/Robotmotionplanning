@@ -21,6 +21,7 @@ CHAPTERS = [
     'docs/integration/controller_integration.md',
     'docs/integration/interface_contracts.md',
     'docs/integration/live_motion_session.md',
+    'docs/integration/preparation_resources.md',
     'docs/architecture/class_diagrams.md',
     'docs/architecture/runtime_flows.md',
     'docs/architecture/module_catalog.md',

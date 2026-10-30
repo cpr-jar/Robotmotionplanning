@@ -98,7 +98,7 @@ struct Reader {
 };
 class Guard final : public YAML::EventHandler {
 public:
-  explicit Guard(std::string f) : file_(std::move(f)) {}
+  explicit Guard(std::string f, PreparationContext *context) : file_(std::move(f)), context_(context) {}
   void OnDocumentStart(const YAML::Mark &m) override {
     if (documents_++)
       fail(m, "Expected exactly one YAML document");
@@ -126,6 +126,7 @@ private:
     throw RobotProgramError({file_, "program", std::size_t(m.line + 1), std::size_t(m.column + 1), 0}, s);
   }
   void node(const YAML::Mark &m) {
+    preparation_consume(context_, PreparationResource::Work, 1, "program.yaml");
     if (++nodes_ > 50000)
       fail(m, "YAML node budget exceeded");
   }
@@ -141,6 +142,7 @@ private:
   }
   std::string file_;
   std::size_t documents_{}, nodes_{}, depth_{};
+  PreparationContext *context_;
 };
 struct Statement {
   std::optional<ProgramInstruction> motion;
@@ -151,16 +153,22 @@ struct Statement {
 RobotProgramError::RobotProgramError(ProgramLocation l, const std::string &m)
     : std::runtime_error(describe(l, m)), location_(std::move(l)), detail_(m) {}
 RobotProgramSource parse_robot_program_yaml(std::string_view content, const std::string &file) {
+  return parse_robot_program_yaml(content, file, nullptr);
+}
+RobotProgramSource parse_robot_program_yaml(std::string_view content, const std::string &file,
+                                            PreparationContext *context) {
+  preparation_consume(context, PreparationResource::InputBytes, content.size(), "program.parse");
   Reader r{file};
   if (content.empty() || content.size() > 1024 * 1024 || content.find('\0') != content.npos)
     throw RobotProgramError({file, "program", 0, 0, 0}, "Empty/oversized/invalid program");
   try {
     std::istringstream input{std::string(content)};
     YAML::Parser parser(input);
-    Guard guard(file);
+    Guard guard(file, context);
     while (parser.HandleNextDocument(guard)) {
     }
     const auto root = YAML::Load(std::string(content));
+    preparation_checkpoint(context, "program.parse");
     r.keys(root, {"schema_version", "units", "frame", "robot_profile", "robot_urdf", "start", "points",
                   "steps", "subprograms", "speed", "cycle_s", "epoch_s"});
     if (r.number(root["schema_version"]) != 1 || r.text(root["units"]) != "SI")
@@ -210,6 +218,7 @@ RobotProgramSource parse_robot_program_yaml(std::string_view content, const std:
         r.fail(sequence, "Expected nonempty step sequence");
       std::vector<Statement> out;
       for (std::size_t i = 0; i < sequence.size(); ++i) {
+        preparation_consume(context, PreparationResource::Work, 1, "program.parse");
         const auto n = sequence[i];
         const auto location = r.location(n, block, i + 1);
         try {
@@ -369,6 +378,7 @@ RobotProgramSource parse_robot_program_yaml(std::string_view content, const std:
       if (depth > 16)
         throw RobotProgramError({file, "steps", 0, 0, 0}, "Subprogram depth budget exceeded");
       for (const auto &s : steps) {
+        preparation_consume(context, PreparationResource::Work, 1, "program.expand");
         if (s.motion) {
           if (result.steps_.size() >= 10000)
             throw RobotProgramError(s.location, "Expanded instruction budget exceeded");
@@ -378,7 +388,10 @@ RobotProgramSource parse_robot_program_yaml(std::string_view content, const std:
       }
     };
     expand(expand, main, 0);
+    preparation_checkpoint(context, "program.parse.finish");
     return result;
+  } catch (const PreparationError &) {
+    throw;
   } catch (const RobotProgramError &) {
     throw;
   } catch (const YAML::Exception &e) {
@@ -388,6 +401,10 @@ RobotProgramSource parse_robot_program_yaml(std::string_view content, const std:
   }
 }
 RobotProgramSource load_robot_program_source(const std::string &file) {
+  return load_robot_program_source(file, nullptr);
+}
+RobotProgramSource load_robot_program_source(const std::string &file, PreparationContext *context) {
+  preparation_checkpoint(context, "program.read");
   std::ifstream in(file, std::ios::binary | std::ios::ate);
   if (!in)
     throw RobotProgramError({file, "program", 0, 0, 0}, "Cannot open program");
@@ -398,16 +415,24 @@ RobotProgramSource load_robot_program_source(const std::string &file) {
   in.seekg(0);
   if (!in.read(s.data(), std::streamsize(s.size())))
     throw RobotProgramError({file, "program", 0, 0, 0}, "Cannot read program");
-  return parse_robot_program_yaml(s, file);
+  return parse_robot_program_yaml(s, file, context);
 }
 PreparedRobotProgram load_robot_program(const std::string &file) {
-  const auto source = load_robot_program_source(file);
+  return load_robot_program(file, nullptr);
+}
+PreparedRobotProgram load_robot_program(const std::string &file, PreparationContext *context) {
+  const auto source = load_robot_program_source(file, context);
   const auto directory = std::filesystem::absolute(file).parent_path(),
              profile = (directory / source.robot_profile()).lexically_normal();
   const auto urdf = source.robot_urdf().empty() ? profile.parent_path() / "robot.urdf"
                                                 : (directory / source.robot_urdf()).lexically_normal();
   try {
-    return compile_robot_program(source, load_serial_robot_files(urdf.string(), profile.string()));
+    preparation_checkpoint(context, "model.import");
+    auto robot = load_serial_robot_files(urdf.string(), profile.string(), context);
+    preparation_checkpoint(context, "model.import");
+    return compile_robot_program(source, std::move(robot), {}, context);
+  } catch (const PreparationError &) {
+    throw;
   } catch (const RobotProgramError &) {
     throw;
   } catch (const std::exception &e) {

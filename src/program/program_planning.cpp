@@ -71,6 +71,11 @@ PreparedRobotProgram compile_robot_program(const RobotProgramSource &source, Imp
 }
 PreparedRobotProgram compile_robot_program(const RobotProgramSource &source, ImportedSerialRobot robot,
                                            const ProgramAssetLoader &loader) {
+  return compile_robot_program(source, std::move(robot), loader, nullptr);
+}
+PreparedRobotProgram compile_robot_program(const RobotProgramSource &source, ImportedSerialRobot robot,
+                                           const ProgramAssetLoader &loader, PreparationContext *context) {
+  preparation_checkpoint(context, "program.compile");
   const ProgramLocation root{source.filename(), "program", 1, 1, 0};
   if (!robot.kinematics)
     throw RobotProgramError(root, "Missing robot kinematics");
@@ -89,6 +94,7 @@ PreparedRobotProgram compile_robot_program(const RobotProgramSource &source, Imp
     double total = 0;
     const auto plan_instruction = [&](const ProgramInstruction &instruction) {
       try {
+        preparation_consume(context, PreparationResource::Instructions, 1, "program.plan");
         if (program->segment_count() >= 10000)
           throw std::invalid_argument("Expanded program instruction budget exceeded");
         const auto limits = scaled(program->robot_.joint_limits, instruction.speed);
@@ -115,10 +121,10 @@ PreparedRobotProgram compile_robot_program(const RobotProgramSource &source, Imp
           if (const auto *q = std::get_if<Vector>(&instruction.target))
             destination = *q;
           else {
-            const auto solution = program->robot_.kinematics->ik(target_pose(), state.q);
+            const auto solution = program->robot_.kinematics->ik_detailed(target_pose(), state.q, context);
             if (!solution)
               throw std::domain_error("PTP target has no seed-local IK solution");
-            destination = *solution;
+            destination = solution.solution;
           }
           if (!kinematic_detail::finite(destination, n))
             throw std::invalid_argument("Target joint dimension does not match robot");
@@ -128,8 +134,10 @@ PreparedRobotProgram compile_robot_program(const RobotProgramSource &source, Imp
             throw std::domain_error(joint.diagnostic);
           double T = joint.trajectory->duration();
           for (int attempt = 0; attempt < 16 && T <= 3600; ++attempt, T *= 1.5) {
+            preparation_consume(context, PreparationResource::Work, 1, "program.ptp");
             auto p = plan_boundary_quintic(limits, state, goal, T);
-            if (p && check_polynomial_constraints(*program->robot_.kinematics, *p.trajectory, tcp)) {
+            if (p && check_polynomial_constraints(*program->robot_.kinematics, *p.trajectory, tcp, {},
+                                                  {16, 100000, context})) {
               segment = p.trajectory;
               break;
             }
@@ -154,6 +162,7 @@ PreparedRobotProgram compile_robot_program(const RobotProgramSource &source, Imp
           } else
             throw std::logic_error("Unexpanded program operation");
           CartesianSplineOptions path_options;
+          path_options.preparation = context;
           path_options.position_tolerance_m = instruction.path_tolerance_m;
           const auto path = map_cartesian_spline(program->robot_.kinematics,
                                                  std::make_shared<PoseSweepPath>(geometry, orientation),
@@ -187,6 +196,8 @@ PreparedRobotProgram compile_robot_program(const RobotProgramSource &source, Imp
         program->ends_.push_back(next);
         program->instructions_.push_back(instruction);
         total = next;
+      } catch (const PreparationError &) {
+        throw;
       } catch (const RobotProgramError &) {
         throw;
       } catch (const std::exception &e) {
@@ -198,6 +209,12 @@ PreparedRobotProgram compile_robot_program(const RobotProgramSource &source, Imp
     };
     std::map<std::string, std::string> assets;
     std::size_t asset_bytes = 0;
+    struct ParsedDrawing {
+      std::string file;
+      DxfImportOptions options;
+      DxfDrawing drawing;
+    };
+    std::vector<ParsedDrawing> parsed;
     for (const auto &instruction : source.instructions()) {
       if (instruction.operation != ProgramOperation::Dxf) {
         plan_instruction(instruction);
@@ -210,20 +227,43 @@ PreparedRobotProgram compile_robot_program(const RobotProgramSource &source, Imp
         if (!assets.count(command.file)) {
           if (assets.size() >= 8)
             throw std::invalid_argument("DXF asset count budget exceeded (8)");
+          preparation_consume(context, PreparationResource::Assets, 1, "dxf.acquire");
           auto text =
               loader ? loader(command.file)
                      : read_dxf_text_file(
                            (std::filesystem::path(source.filename()).parent_path() / command.file).string());
           if (text.size() > dxf_max_bytes || text.size() > 16 * 1024 * 1024 - asset_bytes)
             throw std::invalid_argument("DXF total asset byte budget exceeded (16 MiB)");
+          preparation_consume(context, PreparationResource::InputBytes, text.size(), "dxf.acquire");
           asset_bytes += text.size();
           assets.emplace(command.file, std::move(text));
         }
-        const auto drawing = parse_dxf_path(assets.at(command.file), command.import, command.file);
-        const auto steps =
-            program_detail::expand_dxf(instruction, drawing, program->robot_.kinematics->fk(state.q));
+        auto found = std::find_if(parsed.begin(), parsed.end(), [&](const ParsedDrawing &entry) {
+          return entry.file == command.file && entry.options == command.import;
+        });
+        if (found == parsed.end()) {
+          // Bound variants even for legacy callers without a shared context.
+          if (parsed.size() >= 32)
+            throw std::invalid_argument("Parsed DXF variant budget exceeded (32)");
+          auto drawing = parse_dxf_path(assets.at(command.file), command.import, command.file, context);
+          std::uint64_t bytes = sizeof(DxfDrawing) + drawing.strokes.capacity() * sizeof(DxfStroke);
+          for (const auto &stroke : drawing.strokes) {
+            bytes += stroke.curves.capacity() * sizeof(DxfCurve) + stroke.location.file.capacity() +
+                     stroke.location.layer.capacity() + stroke.location.entity_type.capacity() + 3;
+            for (const auto &curve : stroke.curves)
+              bytes += curve.location.file.capacity() + curve.location.layer.capacity() +
+                       curve.location.entity_type.capacity() + 3;
+          }
+          preparation_consume(context, PreparationResource::CacheBytes, bytes, "dxf.cache");
+          parsed.push_back({command.file, command.import, std::move(drawing)});
+          found = std::prev(parsed.end());
+        }
+        const auto steps = program_detail::expand_dxf(instruction, found->drawing,
+                                                      program->robot_.kinematics->fk(state.q), context);
         for (const auto &step : steps)
           plan_instruction(step);
+      } catch (const PreparationError &) {
+        throw;
       } catch (const RobotProgramError &) {
         throw;
       } catch (const std::exception &error) {
@@ -232,7 +272,9 @@ PreparedRobotProgram compile_robot_program(const RobotProgramSource &source, Imp
     }
     if (!program->segment_count())
       throw RobotProgramError(root, "Empty program");
-    return prepare_robot_program(std::move(program), source.cycle_s());
+    return prepare_robot_program(std::move(program), source.cycle_s(), context);
+  } catch (const PreparationError &) {
+    throw;
   } catch (const RobotProgramError &) {
     throw;
   } catch (const std::exception &e) {

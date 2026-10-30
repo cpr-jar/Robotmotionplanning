@@ -1,4 +1,4 @@
-# Robot Motion C++ — 0.15.0
+# Robot Motion C++ — 0.16.0
 
 C++20-Bibliothek für Roboterkinematik, Bewegungsplanung, Anwenderprogramme und
 zeitlich geprüfte Sollwertausgabe. Der Quellcode ist nach Aufgaben gegliedert;
@@ -27,6 +27,9 @@ Fehlerursachen. Das Steuerungsbeispiel verwendet diesen Ablauf.
 Neu in **0.15.0**: [getrennte CMake-Komponenten und geprüfte Modulgrenzen](docs/architecture/components.md).
 Ausführung, Solver, Kalibrierung, DXF, Modellimport und Programme lassen sich
 gezielt auswählen; die bisherige Fassade bleibt verfügbar.
+
+Neu in **0.16.0**: [gemeinsame Vorbereitungsbudgets und Abbruch](docs/integration/preparation_resources.md),
+DXF-Parsecache, speichersparende Spuren und ein Abbruchknopf im getrennten Editor.
 
 ## Starten
 
@@ -147,6 +150,6 @@ Dispatch-Test sind kein Nachweis physischer Ausführung oder harter Echtzeit.
 Zielrepository: https://github.com/cpr-jar/Robotmotionplanning
 
 Der fortgeführte Quellstand liegt auf `recovery/reconstructed-v0.12.1`.
-[Quell-ZIP v0.15.0](https://github.com/cpr-jar/Robotmotionplanning/archive/refs/tags/v0.15.0.zip).
+[Quell-ZIP v0.15.0](https://github.com/cpr-jar/Robotmotionplanning/archive/refs/tags/v0.16.0.zip).
 Die frühere Rekonstruktionssicherung v0.12.1 bleibt zusätzlich als Git-Bundle in
 `backups/` erhalten; sie wird durch neue Versionen nicht überschrieben.

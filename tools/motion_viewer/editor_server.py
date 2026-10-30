@@ -9,6 +9,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 import json
 import logging
+import os
 import re
 import secrets
 import shutil
@@ -16,6 +17,8 @@ import subprocess
 import tempfile
 import threading
 import zipfile
+
+from job_budget import JobBudget, JobStopped
 
 from create_viewer import (
     ROOT,
@@ -59,8 +62,10 @@ class EditorError(Exception):
 
 def validate_request(value):
     required = {"source", "filename", "cycle_ms"}
-    if not isinstance(value, dict) or not required.issubset(value) or set(value) - required - {"assets"}:
+    if not isinstance(value, dict) or not required.issubset(value) or set(value) - required - {"assets", "job_id"}:
         raise EditorError(400, "Erwartet werden source, filename, cycle_ms und optional assets.")
+    if "job_id" in value and (not isinstance(value["job_id"], str) or not re.fullmatch(r"[a-f0-9]{32}", value["job_id"])):
+        raise EditorError(400, "Ungültige Auftragskennung.")
     source, filename, cycle = value["source"], value["filename"], value["cycle_ms"]
     try:
         valid_source = (
@@ -112,11 +117,15 @@ class SimulationService:
         if not self.exporter.is_file():
             raise ValueError("Exporter fehlt; zuerst das separate Viewer-Werkzeug bauen.")
         self.workspace = Path(workspace).resolve()
+        JobBudget(timeout_s)  # Validate configuration before starting any worker.
         self.timeout_s = timeout_s
         self._temporary = tempfile.TemporaryDirectory(prefix="motion-editor-")
         self.folder = Path(self._temporary.name)
         self._simulation_lock = threading.Lock()
         self._results_lock = threading.Lock()
+        self._jobs_lock = threading.Lock()
+        self._active_job = None
+        self._closing = False
         self._results = OrderedDict()
         self._expired_results = set()
 
@@ -133,8 +142,21 @@ class SimulationService:
                 continue
             self._expired_results.remove(expired)
 
+    def cancel(self, job_id):
+        if not isinstance(job_id, str) or not re.fullmatch(r"[a-f0-9]{32}", job_id):
+            raise EditorError(400, "Ungültige Auftragskennung.")
+        with self._jobs_lock:
+            if self._active_job is None or self._active_job[0] != job_id:
+                return {"job_id": job_id, "cancelled": False}
+            self._active_job[1].cancelled.set()
+            return {"job_id": job_id, "cancelled": True}
+
     def close(self):
-        # A running subprocess has a bounded timeout. Do not remove its input.
+        with self._jobs_lock:
+            self._closing = True
+            if self._active_job:
+                self._active_job[1].cancelled.set()
+        # Wait for cancellation acknowledgement before removing a worker's files.
         with self._simulation_lock:
             self._temporary.cleanup()
 
@@ -164,6 +186,13 @@ class SimulationService:
             raise EditorError(409, "Eine Simulation läuft bereits. Bitte deren Abschluss abwarten.")
         run = None
         published = False
+        budget = JobBudget(self.timeout_s)
+        job_id = request.get("job_id", secrets.token_hex(16))
+        with self._jobs_lock:
+            if self._closing:
+                self._simulation_lock.release()
+                raise EditorError(503, "Der Editor wird beendet.")
+            self._active_job = (job_id, budget)
         try:
             result_id = secrets.token_hex(16)
             run = self.folder / result_id
@@ -174,27 +203,32 @@ class SimulationService:
                 (run / asset["filename"]).write_bytes(asset["content"].encode("utf-8"))
             exported = run / "scene.json"
             with tempfile.TemporaryFile() as diagnostics:
-                try:
-                    process = subprocess.run(
-                        [
-                            str(self.exporter),
-                            str(program),
-                            str(exported),
-                            str(cycle),
-                            "99999",
-                            "--workspace",
-                            str(self.workspace),
-                        ],
-                        stdout=subprocess.DEVNULL,
-                        stderr=diagnostics,
-                        timeout=self.timeout_s,
-                        cwd=self.workspace,
-                        check=False,
-                    )
-                except subprocess.TimeoutExpired as error:
-                    raise EditorError(
-                        422, f"Zeitbudget von {self.timeout_s:g} s überschritten; Simulation abgebrochen."
-                    ) from error
+                budget.checkpoint()
+                environment = os.environ.copy()
+                environment["MOTION_PREPARATION_TIMEOUT_MS"] = str(max(1, int(budget.remaining() * 1000)))
+                with subprocess.Popen(
+                    [str(self.exporter), str(program), str(exported), str(cycle), "99999",
+                     "--workspace", str(self.workspace)],
+                    stdout=subprocess.DEVNULL, stderr=diagnostics, cwd=self.workspace, env=environment,
+                ) as process:
+                    try:
+                        while True:
+                            budget.checkpoint()
+                            try:
+                                process.wait(timeout=min(0.05, budget.remaining()))
+                                break
+                            except subprocess.TimeoutExpired:
+                                continue
+                        budget.checkpoint()
+                    except BaseException:
+                        # Kill only this job's direct native worker and reap it.
+                        process.terminate()
+                        try:
+                            process.wait(timeout=1)
+                        except subprocess.TimeoutExpired:
+                            process.kill()
+                            process.wait()
+                        raise
                 if process.returncode:
                     diagnostics.seek(0)
                     raw = diagnostics.read(MAX_DIAGNOSTIC_BYTES).decode("utf-8", errors="replace")
@@ -207,13 +241,17 @@ class SimulationService:
                     # No temporary host paths in user-facing diagnostics.
                     detail["message"] = detail["message"].replace(str(run), "<Programm>")
                     raise EditorError(422, **detail)
-            data = prepare_data(load_export(exported))
+            data = prepare_data(load_export(exported, budget=budget), budget=budget)
             if data["sample_limit_violations"]:
                 raise EditorError(
                     422,
                     "Die vollständige Simulationsspur verletzt Profilgrenzen; keine neue Ansicht freigegeben.",
                 )
-            atomic_write(run / "viewer.html", render_html(data))
+            budget.checkpoint()
+            html = render_html(data)
+            budget.checkpoint()
+            atomic_write(run / "viewer.html", html)
+            budget.checkpoint()
             with zipfile.ZipFile(run / "program.zip", "w", compression=zipfile.ZIP_DEFLATED) as bundle:
                 bundle.write(program, filename)
                 for asset in assets:
@@ -235,21 +273,31 @@ class SimulationService:
                 "bundle_url": f"/downloads/{result_id}/program.zip",
                 "dxf_files": len(assets),
             }
-            with self._results_lock:
-                self._results[result_id] = (run, filename)
-                published = True
-                while len(self._results) > RESULT_LIMIT:
-                    _, (expired, _) = self._results.popitem(last=False)
-                    self._expired_results.add(expired)
+            # Linearize cancellation and publication: a confirmed cancellation
+            # cannot race a commit; a late cancel cannot affect a later job.
+            with self._jobs_lock:
+                budget.checkpoint()
+                with self._results_lock:
+                    self._results[result_id] = (run, filename)
+                    published = True
+                    while len(self._results) > RESULT_LIMIT:
+                        _, (expired, _) = self._results.popitem(last=False)
+                        self._expired_results.add(expired)
+                self._active_job = None
             self._cleanup_expired_results()
             return summary
         except EditorError:
             raise
+        except JobStopped as error:
+            raise EditorError(422, str(error), code=error.code) from error
         except (ValueError, KeyError, TypeError, OSError, subprocess.SubprocessError) as error:
             raise EditorError(
                 422, "Keine Simulation veröffentlicht: " + str(error).replace(str(self.folder), "<Sitzung>")
             ) from error
         finally:
+            with self._jobs_lock:
+                if self._active_job and self._active_job[0] == job_id:
+                    self._active_job = None
             if run is not None and not published:
                 shutil.rmtree(run, ignore_errors=True)
             self._simulation_lock.release()
@@ -280,7 +328,7 @@ class EditorServer(ThreadingHTTPServer):
 
 
 class EditorHandler(BaseHTTPRequestHandler):
-    server_version = "MotionEditor/0.4.1"
+    server_version = "MotionEditor/0.5.0"
 
     def setup(self):
         super().setup()
@@ -381,7 +429,7 @@ class EditorHandler(BaseHTTPRequestHandler):
             origin = self.headers.get("Origin")
             if origin is not None and origin not in {"http://" + host for host in self.server.hosts}:
                 raise EditorError(403, "Die Anfrage muss aus dem lokalen Editor stammen.")
-            if self.path != "/api/simulate":
+            if self.path not in ("/api/simulate", "/api/cancel"):
                 raise EditorError(404, "Unbekannte Adresse.")
             token = self.headers.get("X-Motion-Token", "")
             if not token.isascii() or not secrets.compare_digest(token, self.server.token):
@@ -404,6 +452,10 @@ class EditorHandler(BaseHTTPRequestHandler):
                 )
             except (UnicodeError, ValueError) as error:
                 raise EditorError(400, "Ungültiges JSON: " + str(error)) from error
+            if self.path == "/api/cancel":
+                if not isinstance(request, dict) or set(request) != {"job_id"}:
+                    raise EditorError(400, "Abbruch benötigt genau job_id.")
+                return self.respond(200, self.server.service.cancel(request["job_id"]))
             self.respond(200, self.server.service.simulate(request))
         except EditorError as error:
             self.respond(error.status, {"error": error.diagnostic})

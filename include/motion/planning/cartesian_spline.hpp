@@ -5,6 +5,7 @@ namespace motion {
 struct CartesianSplineOptions {
   double position_tolerance_m{.0002}, orientation_tolerance_rad{.0005}, max_joint_step{.35};
   std::size_t initial_segments{16}, max_segments{256}, max_enclosure_depth{12}, max_enclosures{100000};
+  PreparationContext *preparation{};
 };
 class CartesianSplinePath;
 struct CartesianSplineResult {
@@ -96,6 +97,7 @@ private:
 inline CartesianSplineResult map_cartesian_spline(std::shared_ptr<const IKinematics> model,
                                                   std::shared_ptr<const IPosePath> desired,
                                                   const Vector &seed, CartesianSplineOptions options) {
+  preparation_checkpoint(options.preparation, "spline");
   const auto fail = [](PlanStatus s, const char *d) { return CartesianSplineResult{s, {}, d}; };
   if (!model || !desired || desired->pieces() == 0 || desired->pieces() > 256 || seed.empty() ||
       !kinematic_detail::finite(seed, model->dof()) || options.initial_segments < 2 ||
@@ -142,7 +144,19 @@ inline CartesianSplineResult map_cartesian_spline(std::shared_ptr<const IKinemat
       std::vector<Vector> q{seed};
       bool okay = true;
       for (std::size_t k = 1; k <= count; ++k) {
-        auto next = model->ik(pose_at(double(k) / count), q.back());
+        preparation_consume(options.preparation, PreparationResource::Work, 1, "spline.ik");
+        const auto goal = pose_at(double(k) / count);
+        auto next = [&]() -> std::optional<Vector> {
+#ifdef MOTION_WITH_SERIAL
+          if (const auto *serial = dynamic_cast<const SerialChainKinematics *>(model.get())) {
+            auto result = serial->ik_detailed(goal, q.back(), options.preparation);
+            return result ? std::optional<Vector>(std::move(result.solution)) : std::nullopt;
+          }
+#endif
+          auto result = model->ik(goal, q.back());
+          preparation_checkpoint(options.preparation, "spline.ik");
+          return result;
+        }();
         if (!next) {
           okay = false;
           break;
@@ -182,6 +196,7 @@ inline CartesianSplineResult map_cartesian_spline(std::shared_ptr<const IKinemat
       std::size_t calls = 0;
       const auto admit = [&](auto &&self, const std::vector<polynomial_detail::Control> &b, double begin,
                              double span, std::size_t depth) -> bool {
+        preparation_consume(options.preparation, PreparationResource::Work, 1, "spline.enclosure");
         if (++calls > options.max_enclosures)
           return false;
         bool accepted = false;
@@ -243,11 +258,15 @@ inline CartesianSplineResult map_cartesian_spline(std::shared_ptr<const IKinemat
           okay = false;
           break;
         }
-      if (okay)
+      if (okay) {
+        preparation_checkpoint(options.preparation, "spline.finish");
         return {PlanStatus::Ready, std::move(candidate),
                 "Bounded numerical pose tube and differential envelopes"};
+      }
     }
     return fail(PlanStatus::Infeasible, "Spline IK/tube admission failed within budget");
+  } catch (const PreparationError &) {
+    throw;
   } catch (const std::invalid_argument &e) {
     return {PlanStatus::InvalidInput, {}, e.what()};
   } catch (const std::exception &e) {

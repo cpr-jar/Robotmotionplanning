@@ -222,7 +222,11 @@ Anhänge werden zusammen eingefroren; die Ergebnisantwort liefert zusätzlich
 Maximal 1 MiB Programmtext / vier DXF-Dateien mit je 1 MiB / 12 MiB JSON-Anfrage,
 99.999 Ticks / 100.000 Samples,
 64 MiB CSV, 128 MiB beim JSON-Einlesen und standardmäßig 4.000 angezeigte Samples.
-Das native Zeitbudget beträgt 120 s; `--timeout-s 30` ändert es (1–600 s).
+Das gesamte Auftragszeitbudget beträgt 120 s; `--timeout-s 30` ändert es (1–600 s).
+Es gilt auch für Spurprüfung, HTML-Erzeugung und die abschließende Veröffentlichung.
+Mit **Abbrechen** wird genau der laufende Auftrag beendet; die vorherige gültige
+Ansicht bleibt erhalten. Ein bestätigter Abbruch veröffentlicht kein neues Ergebnis.
+[Budgetvertrag und technische Grenzen](../../docs/integration/preparation_resources.md).
 Der Exporter ist ein fest vorgegebenes Executable ohne Shell-Aufruf; Programmtext
 führt keine Python-, JavaScript- oder Shell-Befehle aus. Der Server akzeptiert
 nur seine lokalen Hostnamen und schützt Simulationsanfragen durch Sitzungstoken

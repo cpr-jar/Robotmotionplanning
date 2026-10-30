@@ -125,7 +125,7 @@ double unit_scale(DxfUnit units, std::optional<int> header, const DxfLocation &w
     fail(where, "Invalid DXF unit selection");
   }
 }
-std::vector<Group> groups(std::string_view input, const std::string &filename) {
+std::vector<Group> groups(std::string_view input, const std::string &filename, PreparationContext *context) {
   const DxfLocation root{filename, "", "", 0, 0};
   if (input.empty() || input.size() > dxf_max_bytes || input.find('\0') != input.npos ||
       input.starts_with("AutoCAD Binary DXF"))
@@ -146,6 +146,7 @@ std::vector<Group> groups(std::string_view input, const std::string &filename) {
   // A terminal newline is consumed with its value; blank group lines are invalid.
   auto read_line = next_line;
   while (!input.empty()) {
+    preparation_consume(context, PreparationResource::Work, 1, "dxf.tokenize");
     if (input.find_first_not_of(" \t\r\n") == input.npos)
       break;
     const auto code_line = line + 1;
@@ -171,10 +172,15 @@ DxfImportError::DxfImportError(DxfLocation location, const std::string &message)
 
 DxfDrawing parse_dxf_path(std::string_view input, const DxfImportOptions &options,
                           const std::string &filename) {
+  return parse_dxf_path(input, options, filename, nullptr);
+}
+DxfDrawing parse_dxf_path(std::string_view input, const DxfImportOptions &options,
+                          const std::string &filename, PreparationContext *context) {
+  preparation_consume(context, PreparationResource::Drawings, 1, "dxf.parse");
   const DxfLocation root{filename, "", "", 0, 0};
   if (options.layer && (options.layer->empty() || options.layer->size() > 4096))
     fail(root, "Invalid DXF layer selection");
-  const auto data = groups(input, filename);
+  const auto data = groups(input, filename, context);
   std::optional<int> header;
   std::vector<Entity> entities;
   bool ended = false, have_entities = false, have_header = false;
@@ -254,6 +260,7 @@ DxfDrawing parse_dxf_path(std::string_view input, const DxfImportOptions &option
     stroke.curves.push_back(std::move(curve));
   };
   for (std::size_t index = 0; index < entities.size(); ++index) {
+    preparation_consume(context, PreparationResource::Work, 1, "dxf.entities");
     const auto &entity = entities[index];
     ++entity_index;
     DxfLocation where{filename, "0", entity.type, entity.line, entity_index};

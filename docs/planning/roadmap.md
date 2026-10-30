@@ -20,12 +20,20 @@ separate Bibliotheken und unabhängig geprüfte Verbraucher. Legacy-Fassade,
 Headerpfade und vollständiges Serial-Archiv bleiben erhalten.
 Nachweise: [Komponentenprüfung](../testing/components_validation.md).
 
+Mit **0.16.0** ist Paket 4 [Ressourcen und Abbruch](../integration/preparation_resources.md)
+umgesetzt: gemeinsamer Vorbereitungskontext, DXF-Parsecache, Cache-Zulassung nach
+Bytes, CSV-Spooling und zweipassige Spurprüfung. Der Editor kann einen laufenden
+Auftrag abbrechen und teilt ein Gesamtzeitbudget bis zur Veröffentlichung.
+Browser-/TSan-/ARM64-Jobs sind in CI ergänzt. Lokale Tests und verbleibende
+Grenzen: [Ressourcenprüfung](../testing/resources_validation.md).
+
 Die nächsten Schritte:
 
-1. **Ressourcen und Prüfungen:** gemeinsame Vorbereitungsbudgets/Abbruch,
-   Wiederverwendung geparster DXF-Daten, speichersparende Spuren und zusätzliche
-   Browser-/Nebenläufigkeits-/ARM-Prüfungen. Der fokussierte lokale TSan-Nachweis
-   für die neue Session ersetzt keine vollständige CI-/Zielplattformabdeckung.
+1. **Zielplattform und Betriebsbudgets konkretisieren:** ARM64-CI-Läufe beobachten,
+   Pi-/Host-Lastmessungen mit festgelegten Programmen durchführen sowie globale
+   RAM-/Scratch-/Parallelitätslimits und maximale Abbruchlatenz für die Anlage
+   festlegen. Der Vorbereitungskontext liefert Zulassungszähler, keine Prozess-
+   RSS-Garantie oder WCET. CANopen bleibt zurückgestellt.
 2. **Bedarfsgerechte Erweiterungen:** typisierte Quell-/Bewegungsrepräsentation,
    Enclosure-Fähigkeit und das separat offene IK-Skalierungsproblem F07.
    F11 ist für Session/Producer verbessert; durchgehende Planerdiagnosen und

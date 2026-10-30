@@ -13,6 +13,8 @@ import zipfile
 from unittest.mock import patch
 
 from create_viewer import ROOT
+from job_budget import JobStopped
+
 from editor_server import (
     EditorError,
     EditorServer,
@@ -123,7 +125,7 @@ class ProgramEditorTests(unittest.TestCase):
             self.assertEqual(caught.exception.status, 409)
         finally:
             self.service._simulation_lock.release()
-        with patch("editor_server.subprocess.run", side_effect=subprocess.TimeoutExpired("exporter", 120)):
+        with patch("editor_server.JobBudget.checkpoint", side_effect=JobStopped("deadline_exceeded", "Zeitbudget überschritten")):
             with self.assertRaisesRegex(EditorError, "Zeitbudget"):
                 self.service.simulate(request_for())
         self.assertFalse(list(self.service.folder.iterdir()))

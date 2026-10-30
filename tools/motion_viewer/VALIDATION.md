@@ -1,4 +1,14 @@
-# Werkzeugprüfung 0.4.1 · 30.10.2026
+# Werkzeugprüfung 0.5.0 · 30.10.2026
+
+**38/38 Python-Tests** und drei echte Chromium-Abläufe lokal bestanden.
+Neue Prüfungen: nativen Worker abbrechen/reapen, Gesamtdeadline nach Rendering,
+Abbruch während der Python-Spuraufbereitung, falsche/alte Jobkennung, Erhalt der
+vorherigen Ansicht sowie 100.000 Spurzeilen ohne vollständige numerische Listen.
+Browser-Smokes und Jobprotokolle sind jetzt in CI eingebunden.
+[Ressourcenprüfung und Grenzen](../../docs/testing/resources_validation.md).
+
+## Vorheriger Nachweis 0.4.1 · 30.10.2026
+
 
 **32/32** Python-Tests mit Release- sowie ASan/UBSan-Exporter bestanden.
 Zwei neue Tests prüfen IO-Fehler vor der Veröffentlichung und beim späteren

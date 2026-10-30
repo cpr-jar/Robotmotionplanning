@@ -1,4 +1,15 @@
-# Aktuelle Ergänzung — Komponenten und Schichten 0.15.0, 30.10.2026
+# Prüfberichte — aktueller Stand 0.16.0, 30.10.2026
+
+## Aktueller Stand 0.16.0
+
+Gemeinsame Vorbereitungsbudgets und Abbruch, DXF-Parsecache, CSV-Spooling und
+zweipassige Spurprüfung sind umgesetzt. Dazu gehören eigene Fehlercodes,
+Bytezulassung vor dem Cachebau und ein abbrechbarer Editor mit Gesamtdeadline.
+[Vertrag](../integration/preparation_resources.md),
+[Prüfmatrix, Speicherlastfall und Grenzen](resources_validation.md).
+Browser-, TSan- und native ARM64-Jobs sind in CI ergänzt; eine Pi-Abnahme bleibt offen.
+
+## Komponenten und Schichten 0.15.0, 30.10.2026
 
 Die bisherigen Modulzyklen sind aufgelöst. **11/11** unabhängige Komponenten-
 Verbraucher und zwei direkte externe Sanitizer-Verbraucher bestehen. Runtime-

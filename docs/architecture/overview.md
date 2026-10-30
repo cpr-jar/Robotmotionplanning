@@ -1,4 +1,4 @@
-# Architektur des Stands 0.15.0
+# Architektur des Stands 0.16.0
 
 Die Bibliothek trennt Kinematik, Planung, Programminterpretation und zeitliche
 Ausführung. Der Planungs-/Producerbereich darf dynamische Daten verwenden;
@@ -71,3 +71,6 @@ Zusätzliche TCP-Boxhindernisse sind explizite Constraints. Vollständige
 Payload-/Drehmoment- und Link-/Selbstkollisionsmodule sind noch nicht
 wiederhergestellt. CANopen ist bewusst ausgeklammert. Keine dieser Lücken wird
 mit Sample- oder Simulationswerten als physisch geprüft dargestellt.
+
+Ab 0.16.0 ergänzt der [Vorbereitungskontext](../integration/preparation_resources.md)
+gemeinsame Budgets und Abbruch ohne globale Zustände oder Referenzen in fertigen Plänen.

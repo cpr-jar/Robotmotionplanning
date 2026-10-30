@@ -1,5 +1,6 @@
 #pragma once
 #include "motion/core/geometry_types.hpp"
+#include "motion/core/preparation_context.hpp"
 #include <cstddef>
 #include <optional>
 #include <stdexcept>
@@ -15,6 +16,7 @@ enum class DxfUnit { Header, Millimetre, Centimetre, Metre, Inch, Foot };
 struct DxfImportOptions {
   DxfUnit units{DxfUnit::Header};
   std::optional<std::string> layer;
+  bool operator==(const DxfImportOptions &) const = default;
 };
 struct DxfLocation {
   std::string file, layer, entity_type;
@@ -47,6 +49,8 @@ struct DxfDrawing {
 };
 DxfDrawing parse_dxf_path(std::string_view, const DxfImportOptions & = {},
                           const std::string &filename = "<memory>");
+DxfDrawing parse_dxf_path(std::string_view, const DxfImportOptions &, const std::string &,
+                          PreparationContext *);
 std::string read_dxf_text_file(const std::string &);
 DxfDrawing load_dxf_path_file(const std::string &, const DxfImportOptions & = {});
 } // namespace motion

@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.20)
-project(robot_motion_viewer VERSION 0.4.1 LANGUAGES CXX)
+project(robot_motion_viewer VERSION 0.5.0 LANGUAGES CXX)
 get_filename_component(ROBOT_MOTION_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../.." ABSOLUTE)
 # This standalone tool embeds the library; it does not join its implementation/build graph.
 set(MOTION_BUILD_TESTS OFF)
@@ -19,5 +19,5 @@ if(MOTION_VIEWER_BUILD_TESTS)
   enable_testing()
   find_package(Python3 3.9 COMPONENTS Interpreter REQUIRED)
   add_test(NAME motion_viewer_tool_tests COMMAND ${Python3_EXECUTABLE} -m unittest discover -s ${CMAKE_CURRENT_SOURCE_DIR}/tests -v)
-  set_tests_properties(motion_viewer_tool_tests PROPERTIES TIMEOUT 180 ENVIRONMENT "MOTION_VIEWER_EXPORTER=$<TARGET_FILE:motion_viewer_exporter>;PYTHONPATH=${CMAKE_CURRENT_SOURCE_DIR}")
+  set_tests_properties(motion_viewer_tool_tests PROPERTIES TIMEOUT 600 ENVIRONMENT "MOTION_VIEWER_EXPORTER=$<TARGET_FILE:motion_viewer_exporter>;PYTHONPATH=${CMAKE_CURRENT_SOURCE_DIR}")
 endif()

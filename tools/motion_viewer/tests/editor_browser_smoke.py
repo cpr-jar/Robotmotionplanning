@@ -6,6 +6,7 @@ import json
 import shutil
 import threading
 import sys
+from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from create_viewer import ROOT
@@ -141,6 +142,27 @@ def main():
             page.wait_for_function("document.body.dataset.resultState==='current'", timeout=120000)
             viewer.locator("body[data-viewer-state=ready][data-render-mode=skeleton]").wait_for(timeout=30000)
             assert "20 ms" in page.locator("#result-summary").inner_text()
+            # Hold post-processing, then use the real button and authenticated
+            # HTTP cancellation endpoint. A previous immutable preview survives.
+            import editor_server
+            original_prepare = editor_server.prepare_data
+            entered, release = threading.Event(), threading.Event()
+            prior_url = page.locator("#preview").get_attribute("src")
+            def paused(*args, **kwargs):
+                entered.set()
+                if not release.wait(10):
+                    raise RuntimeError("Cancellation fixture timed out")
+                return original_prepare(*args, **kwargs)
+            with patch("editor_server.prepare_data", side_effect=paused):
+                page.locator("#simulate").click()
+                assert entered.wait(10), "Python processing did not start"
+                page.locator("#cancel-simulation").click()
+                page.wait_for_function("document.getElementById('run-status').textContent.includes('Abbruch angefordert')")
+                release.set()
+                page.wait_for_function("document.body.dataset.editorState==='ready'")
+            assert "abgebrochen" in page.locator("#diagnostic-text").inner_text()
+            assert page.locator("#preview").get_attribute("src") == prior_url
+            assert page.locator("#cancel-simulation").is_disabled()
             page.set_viewport_size({"width": 420, "height": 850})
             page.wait_for_timeout(100)
             assert page.evaluate("document.documentElement.scrollWidth<=window.innerWidth")
@@ -163,6 +185,7 @@ def main():
                             "YAML import",
                             "edit during simulation",
                             "second robot",
+                            "cancel during Python processing preserves preview",
                             "20 ms grid",
                             "mobile layout",
                         ],

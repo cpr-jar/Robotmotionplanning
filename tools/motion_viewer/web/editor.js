@@ -4,6 +4,7 @@
   const storageKey = "robot-motion-editor-v1";
   let config,
     busy = false,
+    activeJobId = null,
     lastResult = null,
     lastSubmission = null,
     errorSubmission = null,
@@ -166,7 +167,10 @@
       showError(new Error("Das Sollwertraster muss zwischen 1 und 20 ms liegen."));
       return;
     }
+    submitted.job_id = crypto.randomUUID().replaceAll("-", "");
+    activeJobId = submitted.job_id;
     busy = true;
+    $("cancel-simulation").disabled = false;
     document.body.dataset.editorState = "simulating";
     $("simulate").disabled = true;
     $("simulate").textContent = "Planung & Simulation …";
@@ -220,6 +224,8 @@
         (lastResult ? " Die letzte gültige Simulation bleibt sichtbar." : " Bitte das Programm korrigieren.");
     } finally {
       busy = false;
+      activeJobId = null;
+      $("cancel-simulation").disabled = true;
       $("simulate").disabled = false;
       $("simulate").textContent = "▶ Simulieren";
       document.body.dataset.editorState = "ready";
@@ -246,6 +252,27 @@
     }
   });
   $("simulate").addEventListener("click", simulate);
+  $("cancel-simulation").addEventListener("click", async () => {
+    if (!activeJobId) return;
+    const jobId = activeJobId;
+    $("cancel-simulation").disabled = true;
+    try {
+      const result = await request("/api/cancel", {
+        method: "POST",
+        headers: {"Content-Type": "application/json", "X-Motion-Token": config.token},
+        body: JSON.stringify({job_id: jobId}),
+      });
+      if (activeJobId === jobId) {
+        if (result.cancelled) $("run-status").textContent = "Abbruch angefordert …";
+        else $("cancel-simulation").disabled = false;
+      }
+    } catch (error) {
+      if (activeJobId === jobId) {
+        $("cancel-simulation").disabled = false;
+        $("run-status").textContent = "Abbruchanfrage fehlgeschlagen: " + error.message;
+      }
+    }
+  });
   $("open-dxf").addEventListener("click", () => $("dxf-import").click());
   $("dxf-import").addEventListener("change", async () => {
     try {

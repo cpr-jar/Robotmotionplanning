@@ -156,6 +156,11 @@ KinematicDerivatives SerialChainKinematics::differentiate(const Vector &q, const
   return r;
 }
 SerialIKResult SerialChainKinematics::ik_detailed(const Pose &goal, const Vector &seed) const {
+  return ik_detailed(goal, seed, nullptr);
+}
+SerialIKResult SerialChainKinematics::ik_detailed(const Pose &goal, const Vector &seed,
+                                                  PreparationContext *context) const {
+  preparation_checkpoint(context, "ik");
   SerialIKResult r;
   if (!kinematic_detail::finite_pose(goal)) {
     r.diagnostic = "Invalid pose";
@@ -174,6 +179,7 @@ SerialIKResult SerialChainKinematics::ik_detailed(const Pose &goal, const Vector
       return e;
     };
     for (std::size_t iteration = 0; iteration < options_.max_iterations; ++iteration) {
+      preparation_consume(context, PreparationResource::Work, 1, "ik.iteration");
       const auto e = residual(q);
       r.iterations = iteration;
       r.position_error_m = e.head<3>().norm();
@@ -209,6 +215,7 @@ SerialIKResult SerialChainKinematics::ik_detailed(const Pose &goal, const Vector
         delta *= options_.max_normalized_step / norm;
       bool moved = false;
       for (int attempt = 0; attempt < 16; ++attempt) {
+        preparation_consume(context, PreparationResource::Work, 1, "ik.line_search");
         const double scale = std::ldexp(1.0, -attempt);
         Vector next = q;
         for (std::size_t i = 0; i < q.size(); ++i)
@@ -226,6 +233,8 @@ SerialIKResult SerialChainKinematics::ik_detailed(const Pose &goal, const Vector
     }
     r.status = SerialIKStatus::NoConvergence;
     r.diagnostic = "Local IK stalled or iteration budget exhausted";
+  } catch (const PreparationError &) {
+    throw;
   } catch (const std::exception &e) {
     r.status = SerialIKStatus::NumericalFailure;
     r.diagnostic = e.what();
