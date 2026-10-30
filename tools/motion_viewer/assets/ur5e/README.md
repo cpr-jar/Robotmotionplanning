@@ -37,6 +37,15 @@ diesem Arm-Modell.
   wird dabei unverändert übernommen. Diese Datei wird nicht anstelle des
   Bibliotheksmodells verwendet und enthält keine Kollisionshüllen oder Dynamik.
 
+### Plattformunabhängige Paketintegrität
+
+Die SHA-256-Prüfsumme von `visuals.json` bezieht sich auf UTF-8-Bytes mit
+LF-Zeilenenden. Der Erzeuger schreibt dieses Format auf allen Plattformen.
+Der Leser akzeptiert auch CRLF-Zeilenenden aus einem Windows-Checkout und
+normalisiert ausschließlich CRLF zu LF vor der Prüfsummenprüfung.
+Andere Inhaltsänderungen bleiben Fehler und verhindern die Veröffentlichung
+der Simulation. Die Byte-Prüfsummen der Originalquellen bleiben unverändert.
+
 Die COLLADA-Szenentransformationen und ihre Einheiten werden bei der Konvertierung
 auf die Vertices angewendet. Normalen verwenden die inverse transponierte
 Transformation. Der Renderer behält **Meter und Z nach oben**; es erfolgt keine

@@ -39,6 +39,9 @@ Voraussetzungen: Python ≥3.9, CMake ≥3.20 und ein C++20-Compiler. Alle benö
 Quellarchive, Visual-Meshes und JavaScript-Dateien sind im Projekt enthalten.
 Es werden keine zusätzlichen Python-/JavaScript-Pakete benötigt.
 
+Die eingebetteten Viewer-Dateien und Lizenztexte werden explizit als UTF-8
+gelesen, unabhängig von der Standardkodierung des Betriebssystems.
+
 Im Projekt-Hauptordner:
 
 ```sh

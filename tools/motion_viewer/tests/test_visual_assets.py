@@ -9,6 +9,7 @@ import math
 import struct
 import tempfile
 import unittest
+from unittest import mock
 import xml.etree.ElementTree as ET
 
 import build_visual_assets as builder
@@ -36,6 +37,22 @@ class VisualAssetTests(unittest.TestCase):
                 raw = (folder / record[key]).read_bytes()
                 self.assertEqual(len(raw), record["bytes"])
                 self.assertEqual(hashlib.sha256(raw).hexdigest(), record["sha256"])
+
+    def test_visual_pack_accepts_lf_and_crlf_but_rejects_content_changes(self):
+        raw = (assets.ASSETS / "visuals.json").read_bytes().replace(b"\r\n", b"\n")
+        with tempfile.TemporaryDirectory() as directory:
+            folder = Path(directory)
+            (folder / "manifest.json").write_bytes((assets.ASSETS / "manifest.json").read_bytes())
+            with mock.patch.object(assets, "ASSETS", folder):
+                for newline in (b"\n", b"\r\n"):
+                    with self.subTest(newline=newline):
+                        (folder / "visuals.json").write_bytes(raw.replace(b"\n", newline))
+                        self.assertEqual(assets.select_visual_model(self.robot, "ur5e"), self.model)
+                for mode in ("auto", "ur5e"):
+                    with self.subTest(mode=mode):
+                        (folder / "visuals.json").write_bytes(raw.replace(b'"Z_UP"', b'"Y_UP"'))
+                        with self.assertRaisesRegex(ValueError, "Visual asset checksum mismatch"):
+                            assets.select_visual_model(self.robot, mode)
 
     def test_complete_meshes_and_physical_scale(self):
         self.assertEqual(self.model["up_axis"], "Z_UP")
@@ -146,8 +163,8 @@ class VisualAssetTests(unittest.TestCase):
     def test_html_licenses_include_authors_and_complete_terms(self):
         text = assets.license_text()
         self.assertIn("Ludovic Delval", text)
-        self.assertIn((assets.ASSETS / "source/LICENSE").read_text(), text)
-        self.assertIn((assets.TOOL_DIR / "vendor/THREE-LICENSE.txt").read_text(), text)
+        self.assertIn((assets.ASSETS / "source/LICENSE").read_text(encoding="utf-8"), text)
+        self.assertIn((assets.TOOL_DIR / "vendor/THREE-LICENSE.txt").read_text(encoding="utf-8"), text)
 
 
 if __name__ == "__main__":

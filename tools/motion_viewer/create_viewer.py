@@ -266,15 +266,15 @@ def render_html(data):
         ("\u2029", "\\u2029"),
     ]:
         payload = payload.replace(source, escaped)
-    template = (TOOL_DIR / "web/viewer.html").read_text()
-    vendor = (TOOL_DIR / "vendor/three.min.js").read_text() if data.get("visual_model") else ""
-    mesh_code = (TOOL_DIR / "web/mesh_renderer.js").read_text() if data.get("visual_model") else ""
+    template = (TOOL_DIR / "web/viewer.html").read_text(encoding="utf-8")
+    vendor = (TOOL_DIR / "vendor/three.min.js").read_text(encoding="utf-8") if data.get("visual_model") else ""
+    mesh_code = (TOOL_DIR / "web/mesh_renderer.js").read_text(encoding="utf-8") if data.get("visual_model") else ""
     return (
         template.replace("/*__THREE__*/", vendor)
         .replace("/*__MESH_RENDERER__*/", mesh_code)
-        .replace("/*__VIEWER_STYLE__*/", (TOOL_DIR / "web/viewer.css").read_text())
-        .replace("/*__KINEMATICS__*/", (TOOL_DIR / "web/kinematics.js").read_text())
-        .replace("/*__VIEWER_APP__*/", (TOOL_DIR / "web/viewer.js").read_text())
+        .replace("/*__VIEWER_STYLE__*/", (TOOL_DIR / "web/viewer.css").read_text(encoding="utf-8"))
+        .replace("/*__KINEMATICS__*/", (TOOL_DIR / "web/kinematics.js").read_text(encoding="utf-8"))
+        .replace("/*__VIEWER_APP__*/", (TOOL_DIR / "web/viewer.js").read_text(encoding="utf-8"))
         .replace("__VIEWER_DATA__", payload)
     )
 

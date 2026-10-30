@@ -46,7 +46,7 @@ def select_visual_model(robot, mode="auto"):
     path = ASSETS / "visuals.json"
     if path.stat().st_size > 32 * 1024 * 1024:
         raise ValueError("Visual pack exceeds 32 MiB")
-    raw = path.read_bytes()
+    raw = path.read_bytes().replace(b"\r\n", b"\n")
     if hashlib.sha256(raw).hexdigest() != index["sha256"]:
         raise ValueError("Visual asset checksum mismatch")
     model = json.loads(raw)
@@ -56,11 +56,11 @@ def select_visual_model(robot, mode="auto"):
 
 
 def license_text():
-    ur = (ASSETS / "source/LICENSE").read_text()
-    three = (TOOL_DIR / "vendor/THREE-LICENSE.txt").read_text()
+    ur = (ASSETS / "source/LICENSE").read_text(encoding="utf-8")
+    three = (TOOL_DIR / "vendor/THREE-LICENSE.txt").read_text(encoding="utf-8")
     index = json.loads((ASSETS / "sources.json").read_text())
     authors = (
-        (ASSETS / "source/urdf/ur_macro.xacro").read_text().split("<!--", 1)[1].split("-->", 1)[0].strip()
+        (ASSETS / "source/urdf/ur_macro.xacro").read_text(encoding="utf-8").split("<!--", 1)[1].split("-->", 1)[0].strip()
     )
     return (
         "UR5e visual geometry and description\n" + index["repository"] + "\nCommit " + index["commit"] + "\n"

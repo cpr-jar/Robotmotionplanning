@@ -396,7 +396,9 @@ def main():
             p["index_count"] // 3 for link in links for p in link["parts"] if p["primitive"] == "triangles"
         ),
     }
-    (ASSETS / "visuals.json").write_text(json.dumps(model, separators=(",", ":")) + "\n")
+    (ASSETS / "visuals.json").write_bytes(
+        (json.dumps(model, separators=(",", ":")) + "\n").encode("utf-8")
+    )
     (ASSETS / "manifest.json").write_text(
         json.dumps(
             {
